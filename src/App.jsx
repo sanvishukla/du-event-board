@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import EventCard from "./components/EventCard";
 import EventMap from "./components/EventMap";
+import Footer from "./components/Footer";
 import events from "./data/events.json";
 import { useUrlState } from "./hooks/useUrlState";
 
@@ -324,18 +325,7 @@ export default function App() {
           <EventMap events={filteredEvents} />
         )}
       </main>
-      <footer className="footer">
-        <p>
-          DU Event Board — Built with ❤️ by the community.{" "}
-          <a
-            href="https://github.com/osl-incubator/du-event-board"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Contribute on GitHub
-          </a>
-        </p>
-      </footer>
+      <Footer />
     </>
   );
 }
