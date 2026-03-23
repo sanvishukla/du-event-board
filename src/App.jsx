@@ -20,16 +20,10 @@ function startOfDay(date) {
 }
 
 export default function App() {
-<<<<<<< HEAD
   const [searchTerm, setSearchTerm] = useUrlState("search", "");
   const [selectedRegion, setSelectedRegion] = useUrlState("region", "");
   const [selectedCategory, setSelectedCategory] = useUrlState("category", "");
-=======
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [viewMode, setViewMode] = useState("list");
->>>>>>> f27c214 (Add event map feature)
 
   const [dateFilterType, setDateFilterType] = useUrlState("dateType", "all");
   const [customDate, setCustomDate] = useUrlState("customDate", "");
