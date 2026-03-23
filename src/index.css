@@ -764,7 +764,9 @@ body {
   justify-content: center;
   align-items: center;
   padding: 4px;
-  transition: transform var(--transition-fast), background var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .footer__social-link:hover {
@@ -913,13 +915,13 @@ body {
     align-items: center;
     gap: 3rem;
   }
-  
+
   .footer__links {
     grid-template-columns: 1fr;
     text-align: center;
     gap: 2rem;
   }
-  
+
   .footer__column a {
     justify-content: center;
   }

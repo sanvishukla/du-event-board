@@ -42,7 +42,8 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              About Us <ExternalLink size={14} className="footer__external-icon" />
+              About Us{" "}
+              <ExternalLink size={14} className="footer__external-icon" />
             </a>
             <a
               href="https://www.dataumbrella.org/about/faq"
@@ -55,18 +56,20 @@ export default function Footer() {
 
           <div className="footer__column">
             <a
-              href="#"
+              href="https://www.every.org/data-umbrella"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Donate <ExternalLink size={14} className="footer__external-icon" />
+              Donate{" "}
+              <ExternalLink size={14} className="footer__external-icon" />
             </a>
             <a
               href="https://www.dataumbrella.org/about/sponsors"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Sponsors <ExternalLink size={14} className="footer__external-icon" />
+              Sponsors{" "}
+              <ExternalLink size={14} className="footer__external-icon" />
             </a>
           </div>
 
@@ -76,14 +79,16 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Contact Us <ExternalLink size={14} className="footer__external-icon" />
+              Contact Us{" "}
+              <ExternalLink size={14} className="footer__external-icon" />
             </a>
             <a
               href="https://www.dataumbrella.org/"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Data Umbrella <ExternalLink size={14} className="footer__external-icon" />
+              Data Umbrella{" "}
+              <ExternalLink size={14} className="footer__external-icon" />
             </a>
           </div>
         </div>
