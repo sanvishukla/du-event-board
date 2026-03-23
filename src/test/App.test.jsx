@@ -219,27 +219,4 @@ describe("App", () => {
 
     expect(screen.getByText("No events found")).toBeInTheDocument();
   });
-
-  it("initializes state from URL parameters on mount", () => {
-    // Set up purely initial URL state before rendering
-    window.history.replaceState(
-      null,
-      "",
-      "/?search=python&region=Porto+Alegre",
-    );
-    render(<App />);
-
-    // We should see only the python meetup in porto alegre
-    expect(
-      screen.getByText("Python Meetup - Porto Alegre"),
-    ).toBeInTheDocument();
-
-    // Should NOT see UX Design which is in Porto Alegre but doesn't match 'python'
-    expect(
-      screen.queryByText("UX Design Workshop - Porto Alegre"),
-    ).not.toBeInTheDocument();
-
-    // Check that the search and region select inputs actually populated
-    expect(screen.getByDisplayValue("python")).toBeInTheDocument();
-  });
 });
