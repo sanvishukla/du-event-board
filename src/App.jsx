@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import EventCard from "./components/EventCard";
+import EventMap from "./components/EventMap";
 import events from "./data/events.json";
 import { useUrlState } from "./hooks/useUrlState";
 
@@ -19,9 +20,16 @@ function startOfDay(date) {
 }
 
 export default function App() {
+<<<<<<< HEAD
   const [searchTerm, setSearchTerm] = useUrlState("search", "");
   const [selectedRegion, setSelectedRegion] = useUrlState("region", "");
   const [selectedCategory, setSelectedCategory] = useUrlState("category", "");
+=======
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [viewMode, setViewMode] = useState("list");
+>>>>>>> f27c214 (Add event map feature)
 
   const [dateFilterType, setDateFilterType] = useUrlState("dateType", "all");
   const [customDate, setCustomDate] = useUrlState("customDate", "");
@@ -164,27 +172,49 @@ export default function App() {
         categories={categories}
       />
       <main className="main" id="main-content">
-        <p className="main__results-info">
-          Showing{" "}
-          <span className="main__results-count">{filteredEvents.length}</span>{" "}
-          event{filteredEvents.length !== 1 ? "s" : ""}
-        </p>
-        <div className="events-grid" id="events-grid">
-          {filteredEvents.length > 0 ? (
-            filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))
-          ) : (
-            <div className="empty-state" id="empty-state">
-              <div className="empty-state__icon">🔎</div>
-              <h2 className="empty-state__title">No events found</h2>
-              <p className="empty-state__description">
-                Try adjusting your search terms or filters to find events near
-                you.
-              </p>
-            </div>
-          )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingLeft: '0.25rem' }}>
+          <p className="main__results-info" style={{ marginBottom: 0, paddingLeft: 0 }}>
+            Showing{" "}
+            <span className="main__results-count">{filteredEvents.length}</span>{" "}
+            event{filteredEvents.length !== 1 ? "s" : ""}
+          </p>
+          
+          <div className="view-toggle" style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-input)', padding: '0.3rem', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+            <button 
+              onClick={() => setViewMode('list')}
+              style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: viewMode === 'list' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'list' ? '#fff' : 'var(--text-muted)', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              List
+            </button>
+            <button 
+              onClick={() => setViewMode('map')}
+              style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: viewMode === 'map' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'map' ? '#fff' : 'var(--text-muted)', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+              Map
+            </button>
+          </div>
         </div>
+
+        {viewMode === 'list' ? (
+          <div className="events-grid" id="events-grid">
+            {filteredEvents.length > 0 ? (
+              filteredEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))
+            ) : (
+              <div className="empty-state" id="empty-state">
+                <div className="empty-state__icon">🔎</div>
+                <h2 className="empty-state__title">No events found</h2>
+                <p className="empty-state__description">
+                  Try adjusting your search terms or filters to find events near
+                  you.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <EventMap events={filteredEvents} />
+        )}
       </main>
       <footer className="footer">
         <p>
