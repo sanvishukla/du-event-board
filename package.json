@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "generate": "python scripts/generate_events_json.py",
-    "prebuild": "python3 scripts/generate_events_json.py"
+    "prebuild": "python3 scripts/generate_events_json.py",
+    "create-event": "node scripts/create_event.js"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",
@@ -36,7 +37,9 @@
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
     "jsdom": "^25.0.1",
+    "prompts": "^2.4.2",
     "vite": "^6.0.5",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "yaml": "^2.8.3"
   }
 }
