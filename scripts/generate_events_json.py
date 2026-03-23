@@ -39,6 +39,8 @@ _geocode_cache = None
 def get_cache() -> dict[str, Any]:
     """
     title: Retrieve the geocode cache dictionary from disk.
+    returns:
+      type: dict[str, Any]
     """
     global _geocode_cache
     if _geocode_cache is None:
@@ -62,6 +64,11 @@ def save_cache() -> None:
 def geocode_location(location_str: str) -> tuple[float, float] | None:
     """
     title: Uses Nominatim API to get lat/long for a location string.
+    parameters:
+      location_str:
+        type: str
+    returns:
+      type: tuple[float, float] | None
     """
     if not location_str or location_str.lower() == "online":
         return None
