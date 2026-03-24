@@ -23,7 +23,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useUrlState("search", "");
   const [selectedRegion, setSelectedRegion] = useUrlState("region", "");
   const [selectedCategory, setSelectedCategory] = useUrlState("category", "");
-  const [viewMode, setViewMode] = useUrlState("view", "list");
+  const [viewMode, setViewMode] = useUrlState("view", "grid");
 
   const [dateFilterType, setDateFilterType] = useUrlState("dateType", "all");
   const [customDate, setCustomDate] = useUrlState("customDate", "");
@@ -226,6 +226,29 @@ export default function App() {
             }}
           >
             <button
+              onClick={() => setViewMode("grid")}
+              style={{
+                padding: "0.5rem 1rem",
+                borderRadius: "8px",
+                background:
+                  viewMode === "grid"
+                    ? "var(--accent-primary)"
+                    : "transparent",
+                color: viewMode === "grid" ? "#fff" : "var(--text-muted)",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: "bold",
+                transition: "all 0.2s",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              Grid
+            </button>
+            <button
               onClick={() => setViewMode("list")}
               style={{
                 padding: "0.5rem 1rem",
@@ -303,8 +326,8 @@ export default function App() {
           </div>
         </div>
 
-        {viewMode === "list" ? (
-          <div className="events-grid" id="events-grid">
+        {viewMode === "list" || viewMode === "grid" ? (
+          <div className={`events-${viewMode}`} id={`events-${viewMode}`}>
             {filteredEvents.length > 0 ? (
               filteredEvents.map((event) => (
                 <EventCard key={event.id} event={event} />

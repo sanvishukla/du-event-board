@@ -448,6 +448,35 @@ body {
   gap: 1.5rem;
 }
 
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.events-list .event-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 1.5rem;
+  gap: 2rem;
+}
+
+.events-list .event-card__image {
+  width: 260px;
+  height: 100%;
+  min-height: 220px;
+  margin: -1.5rem 0 -1.5rem -1.5rem;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.events-list .event-card__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* ===================================
    Event Card
    =================================== */
@@ -732,6 +761,20 @@ body {
   .events-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  .events-list .event-card {
+    flex-direction: column;
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+
+  .events-list .event-card__image {
+    width: calc(100% + 2.5rem);
+    height: 160px;
+    min-height: 160px;
+    margin: -1.25rem -1.25rem 0 -1.25rem;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   .event-card {
