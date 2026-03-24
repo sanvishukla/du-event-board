@@ -528,6 +528,135 @@ body {
 }
 
 /* ===================================
+   List View — Grouped by Month
+   =================================== */
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.events-list__month-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.events-list__month-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.events-list__month-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* List Row Item */
+.event-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 100px;
+  transition: all var(--transition-base);
+  cursor: default;
+  overflow: hidden;
+  min-height: 48px;
+}
+
+.event-list-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-sm), 0 0 20px rgba(124, 92, 252, 0.08);
+}
+
+.event-list-row__title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-list-row__title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--accent-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  transition: color var(--transition-fast);
+}
+
+a.event-list-row__title:hover {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+span.event-list-row__title {
+  color: var(--text-primary);
+}
+
+.event-list-row__right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.event-list-row__category {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-secondary);
+  background: rgba(192, 132, 252, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.2);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.event-list-row__status {
+  font-size: 0.65rem !important;
+}
+
+.event-list-row__date {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 100px;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .event-list-row {
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .event-list-row__right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .event-list-row__date {
+    min-width: auto;
+  }
+}
+
+/* ===================================
    Event Card
    =================================== */
 .event-card {
