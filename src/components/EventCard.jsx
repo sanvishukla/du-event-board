@@ -12,10 +12,10 @@ export default function EventCard({ event }) {
   return (
     <article className="event-card" id={`event-${event.id}`}>
       {event.image_url && (
-        <img 
-          src={event.image_url} 
-          alt={`Cover for ${event.title}`} 
-          className="event-card__image" 
+        <img
+          src={event.image_url}
+          alt={`Cover for ${event.title}`}
+          className="event-card__image"
         />
       )}
       <div className="event-card__content">
