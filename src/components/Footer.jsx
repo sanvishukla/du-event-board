@@ -13,6 +13,10 @@ export default function Footer() {
             className="footer__logo"
           />
           <span className="footer__company-name">Data Umbrella</span>
+          <span className="footer__tagline">
+            A data science and open source community
+          </span>
+
           <div className="footer__socials">
             <a
               href="https://github.com/data-umbrella"

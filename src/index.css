@@ -748,7 +748,16 @@ body {
   color: #3b50c3; /* specific deep blue matching screenshot */
   font-weight: 500;
   font-size: 0.9rem;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.footer__tagline {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+  margin-bottom: 0.8rem;
+  max-width: 180px;
+  line-height: 1.2;
 }
 
 .footer__socials {
