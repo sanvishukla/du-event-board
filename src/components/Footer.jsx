@@ -42,13 +42,19 @@ export default function Footer({ onNavigate }) {
         <div className="footer__links">
           <div className="footer__column">
             <button
-              onClick={() => onNavigate("about")}
+              onClick={() =>
+                onNavigate ? onNavigate("about") : (window.location.href = "/")
+              }
               className="footer__internal-link"
             >
               About Us
             </button>
             <button
-              onClick={() => onNavigate("events")}
+              onClick={() =>
+                onNavigate
+                  ? onNavigate("events")
+                  : (window.location.href = "/")
+              }
               className="footer__internal-link"
             >
               FAQs
@@ -66,7 +72,11 @@ export default function Footer({ onNavigate }) {
               <ExternalLink size={14} className="footer__external-icon" />
             </a>
             <button
-              onClick={() => onNavigate("sponsors")}
+              onClick={() =>
+                onNavigate
+                  ? onNavigate("sponsors")
+                  : (window.location.href = "/")
+              }
               className="footer__internal-link"
             >
               Sponsors
@@ -75,7 +85,11 @@ export default function Footer({ onNavigate }) {
 
           <div className="footer__column">
             <button
-              onClick={() => onNavigate("events")}
+              onClick={() =>
+                onNavigate
+                  ? onNavigate("events")
+                  : (window.location.href = "/")
+              }
               className="footer__internal-link"
             >
               Contact Us
