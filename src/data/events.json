@@ -91,8 +91,8 @@
   },
   {
     "id": "6",
-    "lat": -29.183971762576146,
-    "lng": -50.381848562576145,
+    "lat": -30.0324999,
+    "lng": -51.2303767,
     "title": "UX Design Workshop - Porto Alegre",
     "description": "Learn user experience design principles and create wireframes using Figma. Perfect for beginners and developers wanting to improve their design skills.",
     "date": "2026-04-12",
@@ -109,8 +109,8 @@
   },
   {
     "id": "7",
-    "lat": -22.702122562576143,
-    "lng": -45.78485426257615,
+    "lat": -23.5506507,
+    "lng": -46.6333824,
     "title": "Rust Programming Intro - São Paulo",
     "description": "Introduction to the Rust programming language. We'll cover ownership, borrowing, and building your first CLI tool.",
     "date": "2026-04-18",

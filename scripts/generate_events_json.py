@@ -301,34 +301,6 @@ def main() -> None:
 
     save_cache()
 
-    # Apply "jitter" to the JSON output only, to make overlapping markers visible
-    # (Without affecting the source YAML data)
-    seen_coords: dict[tuple[float, float], int] = {}
-    jitter_amount = 1.2  # Increased significantly (1.2 deg = ~130km) for visibility at Zoom 4
-
-    for event in events:
-        if "lat" in event and event["lat"] and "lng" in event and event["lng"]:
-            # Round to 1 decimal place to group items that are very close (not just identical)
-            coords = (
-                round(float(event["lat"]), 1),
-                round(float(event["lng"]), 1),
-            )
-            if coords in seen_coords:
-                # Add a small spiral offset
-                count = seen_coords[coords]
-                import math
-
-                angle = count * (
-                    2 * math.pi / 8
-                )  # 8 positions around the center
-                radius = jitter_amount * (1 + (count // 8) * 0.5)
-
-                event["lat"] = float(event["lat"]) + radius * math.sin(angle)
-                event["lng"] = float(event["lng"]) + radius * math.cos(angle)
-                seen_coords[coords] += 1
-            else:
-                seen_coords[coords] = 1
-
     # Ensure output directory exists
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
