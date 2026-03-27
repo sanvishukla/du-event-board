@@ -8,7 +8,7 @@ export default function Footer({ onNavigate }) {
       <div className="footer__content">
         <div className="footer__brand">
           <img
-            src="/du-event-board/DU_logo.png"
+            src="https://github.com/data-umbrella.png"
             alt="Data Umbrella Logo"
             className="footer__logo"
           />
