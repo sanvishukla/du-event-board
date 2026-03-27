@@ -1,14 +1,14 @@
 import React from "react";
 import { ExternalLink, Github, Twitter } from "lucide-react";
 
-export default function Footer() {
+export default function Footer({ onNavigate }) {
   return (
     <footer className="footer">
       <div className="footer__divider"></div>
       <div className="footer__content">
         <div className="footer__brand">
           <img
-            src="https://github.com/data-umbrella.png"
+            src="/du-event-board/DU_logo.png"
             alt="Data Umbrella Logo"
             className="footer__logo"
           />
@@ -28,7 +28,7 @@ export default function Footer() {
               <Github size={20} strokeWidth={1.5} />
             </a>
             <a
-              href="https://twitter.com/dataumbrella"
+              href="https://x.com/dataumbrella"
               aria-label="Twitter"
               className="footer__social-link"
               target="_blank"
@@ -41,55 +41,50 @@ export default function Footer() {
 
         <div className="footer__links">
           <div className="footer__column">
-            <a
-              href="https://www.dataumbrella.org/about/about-data-umbrella"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => onNavigate("about")}
+              className="footer__internal-link"
             >
-              About Us{" "}
-              <ExternalLink size={14} className="footer__external-icon" />
-            </a>
-            <a
-              href="https://www.dataumbrella.org/about/faq"
-              target="_blank"
-              rel="noopener noreferrer"
+              About Us
+            </button>
+            <button
+              onClick={() => onNavigate("events")}
+              className="footer__internal-link"
             >
-              FAQs <ExternalLink size={14} className="footer__external-icon" />
-            </a>
+              FAQs
+            </button>
           </div>
 
           <div className="footer__column">
             <a
-              href="https://www.every.org/data-umbrella"
+              href="https://opencollective.com/data-umbrella"
               target="_blank"
               rel="noopener noreferrer"
+              className="footer__external-link"
             >
               Donate{" "}
               <ExternalLink size={14} className="footer__external-icon" />
             </a>
-            <a
-              href="https://www.dataumbrella.org/about/sponsors"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => onNavigate("sponsors")}
+              className="footer__internal-link"
             >
-              Sponsors{" "}
-              <ExternalLink size={14} className="footer__external-icon" />
-            </a>
+              Sponsors
+            </button>
           </div>
 
           <div className="footer__column">
-            <a
-              href="https://www.dataumbrella.org/about/contact"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => onNavigate("events")}
+              className="footer__internal-link"
             >
-              Contact Us{" "}
-              <ExternalLink size={14} className="footer__external-icon" />
-            </a>
+              Contact Us
+            </button>
             <a
               href="https://www.dataumbrella.org/"
               target="_blank"
               rel="noopener noreferrer"
+              className="footer__external-link"
             >
               Data Umbrella{" "}
               <ExternalLink size={14} className="footer__external-icon" />
