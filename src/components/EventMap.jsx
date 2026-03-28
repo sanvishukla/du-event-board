@@ -1,5 +1,12 @@
-import React from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Circle,
+  useMap,
+} from "react-leaflet";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ExternalLink, MapPin } from "lucide-react";
 import MarkerClusterGroup from "react-leaflet-cluster";
@@ -20,6 +27,33 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+const RADIUS_PRESETS = [50, 100, 200];
+
+// Internal component to handle map view changes reactively.
+// Only zooms when userCoords changes (i.e. "Find Near Me" is clicked),
+// NOT when the slider/presets change — so the user can freely adjust
+// the radius without the map jumping.
+function MapController({ userCoords, searchRadius }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!userCoords) return;
+    // Manually compute bounding box from the radius at the moment of location acquisition.
+    // 1 degree latitude ≈ 111 km; longitude degrees shrink by cos(lat).
+    const latOffset = searchRadius / 111;
+    const lngOffset =
+      searchRadius / (111 * Math.cos((userCoords.lat * Math.PI) / 180));
+    const bounds = L.latLngBounds(
+      [userCoords.lat - latOffset, userCoords.lng - lngOffset],
+      [userCoords.lat + latOffset, userCoords.lng + lngOffset],
+    );
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userCoords]); // intentionally omit searchRadius — zoom only on new location
+
+  return null;
+}
+
 export default function EventMap({
   events,
   theme = "dark",
@@ -27,6 +61,7 @@ export default function EventMap({
   searchRadius = 50,
   onRadiusChange,
   notification,
+  userCoords,
 }) {
   // Find center based on first geocoded event or fallback
   const mapCenter = events.find((e) => e.lat && e.lng)
@@ -137,7 +172,7 @@ export default function EventMap({
             className="map-near-me-btn-primary"
             style={{
               width: "100%",
-              marginBottom: "20px",
+              marginBottom: "16px",
               padding: "12px",
               borderRadius: "12px",
               background: "var(--accent-primary)",
@@ -162,7 +197,7 @@ export default function EventMap({
             style={{
               display: "flex",
               justifyContent: "space-between",
-              marginBottom: "10px",
+              marginBottom: "8px",
               alignItems: "center",
             }}
           >
@@ -190,6 +225,48 @@ export default function EventMap({
               {searchRadius}km
             </span>
           </div>
+
+          {/* Preset buttons */}
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              marginBottom: "10px",
+            }}
+          >
+            {RADIUS_PRESETS.map((preset) => (
+              <button
+                key={preset}
+                onClick={() => onRadiusChange(preset)}
+                style={{
+                  flex: 1,
+                  padding: "5px 0",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  border:
+                    searchRadius === preset
+                      ? "1px solid var(--accent-primary)"
+                      : "1px solid var(--border-subtle)",
+                  background:
+                    searchRadius === preset
+                      ? "var(--accent-primary)"
+                      : "var(--bg-input)",
+                  color:
+                    searchRadius === preset ? "#fff" : "var(--text-secondary)",
+                  boxShadow:
+                    searchRadius === preset
+                      ? "0 0 10px rgba(124, 92, 252, 0.35)"
+                      : "none",
+                }}
+              >
+                {preset}km
+              </button>
+            ))}
+          </div>
+
           <input
             type="range"
             min="5"
@@ -230,6 +307,25 @@ export default function EventMap({
             url={tileUrl}
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           />
+
+          {/* Auto-pan/zoom controller */}
+          <MapController userCoords={userCoords} searchRadius={searchRadius} />
+
+          {/* Visual radius circle when user location is known */}
+          {userCoords && (
+            <Circle
+              center={[userCoords.lat, userCoords.lng]}
+              radius={searchRadius * 1000}
+              pathOptions={{
+                color: "#7c5cfc",
+                fillColor: "#7c5cfc",
+                fillOpacity: 0.08,
+                weight: 2,
+                dashArray: "6 4",
+                opacity: 0.7,
+              }}
+            />
+          )}
 
           <MarkerClusterGroup chunkedLoading>
             {mapEvents.map((event) => (
