@@ -393,7 +393,11 @@ export default function App() {
                   <h3 className="events-list__month-heading">{month}</h3>
                   <div className="events-list__month-rows">
                     {monthEvents.map((event) => (
-                      <EventCard key={event.id} event={event} viewMode="list" />
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        viewMode="list"
+                      />
                     ))}
                   </div>
                 </div>
