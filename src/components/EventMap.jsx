@@ -265,31 +265,59 @@ export default function EventMap({ events, onSelectEvent, theme }) {
                           })()}
                         </div>
 
-                        <a
-                          href={`?page=event-details&eventId=${event.id}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            onSelectEvent(event.id);
-                          }}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            textDecoration: "none",
-                            backgroundColor: "#7c5cfc",
-                            color: "white",
-                            padding: "8px 16px",
-                            borderRadius: "8px",
-                            fontSize: "13px",
-                            fontWeight: "600",
-                            transition: "all 0.2s",
-                            width: "100%",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                          }}
-                        >
-                          View Details <ExternalLink size={14} />
-                        </a>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <a
+                            href={`?page=event-details&eventId=${event.id}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onSelectEvent(event.id);
+                            }}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              textDecoration: "none",
+                              backgroundColor: "#7c5cfc",
+                              color: "white",
+                              padding: "8px 16px",
+                              borderRadius: "8px",
+                              fontSize: "13px",
+                              fontWeight: "600",
+                              transition: "all 0.2s",
+                              width: "100%",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                            }}
+                          >
+                            View Details <ExternalLink size={14} />
+                          </a>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const address = encodeURIComponent(event.location);
+                              const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
+                              window.open(url, "_blank", "noopener,noreferrer");
+                            }}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              backgroundColor: "#f0f0f0",
+                              color: "#333",
+                              border: "1px solid #ccc",
+                              padding: "8px 16px",
+                              borderRadius: "8px",
+                              fontSize: "13px",
+                              fontWeight: "600",
+                              transition: "all 0.2s",
+                              width: "100%",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Directions
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -302,3 +330,4 @@ export default function EventMap({ events, onSelectEvent, theme }) {
     </AnimatePresence>
   );
 }
+
