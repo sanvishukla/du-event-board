@@ -52,8 +52,8 @@ def check_link(url: str) -> tuple[bool, str]:
         return False, "Timeout (10s)"
     except requests.exceptions.ConnectionError:
         return False, "Connection Error"
-    except Exception as e:
-        return False, f"Error: {str(e)}"
+    except requests.exceptions.RequestException as e:
+        return False, f"Request Error: {str(e)}"
 
 
 def main() -> None:
