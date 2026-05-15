@@ -1,128 +1,124 @@
 events:
-  - id: "1"
-    lat: -30.0324999
-    lng: -51.2303767
-    title: "Python Meetup - Porto Alegre"
-    description: "Monthly Python community meetup featuring talks on web development, data science, and automation. Open to all skill levels."
-    date: "2026-03-15"
-    time: "19:00"
-    location: "TechHub Coworking, Rua da República 433, Porto Alegre"
-    region: "Porto Alegre"
-    category: "Technology"
-    url: "https://example.com/python-poa"
+  - id: '9'
+    title: Test
+    description: XYZ
+    date: 5/22/2026
+    time: 09:00
+    location: DELHI
+    region: INDIA
+    category: XYZ
+    url: WWW.SAMPLE.COM
+    tags:
+      - DNK
+  - id: '10'
+    title: PyOhio 2026
+    description: ''
+    date: '2026-07-25'
+    time: 09:00
+    location: Cleveland, OH, USA
+    region: Canada / USA
+    category: Conference
+    url: https://www.pyohio.org/2026/
     tags:
       - python
-      - programming
-      - community
-
-  - id: "2"
-    lat: -23.5506507
-    lng: -46.6333824
-    title: "React Workshop - São Paulo"
-    description: "Hands-on workshop covering React hooks, state management, and building modern web applications. Bring your laptop!"
-    date: "2026-03-20"
-    time: "14:00"
-    location: "InovaBR Hub, Av. Paulista 1578, São Paulo"
-    region: "São Paulo"
-    category: "Technology"
-    url: "https://example.com/react-sp"
+  - id: '11'
+    title: Indaba 2026
+    description: ''
+    date: '2026-08-02'
+    time: 09:00
+    location: Dakar, Senegal
+    region: Africa
+    category: Conference
+    url: https://deeplearningindaba.com/2026/
     tags:
-      - react
-      - javascript
-      - frontend
-
-  - id: "3"
-    lat: -25.4295963
-    lng: -49.2712724
-    title: "Open Source Friday - Curitiba"
-    description: "Contribute to open source projects together! We'll pair program on popular OSS projects and help newcomers make their first contribution."
-    date: "2026-03-22"
-    time: "18:30"
-    location: "Espaço Digital, Rua XV de Novembro 700, Curitiba"
-    region: "Curitiba"
-    category: "Technology"
-    url: "https://example.com/oss-friday-cwb"
+      - DL
+  - id: '12'
+    title: SciPy 2026
+    description: ''
+    date: '2026-07-13'
+    time: 09:00
+    location: Minneapolis, MN, USA
+    region: Canada / USA
+    category: Conference
+    url: https://www.scipy2026.scipy.org
     tags:
-      - open-source
-      - community
-      - programming
-
-  - id: "4"
-    lat: -22.9110137
-    lng: -43.2093727
-    title: "Data Science Bootcamp - Rio de Janeiro"
-    description: "A full-day bootcamp on data science fundamentals: pandas, scikit-learn, and visualization with matplotlib."
-    date: "2026-04-05"
-    time: "09:00"
-    location: "Lab Analytics, Rua Visconde de Pirajá 330, Rio de Janeiro"
-    region: "Rio de Janeiro"
-    category: "Education"
-    url: "https://example.com/ds-bootcamp-rj"
-    tags:
-      - data-science
-      - machine-learning
       - python
-
-  - id: "5"
-    lat: -19.9227318
-    lng: -43.9450948
-    title: "DevOps Meetup - Belo Horizonte"
-    description: "Monthly DevOps meetup discussing CI/CD pipelines, container orchestration, and infrastructure as code."
-    date: "2026-04-10"
-    time: "19:00"
-    location: "MG Tech Center, Av. Afonso Pena 1500, Belo Horizonte"
-    region: "Belo Horizonte"
-    category: "Technology"
-    url: "https://example.com/devops-bh"
+      - open source
+  - id: '13'
+    title: EuroPython 2026
+    description: ''
+    date: '2026-07-13'
+    time: 09:00
+    location: Krakow, Poland
+    region: Europe
+    category: Conference
+    url: https://ep2026.europython.eu
     tags:
-      - devops
-      - docker
-      - kubernetes
-
-  - id: "6"
-    lat: -30.0324999
-    lng: -51.2303767
-    title: "UX Design Workshop - Porto Alegre"
-    description: "Learn user experience design principles and create wireframes using Figma. Perfect for beginners and developers wanting to improve their design skills."
-    date: "2026-04-12"
-    time: "10:00"
-    location: "Design Lab POA, Rua Mostardeiro 120, Porto Alegre"
-    region: "Porto Alegre"
-    category: "Design"
-    url: "https://example.com/ux-workshop-poa"
+      - python
+  - id: '14'
+    title: RecSys 2024
+    description: ''
+    date: '2026-09-28'
+    time: 09:00
+    location: Minneapolis, MN, USA
+    region: Canada / USA
+    category: Conference
+    url: https://recsys.acm.org/recsys26/
     tags:
-      - design
-      - ux
-      - figma
-
-  - id: "7"
-    lat: -23.5506507
-    lng: -46.6333824
-    title: "Rust Programming Intro - São Paulo"
-    description: "Introduction to the Rust programming language. We'll cover ownership, borrowing, and building your first CLI tool."
-    date: "2026-04-18"
-    time: "18:00"
-    location: "Hacker House SP, Rua Augusta 2690, São Paulo"
-    region: "São Paulo"
-    category: "Technology"
-    url: "https://example.com/rust-intro-sp"
+      - ML
+  - id: '15'
+    title: CVPR 2026
+    description: ''
+    date: '2026-06-03'
+    time: 09:00
+    location: Denver, CO, USA
+    region: Canada / USA
+    category: Conference
+    url: https://cvpr.thecvf.com
     tags:
-      - rust
-      - programming
-      - systems
-
-  - id: "8"
-    lat: -27.544562
-    lng: -48.4999697
-    title: "Community Hackathon - Florianópolis"
-    description: "48-hour hackathon focused on building solutions for local community challenges. Teams of 3-5 people. Prizes for top 3 teams!"
-    date: "2026-04-25"
-    time: "08:00"
-    location: "ACATE, Rodovia SC-401 600, Florianópolis"
-    region: "Florianópolis"
-    category: "Community"
-    url: "https://example.com/hackathon-floripa"
+      - ML
+      - CV
+  - id: '16'
+    title: DjangoCon US 2026
+    description: ''
+    date: '2026-08-24'
+    time: 09:00
+    location: Chicago, IL, USA
+    region: Canada / USA
+    category: Conference
+    url: https://2026.djangocon.us
+  - id: '17'
+    title: ICML 2026
+    description: ''
+    date: '2026-07-06'
+    time: 09:00
+    location: Seoul, South Korea
+    region: Asia
+    category: Conference
+    url: https://icml.cc/Conferences/2026
     tags:
-      - hackathon
-      - community
-      - innovation
+      - AI
+      - ML
+      - CV
+  - id: '18'
+    title: JSM 2026
+    description: ''
+    date: '2026-08-01'
+    time: 09:00
+    location: Boston, MA, USA
+    region: Canada / USA
+    category: Conference
+    url: https://ww2.amstat.org/meetings/jsm/2026/
+    tags:
+      - statistics
+  - id: '19'
+    title: DataConnect Conference 2026
+    description: ''
+    date: '2026-10-29'
+    time: 09:00
+    location: Columbus, Ohio, USA
+    region: Canada / USA
+    category: Conference
+    url: https://www.dataconnectconf.com/dataconnect/conference
+    tags:
+      - women-focused
