@@ -111,8 +111,9 @@ def main() -> None:
         reader = csv.DictReader(csv_content.splitlines())
 
         for row in reader:
-            title = row.get("event_name", "").strip()
-            date = row.get("start_date", "").strip()
+            # Support both snake_case (2026 sheet) and Title Case (Form Responses)
+            title = row.get("event_name", row.get("Event Name", "")).strip()
+            date = row.get("start_date", row.get("Start Date", "")).strip()
 
             if not title or not date:
                 continue
@@ -120,21 +121,32 @@ def main() -> None:
             if is_event_exists(existing_events, title, date):
                 continue
 
+            desc = row.get(
+                "event_description (200 char)",
+                row.get("Event Description", ""),
+            ).strip()
+            category = row.get(
+                "event_type", row.get("Event Type / Category", "")
+            ).strip()
+            url_str = row.get("event_url", row.get("Event URL", "")).strip()
+
+            # Location, Region, Tags are usually the same or just Capitalized
+            location = row.get("location", row.get("Location", "")).strip()
+            region = row.get("region", row.get("Region", "")).strip()
+            tags_raw = row.get("tags", row.get("Tags", "")).strip()
+
             new_event = {
                 "id": get_next_id(existing_events),
                 "title": title,
-                "description": row.get(
-                    "event_description (200 char)", ""
-                ).strip(),
+                "description": desc,
                 "date": date,
                 "time": "09:00",
-                "location": row.get("location", "").strip(),
-                "region": row.get("region", "").strip(),
-                "category": row.get("event_type", "").strip(),
-                "url": row.get("event_url", "").strip(),
+                "location": location,
+                "region": region,
+                "category": category,
+                "url": url_str,
             }
 
-            tags_raw = row.get("tags", "").strip()
             if tags_raw:
                 tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
                 if tags:
