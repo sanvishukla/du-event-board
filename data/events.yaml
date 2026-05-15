@@ -287,15 +287,3 @@ events:
     url: "https://www.dataconnectconf.com/dataconnect/conference"
     tags:
       - women-focused
-
-  - id: "23"
-    title: "3"
-    description: "w"
-    date: "6/6/2026"
-    time: "09:00"
-    location: "iojo"
-    region: "joij"
-    category: "ko"
-    url: "oijio"
-    tags:
-      - oijo
