@@ -11,11 +11,58 @@ summary: |-
 import argparse
 import csv
 import os
+import re
 import sys
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 
 from ruamel.yaml import YAML  # type: ignore
+
+
+def validate_row(row_data: dict[str, str]) -> list[str]:
+    """
+    title: Validate row data from Google Sheets.
+    parameters:
+      row_data:
+        type: dict[str, str]
+    returns:
+      type: list[str]
+    """
+    errors = []
+
+    # Required fields check
+    required = ["title", "date", "url", "category", "location", "region"]
+    for field in required:
+        if not row_data.get(field):
+            errors.append(f"Missing required field: {field}")
+
+    # URL format validation
+    url = row_data.get("url", "")
+    if url and not re.match(r"^https?://", url):
+        errors.append(
+            f"Invalid URL format: {url} (must start with http:// or https://)"
+        )
+
+    # Date validation (Format and Future check)
+    date_str = row_data.get("date", "")
+    if date_str:
+        try:
+            event_date = datetime.strptime(date_str, "%Y-%m-%d")
+            today = datetime.now().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            if event_date < today:
+                errors.append(
+                    f"Date must be in the future (or today): {date_str}"
+                )
+        except ValueError:
+            errors.append(
+                f"Invalid date format: {date_str} (expected YYYY-MM-DD)"
+            )
+
+    return errors
+
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -162,6 +209,22 @@ def main() -> None:
             location = row.get("location", row.get("Location", "")).strip()
             region = row.get("region", row.get("Region", "")).strip()
             tags_raw = row.get("tags", row.get("Tags", "")).strip()
+
+            # Perform validation
+            row_data = {
+                "title": title,
+                "date": date,
+                "url": url_str,
+                "category": category,
+                "location": location,
+                "region": region,
+            }
+            errors = validate_row(row_data)
+            if errors:
+                print(f"Skipping row '{title}' due to validation errors:")
+                for err in errors:
+                    print(f"  - {err}")
+                continue
 
             tags = []
             if tags_raw:

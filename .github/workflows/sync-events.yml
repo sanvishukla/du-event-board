@@ -36,6 +36,10 @@ jobs:
             python scripts/sync_google_sheet.py
           fi
 
+      - name: Validate changes
+        run: |
+          python scripts/generate_events_json.py
+
       - name: Check for changes
         id: check_changes
         run: |
