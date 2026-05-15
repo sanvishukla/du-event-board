@@ -69,15 +69,19 @@ def find_event_index_by_id(events: list, event_id: str) -> int:
     return -1
 
 
-def find_event_index_by_title_date(events: list, title: str, date: str) -> int:
+def find_event_index_by_title_date_loc(
+    events: list, title: str, date: str, loc: str
+) -> int:
     """
-    title: Find index of event by title and date fallback.
+    title: Find index of event by title, date, and location fallback.
     parameters:
       events:
         type: list
       title:
         type: str
       date:
+        type: str
+      loc:
         type: str
     returns:
       type: int
@@ -86,6 +90,7 @@ def find_event_index_by_title_date(events: list, title: str, date: str) -> int:
         if (
             str(ev.get("title", "")) == title
             and str(ev.get("date", "")) == date
+            and str(ev.get("location", "")) == loc
         ):
             return i
     return -1
@@ -161,9 +166,11 @@ def main() -> None:
             # Try matching by ID first
             idx = find_event_index_by_id(events, row_id)
 
-            # Fallback to title/date match if no ID provided in sheet
+            # Fallback to title/date/location match if no ID provided in sheet
             if idx == -1 and not row_id:
-                idx = find_event_index_by_title_date(events, title, date)
+                idx = find_event_index_by_title_date_loc(
+                    events, title, date, location
+                )
 
             if idx != -1:
                 # Update existing event
