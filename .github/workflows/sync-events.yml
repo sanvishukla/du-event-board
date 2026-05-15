@@ -1,20 +1,16 @@
 name: Sync Events from Google Sheets
-on:
-  schedule:
-    - cron: "0 0 * * *" # Daily at midnight
-  repository_dispatch:
-    types: [google_sheet_sync]
-  workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
+on:
+  repository_dispatch:
+    types: [new_event_added]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
-  discovery:
+  sync_events:
     runs-on: ubuntu-latest
-    outputs:
-      ids: ${{ steps.list_dirty.outputs.ids }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,59 +22,29 @@ jobs:
           cache: "pip"
 
       - name: Install Dependencies
-        run: pip install pyyaml ruamel.yaml requests
+        run: |
+          pip install pyyaml ruamel.yaml requests
 
-      - name: List Dirty IDs
-        id: list_dirty
+      - name: Run Sync Script
+        id: sync
         env:
           GOOGLE_SHEET_CSV_URL: ${{ secrets.GOOGLE_SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/10F6Z8uN7SDElBz4Z94qUhXR2i746Pijkj7iR0LPTdnk/export?format=csv&gid=93842923,https://docs.google.com/spreadsheets/d/10F6Z8uN7SDElBz4Z94qUhXR2i746Pijkj7iR0LPTdnk/export?format=csv&gid=204717323' }}
+          SYNC_EVENT_ID: ${{ github.event.client_payload.id }}
         run: |
-          # If triggered by a specific event ID from webhook, use that. Otherwise, discover all.
-          if [ -n "${{ github.event.client_payload.id }}" ]; then
-            echo "ids=[\"${{ github.event.client_payload.id }}\"]" >> $GITHUB_OUTPUT
+          if [ -n "$SYNC_EVENT_ID" ]; then
+            python scripts/sync_google_sheet.py --id "$SYNC_EVENT_ID"
           else
-            IDS=$(python scripts/sync_google_sheet.py --list-dirty)
-            echo "ids=$IDS" >> $GITHUB_OUTPUT
+            python scripts/sync_google_sheet.py
           fi
 
-  sync:
-    needs: discovery
-    runs-on: ubuntu-latest
-    if: needs.discovery.outputs.ids != '[]'
-    strategy:
-      matrix:
-        id: ${{ fromJson(needs.discovery.outputs.ids) }}
-      max-parallel: 2 # Limit concurrency to avoid race conditions on the yaml file if they were in the same PR, but here they are separate PRs. Still good to be safe.
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          cache: "pip"
-
-      - name: Install Dependencies
-        run: pip install pyyaml ruamel.yaml requests
-
-      - name: Run Surgical Sync
-        env:
-          GOOGLE_SHEET_CSV_URL: ${{ secrets.GOOGLE_SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/10F6Z8uN7SDElBz4Z94qUhXR2i746Pijkj7iR0LPTdnk/export?format=csv&gid=93842923,https://docs.google.com/spreadsheets/d/10F6Z8uN7SDElBz4Z94qUhXR2i746Pijkj7iR0LPTdnk/export?format=csv&gid=204717323' }}
-        run: |
-          python scripts/sync_google_sheet.py --id "${{ matrix.id }}"
-
-      - name: Validate changes
-        run: python scripts/generate_events_json.py
-
       - name: Create Pull Request
+        if: steps.sync.outputs.BRANCH_NAME != ''
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "sync: update event ID ${{ matrix.id }}"
-          title: "Sync Event: ID ${{ matrix.id }}"
-          body: "Automated sync from Google Sheets for event ID ${{ matrix.id }}."
-          branch: "sync-event-${{ matrix.id }}"
+          branch: ${{ steps.sync.outputs.BRANCH_NAME }}
+          title: "Sync: ${{ steps.sync.outputs.ACTION }} event ${{ steps.sync.outputs.EVENT_ID }}"
+          body: "Automated sync of event ${{ steps.sync.outputs.EVENT_ID }} from Google Sheets."
+          commit-message: "sync: ${{ steps.sync.outputs.ACTION }} event ${{ steps.sync.outputs.EVENT_ID }}"
           base: main
-          labels: "automated-sync"
+          delete-branch: true
