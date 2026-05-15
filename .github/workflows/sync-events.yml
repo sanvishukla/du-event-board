@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install pyyaml requests
+          pip install pyyaml ruamel.yaml requests
 
       - name: Run Sync Script
         env:
