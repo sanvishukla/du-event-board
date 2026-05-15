@@ -88,6 +88,7 @@ def main() -> None:
 
     existing_events = yaml_data["events"]
     new_events_added = 0
+    new_events_list = []
 
     for url in GOOGLE_SHEET_URLS:
         print(f"Downloading CSV from: {url}")
@@ -139,40 +140,37 @@ def main() -> None:
                 if tags:
                     new_event["tags"] = tags
 
+            new_events_list.append(new_event)
             existing_events.append(new_event)
             new_events_added += 1
             print(f"Added new event: {title}")
 
     if new_events_added > 0:
-        print(f"Saving {new_events_added} new events to events.yaml...")
-
-        class Dumper(yaml.Dumper):
-            def increase_indent(
-                self, flow: bool = False, indentless: bool = False
-            ) -> Any:
-                """
-                title: Custom indent
-                parameters:
-                  flow:
-                    type: bool
-                  indentless:
-                    type: bool
-                returns:
-                  type: Any
-                """
-                _ = indentless
-                return super(Dumper, self).increase_indent(flow, False)
-
-        with open(EVENTS_YAML_FILE, "w", encoding="utf-8") as f:
-            yaml.dump(
-                yaml_data,
-                f,
-                Dumper=Dumper,
-                default_flow_style=False,
-                sort_keys=False,
-                allow_unicode=True,
-            )
-        print("Successfully updated events.yaml.")
+        print(f"Appending {new_events_added} new events to events.yaml...")
+        with open(EVENTS_YAML_FILE, "a", encoding="utf-8") as f:
+            for ev in new_events_list:
+                f.write("\n")
+                f.write(f'  - id: "{ev["id"]}"\n')
+                f.write(f'    title: "{ev["title"]}"\n')
+                if ev.get("description"):
+                    # Handle multiline descriptions safely by escaping quotes
+                    desc = ev["description"].replace('"', '\\"')
+                    f.write(f'    description: "{desc}"\n')
+                f.write(f'    date: "{ev["date"]}"\n')
+                f.write(f'    time: "{ev["time"]}"\n')
+                if ev.get("location"):
+                    f.write(f'    location: "{ev["location"]}"\n')
+                if ev.get("region"):
+                    f.write(f'    region: "{ev["region"]}"\n')
+                if ev.get("category"):
+                    f.write(f'    category: "{ev["category"]}"\n')
+                if ev.get("url"):
+                    f.write(f'    url: "{ev["url"]}"\n')
+                if ev.get("tags"):
+                    f.write("    tags:\n")
+                    for tag in ev["tags"]:
+                        f.write(f"      - {tag}\n")
+        print("Successfully appended to events.yaml.")
     else:
         print("No new events found. events.yaml is up to date.")
 
