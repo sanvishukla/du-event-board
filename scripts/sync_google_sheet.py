@@ -101,6 +101,7 @@ def main() -> None:
 
     yaml = YAML()
     yaml.preserve_quotes = True
+    yaml.width = 4096
     yaml.indent(mapping=2, sequence=4, offset=2)
 
     with open(EVENTS_YAML_FILE, "r", encoding="utf-8") as f:
