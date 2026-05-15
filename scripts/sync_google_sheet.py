@@ -16,6 +16,7 @@ import urllib.request
 from pathlib import Path
 
 from ruamel.yaml import YAML  # type: ignore
+from datetime import datetime
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -51,6 +52,27 @@ def get_next_id(events: list) -> str:
         except (ValueError, TypeError):
             pass
     return str(max_id + 1)
+
+
+def normalize_date(date_str: str) -> str:
+    """
+    title: Normalize date string to yyyy-MM-dd format.
+    parameters:
+      date_str:
+        type: str
+    returns:
+      type: str
+    """
+    if not date_str:
+        return ""
+    date_str = str(date_str).strip()
+    # Try various formats
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return date_str  # Fallback to original if no format matches
 
 
 def find_event_index_by_id(events: list, event_id: str) -> int:
@@ -91,10 +113,11 @@ def find_event_index_by_fingerprint(
     returns:
       type: int
     """
+    norm_date = normalize_date(date)
     for i, ev in enumerate(events):
         if (
             str(ev.get("title", "")).strip() == title.strip()
-            and str(ev.get("date", "")).strip() == date.strip()
+            and normalize_date(ev.get("date", "")) == norm_date
             and str(ev.get("url", "")).strip() == url.strip()
             and str(ev.get("location", "")).strip() == location.strip()
         ):
