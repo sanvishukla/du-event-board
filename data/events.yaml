@@ -31,22 +31,6 @@ events:
       - javascript
       - frontend
 
-  - id: "3"
-    lat: -25.4295963
-    lng: -49.2712724
-    title: "Open Source Friday - Curitiba"
-    description: "Contribute to open source projects together! We'll pair program on popular OSS projects and help newcomers make their first contribution."
-    date: "2026-03-22"
-    time: "18:30"
-    location: "Espaço Digital, Rua XV de Novembro 700, Curitiba"
-    region: "Curitiba"
-    category: "Technology"
-    url: "https://example.com/oss-friday-cwb"
-    tags:
-      - open-source
-      - community
-      - programming
-
   - id: "4"
     lat: -22.9110137
     lng: -43.2093727
