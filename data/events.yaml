@@ -294,3 +294,14 @@ events:
     url: https://www.dataconnectconf.com/dataconnect/conference
     tags:
       - women-focused
+  - id: '24'
+    title: test
+    description: lm;lm
+    date: 5/6/2026
+    time: 09:00
+    location: kjhkj
+    region: klh
+    category: m;l
+    url: klnkh
+    tags:
+      - klhn
