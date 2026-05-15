@@ -247,12 +247,3 @@ events:
     region: test
     category: test
     url: test
-  - id: '20'
-    title: test2
-    description: test
-    date: 5/29/2026
-    time: 09:00
-    location: test
-    region: test
-    category: test
-    url: test
