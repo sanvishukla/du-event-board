@@ -2,7 +2,7 @@ name: Sync Events from Google Sheets
 
 on:
   repository_dispatch:
-    types: [new_event_added]
+    types: [new_event_added, google_sheet_sync]
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
