@@ -101,6 +101,7 @@ def main() -> None:
 
     yaml = YAML()
     yaml.preserve_quotes = True
+    yaml.width = 4096
     yaml.indent(mapping=2, sequence=4, offset=2)
 
     with open(EVENTS_YAML_FILE, "r", encoding="utf-8") as f:
@@ -229,22 +230,7 @@ def main() -> None:
                 print(f"Added new event: {title} (ID: {new_id})")
                 changes_made += 1
 
-    # Handle Deletions for 2026 events
-    indices_to_delete = []
-    for i, ev_item in enumerate(events):
-        ev_id = str(ev_item.get("id", ""))
-        ev_date = str(ev_item.get("date", ""))
-        # If it's a 2026 event but not seen in any of the Google Sheets
-        if "2026" in ev_date and ev_id not in sheet_seen_ids:
-            indices_to_delete.append(i)
-            print(
-                f"Deleted event: {ev_item.get('title')} (ID: {ev_id}) as it was removed from Google Sheets."
-            )
-
-    # Delete in reverse order to preserve indices
-    for i in sorted(indices_to_delete, reverse=True):
-        del events[i]
-        changes_made += 1
+    # (Deletions removed as per user request to keep updates surgical)
 
     if changes_made > 0:
         print(f"Saving {changes_made} changes to events.yaml...")
