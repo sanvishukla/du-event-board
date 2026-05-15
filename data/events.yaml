@@ -15,22 +15,6 @@ events:
       - programming
       - community
 
-  - id: "2"
-    lat: -23.5506507
-    lng: -46.6333824
-    title: "React Workshop - São Paulo"
-    description: "Hands-on workshop covering React hooks, state management, and building modern web applications. Bring your laptop!"
-    date: "2026-03-20"
-    time: "14:00"
-    location: "InovaBR Hub, Av. Paulista 1578, São Paulo"
-    region: "São Paulo"
-    category: "Technology"
-    url: "https://example.com/react-sp"
-    tags:
-      - react
-      - javascript
-      - frontend
-
   - id: "3"
     lat: -25.4295963
     lng: -49.2712724
