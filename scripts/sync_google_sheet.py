@@ -9,7 +9,6 @@ summary: |-
 """
 
 import csv
-import json
 import os
 import sys
 import urllib.request
@@ -29,8 +28,6 @@ GOOGLE_SHEET_URLS_ENV = os.environ.get(
 GOOGLE_SHEET_URLS = [
     url.strip() for url in GOOGLE_SHEET_URLS_ENV.split(",") if url.strip()
 ]
-
-WEBHOOK_URL = os.environ.get("GOOGLE_SHEET_WEBHOOK_URL", "").strip()
 
 
 def get_next_id(events: list) -> str:
@@ -94,40 +91,6 @@ def find_event_index_by_title_date(events: list, title: str, date: str) -> int:
     return -1
 
 
-def push_to_webhook(events_to_push: list) -> None:
-    """
-    title: Push missing events back to Google Sheets.
-    parameters:
-      events_to_push:
-        type: list
-    """
-    if not WEBHOOK_URL:
-        print(
-            "Notice: GOOGLE_SHEET_WEBHOOK_URL not set. Cannot push missing events back to sheet."
-        )
-        return
-
-    print(
-        f"Pushing {len(events_to_push)} missing events back to Google Sheets..."
-    )
-    payload = json.dumps({"events": events_to_push}).encode("utf-8")
-    req = urllib.request.Request(
-        WEBHOOK_URL,
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0",
-        },
-    )
-
-    try:
-        with urllib.request.urlopen(req) as response:
-            result = response.read().decode("utf-8")
-            print(f"Server response: {result}")
-    except Exception as e:
-        print(f"Failed to push back to Google Sheets: {e}", file=sys.stderr)
-
-
 def main() -> None:
     """
     title: Main function to sync events
@@ -149,7 +112,7 @@ def main() -> None:
 
     events = yaml_data["events"]
 
-    # We will track all IDs seen in the sheets to handle missing ones
+    # We will track all IDs seen in the sheets to handle deletions
     sheet_seen_ids = set()
 
     changes_made = 0
@@ -206,33 +169,36 @@ def main() -> None:
                 ev = events[idx]
                 updated = False
 
-                # Check fields and update if changed (only if sheet value is not empty)
-                if title and ev.get("title") != title:
+                # Check fields and update if changed
+                if ev.get("title") != title:
                     ev["title"] = title
                     updated = True
-                if date and ev.get("date") != date:
+                if ev.get("date") != date:
                     ev["date"] = date
                     updated = True
-                if desc and ev.get("description", "") != desc:
+                if ev.get("description", "") != desc:
                     ev["description"] = desc
                     updated = True
-                if category and ev.get("category", "") != category:
+                if ev.get("category", "") != category:
                     ev["category"] = category
                     updated = True
-                if url_str and ev.get("url", "") != url_str:
+                if ev.get("url", "") != url_str:
                     ev["url"] = url_str
                     updated = True
-                if location and ev.get("location", "") != location:
+                if ev.get("location", "") != location:
                     ev["location"] = location
                     updated = True
-                if region and ev.get("region", "") != region:
+                if ev.get("region", "") != region:
                     ev["region"] = region
                     updated = True
 
-                # Update tags if changed (only if sheet has tags)
+                # Update tags if changed
                 existing_tags = ev.get("tags", [])
-                if tags and existing_tags != tags:
-                    ev["tags"] = tags
+                if existing_tags != tags:
+                    if tags:
+                        ev["tags"] = tags
+                    elif "tags" in ev:
+                        del ev["tags"]
                     updated = True
 
                 if updated:
@@ -263,17 +229,9 @@ def main() -> None:
                 print(f"Added new event: {title} (ID: {new_id})")
                 changes_made += 1
 
-    # Find events in YAML but missing from Sheet (for 2026 events)
-    missing_from_sheet = []
-    for ev_item in events:
-        ev_id = str(ev_item.get("id", ""))
-        ev_date = str(ev_item.get("date", ""))
-        # If it's a 2026 event but not seen in any of the Google Sheets
-        if "2026" in ev_date and ev_id not in sheet_seen_ids:
-            missing_from_sheet.append(dict(ev_item))
-
-    if missing_from_sheet:
-        push_to_webhook(missing_from_sheet)
+    # Note: We no longer handle deletions here. If an event is in the website
+    # but not in the sheets, we keep it. Our separate "Push to Sheets"
+    # mechanism will ensure it eventually shows up in the Google Sheet.
 
     if changes_made > 0:
         print(f"Saving {changes_made} changes to events.yaml...")
