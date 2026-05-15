@@ -9,6 +9,7 @@ summary: |-
 """
 
 import csv
+import json
 import os
 import sys
 import urllib.request
@@ -28,6 +29,8 @@ GOOGLE_SHEET_URLS_ENV = os.environ.get(
 GOOGLE_SHEET_URLS = [
     url.strip() for url in GOOGLE_SHEET_URLS_ENV.split(",") if url.strip()
 ]
+
+WEBHOOK_URL = os.environ.get("GOOGLE_SHEET_WEBHOOK_URL", "").strip()
 
 
 def get_next_id(events: list) -> str:
@@ -91,6 +94,40 @@ def find_event_index_by_title_date(events: list, title: str, date: str) -> int:
     return -1
 
 
+def push_to_webhook(events_to_push: list) -> None:
+    """
+    title: Push missing events back to Google Sheets.
+    parameters:
+      events_to_push:
+        type: list
+    """
+    if not WEBHOOK_URL:
+        print(
+            "Notice: GOOGLE_SHEET_WEBHOOK_URL not set. Cannot push missing events back to sheet."
+        )
+        return
+
+    print(
+        f"Pushing {len(events_to_push)} missing events back to Google Sheets..."
+    )
+    payload = json.dumps({"events": events_to_push}).encode("utf-8")
+    req = urllib.request.Request(
+        WEBHOOK_URL,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req) as response:
+            result = response.read().decode("utf-8")
+            print(f"Server response: {result}")
+    except Exception as e:
+        print(f"Failed to push back to Google Sheets: {e}", file=sys.stderr)
+
+
 def main() -> None:
     """
     title: Main function to sync events
@@ -112,7 +149,7 @@ def main() -> None:
 
     events = yaml_data["events"]
 
-    # We will track all IDs seen in the sheets to handle deletions
+    # We will track all IDs seen in the sheets to handle missing ones
     sheet_seen_ids = set()
 
     changes_made = 0
@@ -229,22 +266,17 @@ def main() -> None:
                 print(f"Added new event: {title} (ID: {new_id})")
                 changes_made += 1
 
-    # Handle Deletions for 2026 events
-    indices_to_delete = []
-    for i, ev_item in enumerate(events):
+    # Find events in YAML but missing from Sheet (for 2026 events)
+    missing_from_sheet = []
+    for ev_item in events:
         ev_id = str(ev_item.get("id", ""))
         ev_date = str(ev_item.get("date", ""))
         # If it's a 2026 event but not seen in any of the Google Sheets
         if "2026" in ev_date and ev_id not in sheet_seen_ids:
-            indices_to_delete.append(i)
-            print(
-                f"Deleted event: {ev_item.get('title')} (ID: {ev_id}) as it was removed from Google Sheets."
-            )
+            missing_from_sheet.append(dict(ev_item))
 
-    # Delete in reverse order to preserve indices
-    for i in sorted(indices_to_delete, reverse=True):
-        del events[i]
-        changes_made += 1
+    if missing_from_sheet:
+        push_to_webhook(missing_from_sheet)
 
     if changes_made > 0:
         print(f"Saving {changes_made} changes to events.yaml...")
