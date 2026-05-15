@@ -145,6 +145,11 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--id", help="Only sync this specific event ID")
+    parser.add_argument(
+        "--list-dirty",
+        action="store_true",
+        help="List IDs that need sync and exit",
+    )
     args = parser.parse_args()
 
     if not EVENTS_YAML_FILE.exists():
@@ -167,6 +172,7 @@ def main() -> None:
 
     # We will track all IDs seen in the sheets to handle deletions
     sheet_seen_ids = set()
+    dirty_ids = set()
 
     changes_made = 0
 
@@ -238,51 +244,64 @@ def main() -> None:
                 idx = find_event_index_by_title_date(events, title, date)
 
             if idx != -1:
-                # Update existing event
                 ev = events[idx]
-                updated = False
+                sheet_seen_ids.add(str(ev["id"]))
 
-                # Check fields and update if changed
+                # Check if dirty
+                is_dirty = False
                 if ev.get("title") != title:
-                    ev["title"] = title
-                    updated = True
+                    is_dirty = True
                 if ev.get("date") != date:
-                    ev["date"] = date
-                    updated = True
+                    is_dirty = True
                 if ev.get("description", "") != desc:
-                    ev["description"] = desc
-                    updated = True
+                    is_dirty = True
                 if ev.get("category", "") != category:
-                    ev["category"] = category
-                    updated = True
+                    is_dirty = True
                 if ev.get("url", "") != url_str:
-                    ev["url"] = url_str
-                    updated = True
+                    is_dirty = True
                 if ev.get("location", "") != location:
-                    ev["location"] = location
-                    updated = True
+                    is_dirty = True
                 if ev.get("region", "") != region:
-                    ev["region"] = region
-                    updated = True
+                    is_dirty = True
+                if ev.get("tags", []) != tags:
+                    is_dirty = True
 
-                # Update tags if changed
-                existing_tags = ev.get("tags", [])
-                if existing_tags != tags:
+                if is_dirty:
+                    dirty_ids.add(str(ev["id"]))
+
+                # If a specific ID is requested, skip everything else
+                if args.id and str(ev["id"]) != str(args.id):
+                    continue
+
+                if is_dirty:
+                    # Update fields
+                    ev["title"] = title
+                    ev["date"] = date
+                    ev["description"] = desc
+                    ev["category"] = category
+                    ev["url"] = url_str
+                    ev["location"] = location
+                    ev["region"] = region
                     if tags:
                         ev["tags"] = tags
                     elif "tags" in ev:
                         del ev["tags"]
-                    updated = True
 
-                if updated:
-                    print(f"Updated event: {title} (ID: {ev['id']})")
+                    print(
+                        f"Updated event: {title} (ID: {ev['id']})",
+                        file=sys.stderr,
+                    )
                     changes_made += 1
-
-                sheet_seen_ids.add(str(ev["id"]))
 
             else:
                 # Create new event
+                # Create new event
                 new_id = row_id if row_id else get_next_id(events)
+                dirty_ids.add(new_id)
+
+                if args.id and str(new_id) != str(args.id):
+                    continue
+
                 new_event = {
                     "id": new_id,
                     "title": title,
@@ -299,27 +318,50 @@ def main() -> None:
 
                 events.append(new_event)
                 sheet_seen_ids.add(new_id)
-                print(f"Added new event: {title} (ID: {new_id})")
+                print(
+                    f"Added new event: {title} (ID: {new_id})", file=sys.stderr
+                )
                 changes_made += 1
 
-    # Handle Deletions for 2026 events
-    # We only handle deletions if a full sync is requested (no specific ID)
+    # Handle Deletions
+    for ev_item in events:
+        ev_id = str(ev_item.get("id", ""))
+        ev_date = str(ev_item.get("date", ""))
+        if "2026" in ev_date and ev_id not in sheet_seen_ids:
+            dirty_ids.add(ev_id)
+
+    if args.list_dirty:
+        # Output JSON array for GitHub Action matrix
+        import json
+
+        print(json.dumps(list(dirty_ids)))
+        return
+
+    # Deletion execution (only if no specific ID requested)
     if not args.id:
         indices_to_delete = []
         for i, ev_item in enumerate(events):
             ev_id = str(ev_item.get("id", ""))
             ev_date = str(ev_item.get("date", ""))
-            # If it's a 2026 event but not seen in any of the Google Sheets
             if "2026" in ev_date and ev_id not in sheet_seen_ids:
                 indices_to_delete.append(i)
                 print(
-                    f"Deleted event: {ev_item.get('title')} (ID: {ev_id}) as it was removed from Google Sheets."
+                    f"Deleted event: {ev_item.get('title')} (ID: {ev_id})",
+                    file=sys.stderr,
                 )
 
-        # Delete in reverse order to preserve indices
         for i in sorted(indices_to_delete, reverse=True):
             del events[i]
             changes_made += 1
+    elif args.id:
+        # Special case: Deletion of a specific ID
+        # If the ID was dirty but wasn't found in the sheet loop above, it must be a deletion
+        if args.id not in sheet_seen_ids:
+            idx = find_event_index_by_id(events, args.id)
+            if idx != -1:
+                print(f"Deleting event ID: {args.id}", file=sys.stderr)
+                del events[idx]
+                changes_made += 1
 
     if changes_made > 0:
         print(f"Saving {changes_made} changes to events.yaml...")
