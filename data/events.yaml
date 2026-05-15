@@ -10,11 +10,6 @@ events:
     region: "Porto Alegre"
     category: "Technology"
     url: "https://example.com/python-poa"
-    tags:
-      - python
-      - programming
-      - community
-
   - id: "2"
     lat: -23.5506507
     lng: -46.6333824
@@ -26,11 +21,6 @@ events:
     region: "São Paulo"
     category: "Technology"
     url: "https://example.com/react-sp"
-    tags:
-      - react
-      - javascript
-      - frontend
-
   - id: "3"
     lat: -25.4295963
     lng: -49.2712724
@@ -42,11 +32,6 @@ events:
     region: "Curitiba"
     category: "Technology"
     url: "https://example.com/oss-friday-cwb"
-    tags:
-      - open-source
-      - community
-      - programming
-
   - id: "4"
     lat: -22.9110137
     lng: -43.2093727
@@ -58,11 +43,6 @@ events:
     region: "Rio de Janeiro"
     category: "Education"
     url: "https://example.com/ds-bootcamp-rj"
-    tags:
-      - data-science
-      - machine-learning
-      - python
-
   - id: "5"
     lat: -19.9227318
     lng: -43.9450948
@@ -74,11 +54,6 @@ events:
     region: "Belo Horizonte"
     category: "Technology"
     url: "https://example.com/devops-bh"
-    tags:
-      - devops
-      - docker
-      - kubernetes
-
   - id: "6"
     lat: -30.0324999
     lng: -51.2303767
@@ -90,11 +65,6 @@ events:
     region: "Porto Alegre"
     category: "Design"
     url: "https://example.com/ux-workshop-poa"
-    tags:
-      - design
-      - ux
-      - figma
-
   - id: "7"
     lat: -23.5506507
     lng: -46.6333824
@@ -106,11 +76,6 @@ events:
     region: "São Paulo"
     category: "Technology"
     url: "https://example.com/rust-intro-sp"
-    tags:
-      - rust
-      - programming
-      - systems
-
   - id: "8"
     lat: -27.544562
     lng: -48.4999697
@@ -122,7 +87,182 @@ events:
     region: "Florianópolis"
     category: "Community"
     url: "https://example.com/hackathon-floripa"
+  - id: '9'
+    title: test
+    description: dvsc
+    date: 5/30/2026
+    time: 09:00
+    location: sdvsx
+    region: dvs
+    category: sdfs
+    url: www.sample.com
     tags:
-      - hackathon
-      - community
-      - innovation
+      - knoi
+  - id: '10'
+    title: test
+    description: ef
+    date: 5/15/2026
+    time: 09:00
+    location: fv
+    region: vdv
+    category: cvd
+    url: www.gmail.com
+    tags:
+      - jnklk
+  - id: '11'
+    title: test2
+    description: njks
+    date: 6/5/2026
+    time: 09:00
+    location: knk
+    region: nknk
+    category: ioknk
+    url: www.sample1.com
+    tags:
+      - lkj
+  - id: '12'
+    title: sfjdi
+    description: sdvsd
+    date: 5/21/2026
+    time: 09:00
+    location: lknij
+    region: lknin
+    category: ilkjk
+    url: nklnk
+    tags:
+      - nk
+      - mnkln
+  - id: '13'
+    title: iljkij
+    description: lkjm
+    date: 5/22/2026
+    time: 09:00
+    location: lkn
+    region: mklm
+    category: klji
+    url: mlkm
+    tags:
+      - klmm
+  - id: '14'
+    title: test
+    description: lm;lmcgmk
+    date: 5/6/2026
+    time: 09:00
+    location: kjhkj
+    region: klh
+    category: m;l
+    url: klnkh
+    tags:
+      - klhn
+  - id: '15'
+    title: PyOhio 2026
+    description: ''
+    date: '2026-07-25'
+    time: 09:00
+    location: Cleveland, OH, USA
+    region: Canada / USA
+    category: Conference
+    url: https://www.pyohio.org/2026/
+    tags:
+      - python
+  - id: '16'
+    title: Indaba 2026
+    description: ''
+    date: '2026-08-02'
+    time: 09:00
+    location: Dakar, Senegal
+    region: Africa
+    category: Conference
+    url: https://deeplearningindaba.com/2026/
+    tags:
+      - DL
+  - id: '17'
+    title: SciPy 2026
+    description: ''
+    date: '2026-07-13'
+    time: 09:00
+    location: Minneapolis, MN, USA
+    region: Canada / USA
+    category: Conference
+    url: https://www.scipy2026.scipy.org
+    tags:
+      - python
+      - open source
+  - id: '18'
+    title: EuroPython 2026
+    description: ''
+    date: '2026-07-13'
+    time: 09:00
+    location: Krakow, Poland
+    region: Europe
+    category: Conference
+    url: https://ep2026.europython.eu
+    tags:
+      - python
+  - id: '19'
+    title: RecSys 2024
+    description: ''
+    date: '2026-09-28'
+    time: 09:00
+    location: Minneapolis, MN, USA
+    region: Canada / USA
+    category: Conference
+    url: https://recsys.acm.org/recsys26/
+    tags:
+      - ML
+  - id: '20'
+    title: CVPR 2026
+    description: ''
+    date: '2026-06-03'
+    time: 09:00
+    location: Denver, CO, USA
+    region: Canada / USA
+    category: Conference
+    url: https://cvpr.thecvf.com
+    tags:
+      - ML
+      - CV
+  - id: '21'
+    title: DjangoCon US 2026
+    description: ''
+    date: '2026-08-24'
+    time: 09:00
+    location: Chicago, IL, USA
+    region: Canada / USA
+    category: Conference
+    url: https://2026.djangocon.us
+  - id: '22'
+    title: ICML 2026
+    description: ''
+    date: '2026-07-06'
+    time: 09:00
+    location: Seoul, South Korea
+    region: Asia
+    category: Conference
+    url: https://icml.cc/Conferences/2026
+    tags:
+      - AI
+      - ML
+      - CV
+  - id: '23'
+    title: JSM 2026
+    description: ''
+    date: '2026-08-01'
+    time: 09:00
+    location: Boston, MA, USA
+    region: Canada / USA
+    category: Conference
+    url: https://ww2.amstat.org/meetings/jsm/2026/
+    tags:
+      - statistics
+  - id: '24'
+    title: DataConnect Conference 2026
+    description: ''
+    date: '2026-10-29'
+    time: 09:00
+    location: Columbus, Ohio, USA
+    region: Canada / USA
+    category: Conference
+    url: https://www.dataconnectconf.com/dataconnect/conference
+    tags:
+      - women-focused
