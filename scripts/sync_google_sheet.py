@@ -8,6 +8,7 @@ summary: |-
   to preserve comments and formatting.
 """
 
+import argparse
 import csv
 import os
 import sys
@@ -95,6 +96,10 @@ def main() -> None:
     """
     title: Main function to sync events
     """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--id", help="Only sync this specific event ID")
+    args = parser.parse_args()
+
     if not EVENTS_YAML_FILE.exists():
         print(f"Error: {EVENTS_YAML_FILE} not found.", file=sys.stderr)
         sys.exit(1)
@@ -140,6 +145,10 @@ def main() -> None:
             row_id = str(row.get("id", row.get("ID", ""))).strip()
 
             if not title or not date:
+                continue
+
+            # If a specific ID is requested, skip everything else
+            if args.id and row_id != str(args.id):
                 continue
 
             desc = row.get(
@@ -230,7 +239,24 @@ def main() -> None:
                 print(f"Added new event: {title} (ID: {new_id})")
                 changes_made += 1
 
-    # (Deletions removed as per user request to keep updates surgical)
+    # Handle Deletions for 2026 events
+    # We only handle deletions if a full sync is requested (no specific ID)
+    if not args.id:
+        indices_to_delete = []
+        for i, ev_item in enumerate(events):
+            ev_id = str(ev_item.get("id", ""))
+            ev_date = str(ev_item.get("date", ""))
+            # If it's a 2026 event but not seen in any of the Google Sheets
+            if "2026" in ev_date and ev_id not in sheet_seen_ids:
+                indices_to_delete.append(i)
+                print(
+                    f"Deleted event: {ev_item.get('title')} (ID: {ev_id}) as it was removed from Google Sheets."
+                )
+
+        # Delete in reverse order to preserve indices
+        for i in sorted(indices_to_delete, reverse=True):
+            del events[i]
+            changes_made += 1
 
     if changes_made > 0:
         print(f"Saving {changes_made} changes to events.yaml...")
