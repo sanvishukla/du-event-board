@@ -157,7 +157,12 @@ def main() -> None:
             url_str = row.get("event_url", row.get("Event URL", "")).strip()
             location = row.get("location", row.get("Location", "")).strip()
             region = row.get("region", row.get("Region", "")).strip()
-            tags_raw = row.get("tags", row.get("Tags", "")).strip()
+            # Handle duplicate "tags" columns in CSV by looking at raw row values
+            tags_raw = ""
+            if "tags" in row:
+                tags_raw = str(row["tags"]).strip()
+            if not tags_raw and "Tags" in row:
+                tags_raw = str(row["Tags"]).strip()
 
             tags = []
             if tags_raw:
@@ -177,37 +182,36 @@ def main() -> None:
                 ev = events[idx]
                 updated = False
 
-                # Check fields and update if changed
-                if ev.get("title") != title:
+                # IMPORTANT: Only update if the spreadsheet cell is NOT empty.
+                # This prevents accidental deletions of website data.
+                if title and ev.get("title") != title:
                     ev["title"] = title
                     updated = True
-                if ev.get("date") != date:
+                if date and ev.get("date") != date:
                     ev["date"] = date
                     updated = True
-                if ev.get("description", "") != desc:
+                if desc and ev.get("description", "") != desc:
                     ev["description"] = desc
                     updated = True
-                if ev.get("category", "") != category:
+                if category and ev.get("category", "") != category:
                     ev["category"] = category
                     updated = True
-                if ev.get("url", "") != url_str:
+                if url_str and ev.get("url", "") != url_str:
                     ev["url"] = url_str
                     updated = True
-                if ev.get("location", "") != location:
+                if location and ev.get("location", "") != location:
                     ev["location"] = location
                     updated = True
-                if ev.get("region", "") != region:
+                if region and ev.get("region", "") != region:
                     ev["region"] = region
                     updated = True
 
-                # Update tags if changed
-                existing_tags = ev.get("tags", [])
-                if existing_tags != tags:
-                    if tags:
+                # Only update tags if the spreadsheet has tags
+                if tags:
+                    existing_tags = ev.get("tags", [])
+                    if existing_tags != tags:
                         ev["tags"] = tags
-                    elif "tags" in ev:
-                        del ev["tags"]
-                    updated = True
+                        updated = True
 
                 if updated:
                     print(f"Updated event: {title} (ID: {ev['id']})")
