@@ -16,7 +16,6 @@ import urllib.request
 from pathlib import Path
 
 from ruamel.yaml import YAML  # type: ignore
-from datetime import datetime
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -54,27 +53,6 @@ def get_next_id(events: list) -> str:
     return str(max_id + 1)
 
 
-def normalize_date(date_str: str) -> str:
-    """
-    title: Normalize date string to yyyy-MM-dd format.
-    parameters:
-      date_str:
-        type: str
-    returns:
-      type: str
-    """
-    if not date_str:
-        return ""
-    date_str = str(date_str).strip()
-    # Try various formats
-    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"):
-        try:
-            return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
-        except ValueError:
-            continue
-    return date_str  # Fallback to original if no format matches
-
-
 def find_event_index_by_id(events: list, event_id: str) -> int:
     """
     title: Find index of event by ID.
@@ -94,11 +72,9 @@ def find_event_index_by_id(events: list, event_id: str) -> int:
     return -1
 
 
-def find_event_index_by_fingerprint(
-    events: list, title: str, date: str, url: str, location: str
-) -> int:
+def find_event_index_by_title_date(events: list, title: str, date: str) -> int:
     """
-    title: Find index of event by a combination of fields (fingerprint).
+    title: Find index of event by title and date fallback.
     parameters:
       events:
         type: list
@@ -106,20 +82,13 @@ def find_event_index_by_fingerprint(
         type: str
       date:
         type: str
-      url:
-        type: str
-      location:
-        type: str
     returns:
       type: int
     """
-    norm_date = normalize_date(date)
     for i, ev in enumerate(events):
         if (
-            str(ev.get("title", "")).strip() == title.strip()
-            and normalize_date(ev.get("date", "")) == norm_date
-            and str(ev.get("url", "")).strip() == url.strip()
-            and str(ev.get("location", "")).strip() == location.strip()
+            str(ev.get("title", "")) == title
+            and str(ev.get("date", "")) == date
         ):
             return i
     return -1
@@ -170,7 +139,6 @@ def main() -> None:
     yaml = YAML()
     yaml.preserve_quotes = True
     yaml.indent(mapping=2, sequence=4, offset=2)
-    yaml.width = 4096
 
     with open(EVENTS_YAML_FILE, "r", encoding="utf-8") as f:
         yaml_data = yaml.load(f)
@@ -229,47 +197,42 @@ def main() -> None:
             # Try matching by ID first
             idx = find_event_index_by_id(events, row_id)
 
-            # Fallback to fingerprint match if no ID provided in sheet
+            # Fallback to title/date match if no ID provided in sheet
             if idx == -1 and not row_id:
-                idx = find_event_index_by_fingerprint(
-                    events, title, date, url_str, location
-                )
+                idx = find_event_index_by_title_date(events, title, date)
 
             if idx != -1:
                 # Update existing event
                 ev = events[idx]
                 updated = False
 
-                # Check fields and update if changed
-                if ev.get("title") != title:
+                # Check fields and update if changed (only if sheet value is not empty)
+                if title and ev.get("title") != title:
                     ev["title"] = title
                     updated = True
-                if ev.get("date") != date:
+                if date and ev.get("date") != date:
                     ev["date"] = date
                     updated = True
-                if ev.get("description", "") != desc:
+                if desc and ev.get("description", "") != desc:
                     ev["description"] = desc
                     updated = True
-                if ev.get("category", "") != category:
+                if category and ev.get("category", "") != category:
                     ev["category"] = category
                     updated = True
-                if ev.get("url", "") != url_str:
+                if url_str and ev.get("url", "") != url_str:
                     ev["url"] = url_str
                     updated = True
-                if ev.get("location", "") != location:
+                if location and ev.get("location", "") != location:
                     ev["location"] = location
                     updated = True
-                if ev.get("region", "") != region:
+                if region and ev.get("region", "") != region:
                     ev["region"] = region
                     updated = True
 
-                # Update tags if changed
+                # Update tags if changed (only if sheet has tags)
                 existing_tags = ev.get("tags", [])
-                if existing_tags != tags:
-                    if tags:
-                        ev["tags"] = tags
-                    elif "tags" in ev:
-                        del ev["tags"]
+                if tags and existing_tags != tags:
+                    ev["tags"] = tags
                     updated = True
 
                 if updated:
