@@ -126,3 +126,14 @@ events:
       - hackathon
       - community
       - innovation
+  - id: '9'
+    title: PyOhio 2026
+    description: ''
+    date: '2026-07-25'
+    time: 09:00
+    location: Cleveland, OH, USA
+    region: Canada / USA
+    category: Conference
+    url: https://www.pyohio.org/2026/
+    tags:
+      - python
