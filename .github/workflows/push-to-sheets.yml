@@ -1,0 +1,33 @@
+name: Push Events to Google Sheets
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "data/events.yaml"
+  workflow_dispatch:
+
+jobs:
+  push_to_sheets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          pip install pyyaml requests
+
+      - name: Push to Google Sheets Webhook
+        env:
+          GOOGLE_SHEET_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEET_WEBHOOK_URL }}
+        run: |
+          python scripts/push_to_sheets.py
