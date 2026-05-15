@@ -72,9 +72,11 @@ def find_event_index_by_id(events: list, event_id: str) -> int:
     return -1
 
 
-def find_event_index_by_title_date(events: list, title: str, date: str) -> int:
+def find_event_index_by_fingerprint(
+    events: list, title: str, date: str, url: str, location: str
+) -> int:
     """
-    title: Find index of event by title and date fallback.
+    title: Find index of event by a combination of fields (fingerprint).
     parameters:
       events:
         type: list
@@ -82,13 +84,19 @@ def find_event_index_by_title_date(events: list, title: str, date: str) -> int:
         type: str
       date:
         type: str
+      url:
+        type: str
+      location:
+        type: str
     returns:
       type: int
     """
     for i, ev in enumerate(events):
         if (
-            str(ev.get("title", "")) == title
-            and str(ev.get("date", "")) == date
+            str(ev.get("title", "")).strip() == title.strip()
+            and str(ev.get("date", "")).strip() == date.strip()
+            and str(ev.get("url", "")).strip() == url.strip()
+            and str(ev.get("location", "")).strip() == location.strip()
         ):
             return i
     return -1
@@ -198,9 +206,11 @@ def main() -> None:
             # Try matching by ID first
             idx = find_event_index_by_id(events, row_id)
 
-            # Fallback to title/date match if no ID provided in sheet
+            # Fallback to fingerprint match if no ID provided in sheet
             if idx == -1 and not row_id:
-                idx = find_event_index_by_title_date(events, title, date)
+                idx = find_event_index_by_fingerprint(
+                    events, title, date, url_str, location
+                )
 
             if idx != -1:
                 # Update existing event
