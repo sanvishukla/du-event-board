@@ -344,6 +344,35 @@ def main() -> None:
     elif "paid" in paid_or_free_val:
         event_data["paid_or_free"] = "paid"
 
+    # Fill defaults for required fields to satisfy generate_events_json.py validation
+    if not event_data.get("description"):
+        org_name = event_data.get("organization_name", "")
+        if org_name:
+            event_data["description"] = f"Event hosted by {org_name}."
+        else:
+            event_data["description"] = "No description provided."
+
+    if not event_data.get("location"):
+        if event_data.get("virtual"):
+            event_data["location"] = "Online"
+        else:
+            event_data["location"] = "TBD"
+
+    if not event_data.get("region"):
+        loc_str = str(event_data.get("location", "")).lower()
+        if (
+            event_data.get("virtual")
+            or loc_str == "online"
+            or loc_str == "virtual"
+        ):
+            event_data["region"] = "Online"
+        else:
+            event_data["region"] = "Global"
+
+    if not event_data.get("category"):
+        event_data["category"] = "Technology"
+
+    # Required validation
     if not event_data.get("title"):
         print("Error: Event Name/Title is required.", file=sys.stderr)
         sys.exit(1)
