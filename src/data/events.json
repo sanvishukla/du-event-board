@@ -142,5 +142,25 @@
       "community",
       "innovation"
     ]
+  },
+  {
+    "id": "9",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "title": "sdfjidsj",
+    "description": "No description provided.",
+    "date": "2026-05-27",
+    "time": "10:07",
+    "location": "delhi",
+    "region": "india",
+    "category": "nkn",
+    "url": "",
+    "tags": [
+      "knkn"
+    ],
+    "end_date": "2026-05-29",
+    "featured": true,
+    "in_person": true,
+    "virtual": false
   }
 ]
