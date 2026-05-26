@@ -4,8 +4,6 @@ on:
   repository_dispatch:
     types: [sync_from_sheet]
   workflow_dispatch:
-  schedule:
-    - cron: "0 * * * *" # Run every hour
 
 permissions:
   contents: write
