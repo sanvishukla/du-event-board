@@ -117,22 +117,20 @@ def main() -> None:
 
     print(f"Found {len(missing_events)} new event(s) to sync to Google Sheet.")
 
-    post_url = webapp_url
-    if "token" not in query_params:
-        parsed_url = urllib.parse.urlparse(webapp_url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        query_params["token"] = [secret_token]
-        new_query = urllib.parse.urlencode(query_params, doseq=True)
-        post_url = urllib.parse.urlunparse(
-            (
-                parsed_url.scheme,
-                parsed_url.netloc,
-                parsed_url.path,
-                parsed_url.params,
-                new_query,
-                parsed_url.fragment,
-            )
+    parsed_post_url = urllib.parse.urlparse(webapp_url)
+    post_query_params = urllib.parse.parse_qs(parsed_post_url.query)
+    post_query_params["token"] = [secret_token]
+    new_post_query = urllib.parse.urlencode(post_query_params, doseq=True)
+    post_url = urllib.parse.urlunparse(
+        (
+            parsed_post_url.scheme,
+            parsed_post_url.netloc,
+            parsed_post_url.path,
+            parsed_post_url.params,
+            new_post_query,
+            parsed_post_url.fragment,
         )
+    )
 
     success_count = 0
     for event in missing_events:
