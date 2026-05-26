@@ -153,3 +153,30 @@ events:
     in_person: false
     virtual: true
     language: english
+
+  - id: "10"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: test 3
+    description: huijkm
+    date: '2026-05-28'
+    time: '10:10'
+    location: new delhi
+    region: india
+    category: nkj
+    url: www.sample.com
+    tags:
+      - oijkl
+    end_date: '2026-05-28'
+    featured: false
+    organization_name: uhijkml
+    organization_url: www.sample.com
+    url_linkedin: www.sample.com
+    url_twitter: www.sample.com
+    url_other: www.sample.com
+    acronym: uhijknm
+    paid_or_free: free
+    image_url: www.sample.com
+    in_person: false
+    virtual: true
+    language: english
