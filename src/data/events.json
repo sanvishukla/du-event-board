@@ -142,34 +142,5 @@
       "community",
       "innovation"
     ]
-  },
-  {
-    "id": "9",
-    "lat": 28.6138954,
-    "lng": 77.2090057,
-    "title": "TEST1",
-    "description": "HJKHLN",
-    "date": "2026-05-28",
-    "time": "10:00",
-    "location": "new delhi",
-    "region": "delhi",
-    "category": "NKNNL",
-    "url": "www.sample.com",
-    "tags": [
-      "L;KK"
-    ],
-    "end_date": "2026-06-05",
-    "featured": true,
-    "organization_name": "MKJL",
-    "organization_url": "www.sample.com",
-    "url_linkedin": "www.sample.com",
-    "url_twitter": "www.sample.com",
-    "url_other": "www.sample.com",
-    "acronym": "KMLKML;",
-    "paid_or_free": "free",
-    "image_url": "www.sample.com",
-    "in_person": true,
-    "virtual": true,
-    "language": "english"
   }
 ]
