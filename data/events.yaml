@@ -126,34 +126,8 @@ events:
       - hackathon
       - community
       - innovation
-
+      
   - id: "9"
-    lat: 28.6138954
-    lng: 77.2090057
-    title: Test
-    description: iojmlkm
-    date: '2026-05-21'
-    time: '10:00'
-    location: new delhi
-    region: india
-    category: khjhj
-    url: www.sample.com
-    tags:
-      - jikhjk
-    end_date: '2026-06-06'
-    featured: true
-    organization_url: www.sample.com
-    url_linkedin: www.sample.com
-    url_twitter: www.sample.com
-    url_other: www.sample.com
-    acronym: lkll;k
-    paid_or_free: free
-    image_url: www.sample.com
-    in_person: false
-    virtual: true
-    language: english
-
-  - id: "10"
     lat: 28.6138954
     lng: 77.2090057
     title: TEST1
