@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "data/events.yaml"
+  workflow_dispatch:
 
 jobs:
   sync:
