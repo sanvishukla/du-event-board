@@ -509,8 +509,6 @@ def main() -> None:
         # Normalization of virtual/location
         virtual_val = clean_boolean(get_field_value(s_ev, "virtual"))
         s_location = get_field_value(s_ev, "location")
-        if not s_location:
-            s_location = "Online" if virtual_val else "TBD"
 
         key = (s_title.lower(), s_date, s_end_date, s_location.lower())
 
@@ -545,14 +543,6 @@ def main() -> None:
             mapped_event["paid_or_free"] = "paid"
         else:
             mapped_event["paid_or_free"] = ""
-
-        # Safe required TBD placeholders to prevent validation failure
-        if not mapped_event.get("description"):
-            mapped_event["description"] = "TBD"
-        if not mapped_event.get("region"):
-            mapped_event["region"] = "Online" if virtual_val else "TBD"
-        if not mapped_event.get("category"):
-            mapped_event["category"] = "TBD"
 
         # Look up in index
         if key in yaml_index:
