@@ -241,6 +241,115 @@ def format_yaml_field(key: str, val: Any, indent: int = 4) -> str:
     return "\n".join(formatted_lines)
 
 
+def split_yaml_into_blocks(file_path: Path) -> tuple[str, dict[str, str]]:
+    """
+    title: Split events.yaml into header and individual event blocks.
+    parameters:
+      file_path:
+        type: Path
+    returns:
+      type: tuple[str, dict[str, str]]
+    """
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    lines = content.splitlines(keepends=True)
+    header_lines = []
+    blocks = {}
+
+    current_id = None
+    current_block_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        match = re.match(r"^\s*-\s+id:\s*['\"]?(\d+)['\"]?$", stripped)
+        if match:
+            if current_id is not None:
+                blocks[current_id] = "".join(current_block_lines)
+            current_id = match.group(1)
+            current_block_lines = [line]
+        else:
+            if current_id is None:
+                header_lines.append(line)
+            else:
+                current_block_lines.append(line)
+
+    if current_id is not None:
+        blocks[current_id] = "".join(current_block_lines)
+
+    header = "".join(header_lines)
+    return header, blocks
+
+
+def format_event_as_yaml(ev: dict[str, Any]) -> str:
+    """
+    title: Format an event dictionary to standard YAML layout.
+    parameters:
+      ev:
+        type: dict[str, Any]
+    returns:
+      type: str
+    """
+    key_order = [
+        "id",
+        "lat",
+        "lng",
+        "title",
+        "description",
+        "date",
+        "time",
+        "location",
+        "region",
+        "category",
+        "url",
+        "tags",
+        "end_date",
+        "featured",
+        "organization_name",
+        "organization_url",
+        "url_linkedin",
+        "url_twitter",
+        "url_other",
+        "acronym",
+        "paid_or_free",
+        "image_url",
+        "in_person",
+        "virtual",
+        "language",
+    ]
+
+    lines = []
+    lines.append(f'  - id: "{ev.get("id")}"')
+
+    for k in key_order[1:]:
+        val = ev.get(k)
+        if val == "" or val is None or val == [] or val is False:
+            if k not in [
+                "title",
+                "description",
+                "date",
+                "time",
+                "location",
+                "region",
+                "category",
+            ]:
+                continue
+
+        if k == "tags" and isinstance(val, list):
+            lines.append("    tags:")
+            for tag in val:
+                lines.append(f"      - {tag}")
+        elif isinstance(val, bool):
+            lines.append(f"    {k}: {str(val).lower()}")
+        elif isinstance(val, (int, float)):
+            lines.append(f"    {k}: {val}")
+        else:
+            val_str = str(val).replace('"', '\\"')
+            lines.append(f'    {k}: "{val_str}"')
+
+    return "\n".join(lines) + "\n"
+
+
 def main() -> None:
     """
     title: >-
@@ -384,27 +493,7 @@ def main() -> None:
         elif "paid" in paid_or_free_val:
             mapped_event["paid_or_free"] = "paid"
 
-        # Fill defaults for required fields
-        if not mapped_event.get("description"):
-            org_name = mapped_event.get("organization_name", "")
-            mapped_event["description"] = (
-                f"Event hosted by {org_name}."
-                if org_name
-                else "No description provided."
-            )
-
         mapped_event["location"] = s_location
-
-        if not mapped_event.get("region"):
-            loc_str = s_location.lower()
-            mapped_event["region"] = (
-                "Online"
-                if (virtual_val or loc_str == "online" or loc_str == "virtual")
-                else "Global"
-            )
-
-        if not mapped_event.get("category"):
-            mapped_event["category"] = "Technology"
 
         # Look up in index
         if key in yaml_index:
@@ -465,66 +554,36 @@ def main() -> None:
     except Exception:
         pass
 
-    # Save to events.yaml using our clean YAML formatter
-    key_order = [
-        "id",
-        "lat",
-        "lng",
-        "title",
-        "description",
-        "date",
-        "time",
-        "location",
-        "region",
-        "category",
-        "url",
-        "tags",
-        "end_date",
-        "featured",
-        "organization_name",
-        "organization_url",
-        "url_linkedin",
-        "url_twitter",
-        "url_other",
-        "acronym",
-        "paid_or_free",
-        "image_url",
-        "in_person",
-        "virtual",
-        "language",
-    ]
+    # Load original blocks to preserve formatting and quotes for unmodified events
+    header, blocks = split_yaml_into_blocks(INPUT_FILE)
 
-    yaml_lines = ["events:"]
+    yaml_blocks = []
     for ev in updated_yaml_events:
-        first_key = key_order[0]
-        first_val = ev.get(first_key, "")
-        yaml_lines.append(f'  - {first_key}: "{first_val}"')
+        event_id = str(ev.get("id", ""))
 
-        for k in key_order[1:]:
-            val = ev.get(k)
-            if val == "" or val is None or val == []:
-                if k in [
-                    "lat",
-                    "lng",
-                    "end_date",
-                    "organization_name",
-                    "organization_url",
-                    "url_linkedin",
-                    "url_twitter",
-                    "url_other",
-                    "acronym",
-                    "paid_or_free",
-                    "image_url",
-                    "in_person",
-                    "virtual",
-                    "language",
-                ]:
-                    continue
-            yaml_lines.append(format_yaml_field(k, val, indent=4))
-        yaml_lines.append("")
+        # Check if this event was modified compared to the original parsed events
+        original_ev = next(
+            (x for x in yaml_events if str(x.get("id")) == event_id), None
+        )
+
+        is_modified = True
+        if original_ev is not None:
+            is_modified = False
+            for k in set(list(ev.keys()) + list(original_ev.keys())):
+                if ev.get(k) != original_ev.get(k):
+                    is_modified = True
+                    break
+
+        if not is_modified and event_id in blocks:
+            yaml_blocks.append(blocks[event_id])
+        else:
+            yaml_blocks.append(format_event_as_yaml(ev) + "\n")
 
     with open(INPUT_FILE, "w", encoding="utf-8") as f:
-        f.write("\n".join(yaml_lines).strip() + "\n")
+        final_header = header
+        if final_header and not final_header.endswith("\n"):
+            final_header += "\n"
+        f.write(final_header + "".join(yaml_blocks))
 
     print("Successfully updated events.yaml")
 
