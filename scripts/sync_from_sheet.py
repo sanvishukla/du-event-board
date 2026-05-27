@@ -443,14 +443,15 @@ def main() -> None:
 
             updated_yaml_events.append(mapped_event)
 
-    # Deletions: Identify events in YAML that are no longer in the sheet
+    # Keep events from YAML that were not matched by any sheet event.
+    # They will be synced back to the sheet on merge.
     for ev in yaml_events:
         event_id = str(ev.get("id", ""))
         if event_id not in processed_yaml_ids:
             print(
-                f"Deletion detected (event removed from sheet): '{ev.get('title')}' on {ev.get('date')}"
+                f"Event in YAML but not in Google Sheet (keeping in database): '{ev.get('title')}' on {ev.get('date')}"
             )
-            has_changes = True
+            updated_yaml_events.append(ev)
 
     if not has_changes:
         print(
