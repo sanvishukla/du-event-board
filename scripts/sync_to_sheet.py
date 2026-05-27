@@ -6,6 +6,8 @@ summary: |-
   and appends any new events that do not yet exist in the sheet.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import sys
@@ -18,6 +20,9 @@ import yaml
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 INPUT_FILE = PROJECT_ROOT / "data" / "events.yaml"
+
+sys.path.append(str(SCRIPT_DIR))
+from sync_from_sheet import parse_date_time  # noqa: E402
 
 
 def format_boolean(val: Any) -> str:
@@ -55,7 +60,7 @@ def main() -> None:
 
     parsed_url = urllib.parse.urlparse(webapp_url)
     query_params = urllib.parse.parse_qs(parsed_url.query)
-    query_params["action"] = ["get_events"]
+    query_params["action"] = ["get_sheet_events"]
     query_params["token"] = [secret_token]
     new_query = urllib.parse.urlencode(query_params, doseq=True)
     get_events_url = urllib.parse.urlunparse(
@@ -82,7 +87,24 @@ def main() -> None:
                     file=sys.stderr,
                 )
                 sys.exit(1)
-            existing_keys = set(res_body)
+
+            existing_keys = set()
+            for s_ev in res_body:
+                s_title = str(s_ev.get("event_name", "")).strip().lower()
+                s_date_raw = str(s_ev.get("start_date", "")).strip()
+                s_date, _ = parse_date_time(s_date_raw)
+
+                # End date
+                end_date_raw = str(s_ev.get("end_date", "")).strip()
+                s_end_date = ""
+                if end_date_raw:
+                    s_end_date, _ = parse_date_time(end_date_raw)
+
+                s_location = str(s_ev.get("location", "")).strip().lower()
+                if s_title and s_date:
+                    existing_keys.add(
+                        (s_title, s_date, s_end_date, s_location)
+                    )
     except Exception as e:
         print(f"Error calling Web App to fetch events: {e}", file=sys.stderr)
         sys.exit(1)
@@ -101,11 +123,13 @@ def main() -> None:
 
     missing_events = []
     for event in events:
-        title = str(event.get("title", "")).strip()
+        title = str(event.get("title", "")).strip().lower()
         date = str(event.get("date", "")).strip()
+        end_date = str(event.get("end_date", "")).strip()
+        location = str(event.get("location", "")).strip().lower()
         if not title or not date:
             continue
-        key = f"{title}|{date}"
+        key = (title, date, end_date, location)
         if key not in existing_keys:
             missing_events.append(event)
 

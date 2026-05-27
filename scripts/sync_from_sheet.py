@@ -6,6 +6,8 @@ summary: |-
   detects edits and additions, geocodes coordinates, and updates events.yaml.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -302,13 +304,21 @@ def main() -> None:
     yaml_events = current_data.get("events", [])
     print(f"Loaded {len(yaml_events)} existing events from events.yaml.")
 
-    # Index yaml events by (title.lower, date) for quick lookup and duplicate checks
+    # Guard against empty sheet fetch to prevent wiping database
+    if not sheet_events:
+        print(
+            "Warning: Google Sheet returned 0 events. Aborting to prevent wiping the database."
+        )
+        sys.exit(0)
+
+    # Index yaml events by (title.lower, date, end_date, location.lower) for lookup
     yaml_index = {}
     for ev in yaml_events:
         t = str(ev.get("title", "")).strip().lower()
         d = str(ev.get("date", "")).strip()
-        if t and d:
-            yaml_index[(t, d)] = ev
+        ed = str(ev.get("end_date", "")).strip()
+        loc = str(ev.get("location", "")).strip().lower()
+        yaml_index[(t, d, ed, loc)] = ev
 
     # We will build a list of updated events, keeping the order of IDs
     updated_yaml_events: list[dict[str, Any]] = []
@@ -324,6 +334,7 @@ def main() -> None:
             pass
 
     has_changes = False
+    processed_yaml_ids = set()
 
     # Process events from Sheet
     for s_ev in sheet_events:
@@ -333,7 +344,20 @@ def main() -> None:
             continue
 
         s_date, s_time = parse_date_time(s_date_raw)
-        key = (s_title.lower(), s_date)
+
+        # End date
+        end_date_raw = str(s_ev.get("end_date", "")).strip()
+        s_end_date = ""
+        if end_date_raw:
+            s_end_date, _ = parse_date_time(end_date_raw)
+
+        # Normalization of virtual/location
+        virtual_val = clean_boolean(s_ev.get("virtual", False))
+        s_location = str(s_ev.get("location", "")).strip()
+        if not s_location:
+            s_location = "Online" if virtual_val else "TBD"
+
+        key = (s_title.lower(), s_date, s_end_date, s_location.lower())
 
         # Build normalized representation
         mapped_event: dict[str, Any] = {}
@@ -343,14 +367,7 @@ def main() -> None:
         mapped_event["title"] = s_title
         mapped_event["date"] = s_date
         mapped_event["time"] = s_time if s_time else "12:00"
-
-        # End date
-        end_date_raw = str(s_ev.get("end_date", "")).strip()
-        if end_date_raw:
-            e_date, _ = parse_date_time(end_date_raw)
-            mapped_event["end_date"] = e_date
-        else:
-            mapped_event["end_date"] = ""
+        mapped_event["end_date"] = s_end_date
 
         # Normalize tags
         mapped_event["tags"] = clean_tags(s_ev.get("tags", ""))
@@ -358,7 +375,7 @@ def main() -> None:
         # Normalize booleans
         mapped_event["featured"] = clean_boolean(s_ev.get("featured", False))
         mapped_event["in_person"] = clean_boolean(s_ev.get("in_person", False))
-        mapped_event["virtual"] = clean_boolean(s_ev.get("virtual", False))
+        mapped_event["virtual"] = virtual_val
 
         # Standardize paid_or_free
         paid_or_free_val = str(mapped_event.get("paid_or_free", "")).lower()
@@ -376,20 +393,13 @@ def main() -> None:
                 else "No description provided."
             )
 
-        if not mapped_event.get("location"):
-            mapped_event["location"] = (
-                "Online" if mapped_event.get("virtual") else "TBD"
-            )
+        mapped_event["location"] = s_location
 
         if not mapped_event.get("region"):
-            loc_str = str(mapped_event.get("location", "")).lower()
+            loc_str = s_location.lower()
             mapped_event["region"] = (
                 "Online"
-                if (
-                    mapped_event.get("virtual")
-                    or loc_str == "online"
-                    or loc_str == "virtual"
-                )
+                if (virtual_val or loc_str == "online" or loc_str == "virtual")
                 else "Global"
             )
 
@@ -399,6 +409,7 @@ def main() -> None:
         # Look up in index
         if key in yaml_index:
             existing_ev = yaml_index[key]
+            processed_yaml_ids.add(str(existing_ev.get("id")))
 
             # Check if any field changed
             ev_changed = False
@@ -410,16 +421,10 @@ def main() -> None:
             if ev_changed:
                 print(f"Edit detected for event: '{s_title}' on {s_date}")
                 has_changes = True
-                # Preserve ID and coordinate fields if location didn't change
                 mapped_event["id"] = existing_ev.get("id")
-                if existing_ev.get("location") == mapped_event.get("location"):
-                    mapped_event["lat"] = existing_ev.get("lat", "")
-                    mapped_event["lng"] = existing_ev.get("lng", "")
-                else:
-                    # Resolve new coordinates
-                    coords = geocode_location(str(mapped_event["location"]))
-                    mapped_event["lat"] = coords[0] if coords else ""
-                    mapped_event["lng"] = coords[1] if coords else ""
+                # Location is part of the key and identical, so coordinates can be preserved
+                mapped_event["lat"] = existing_ev.get("lat", "")
+                mapped_event["lng"] = existing_ev.get("lng", "")
 
                 updated_yaml_events.append(mapped_event)
             else:
@@ -438,26 +443,18 @@ def main() -> None:
 
             updated_yaml_events.append(mapped_event)
 
-    # Also keep events from YAML that are NOT in the sheet (e.g. if the sheet was filtered or cleared)
-    sheet_keys = {
-        (
-            str(s_ev.get("event_name", "")).strip().lower(),
-            parse_date_time(str(s_ev.get("start_date", "")))[0],
-        )
-        for s_ev in sheet_events
-        if s_ev.get("event_name") and s_ev.get("start_date")
-    }
-
+    # Deletions: Identify events in YAML that are no longer in the sheet
     for ev in yaml_events:
-        t = str(ev.get("title", "")).strip().lower()
-        d = str(ev.get("date", "")).strip()
-        if (t, d) not in sheet_keys:
-            # Not in the sheet, keep it as-is
-            updated_yaml_events.append(ev)
+        event_id = str(ev.get("id", ""))
+        if event_id not in processed_yaml_ids:
+            print(
+                f"Deletion detected (event removed from sheet): '{ev.get('title')}' on {ev.get('date')}"
+            )
+            has_changes = True
 
     if not has_changes:
         print(
-            "No additions or edits detected. Workspace is in sync with Google Sheet."
+            "No additions, edits, or deletions detected. Workspace is in sync with Google Sheet."
         )
         sys.exit(0)
 
