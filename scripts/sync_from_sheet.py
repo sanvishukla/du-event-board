@@ -26,23 +26,69 @@ INPUT_FILE = PROJECT_ROOT / "data" / "events.yaml"
 CACHE_FILE = PROJECT_ROOT / "data" / ".geocode_cache.json"
 
 FIELD_MAPPING = {
-    "title": "event_name",
-    "end_date": "end_date",
-    "category": "event_type",
-    "description": "event_description (200 char)",
-    "organization_name": "organization_name",
-    "acronym": "acronym",
-    "organization_url": "organization_url",
-    "url_linkedin": "url_linkedin",
-    "url_twitter": "url_twitter",
-    "url_other": "url_other",
-    "paid_or_free": "paid_or_free",
-    "url": "event_url",
-    "image_url": "image_url",
-    "location": "location",
-    "region": "region",
-    "language": "language",
+    "title": ["event_name", "title", "event name"],
+    "end_date": ["end_date", "end date"],
+    "category": ["event_type", "category", "event type"],
+    "description": [
+        "event_description (200 char)",
+        "event_description",
+        "description",
+        "event description",
+    ],
+    "organization_name": [
+        "organization_name",
+        "organization name",
+        "hosting organization name",
+    ],
+    "acronym": ["acronym", "organization acronym"],
+    "organization_url": [
+        "organization_url",
+        "organization url",
+        "official organization website url",
+    ],
+    "url_linkedin": ["url_linkedin", "linkedin profile url"],
+    "url_twitter": ["url_twitter", "twitter/x profile url", "twitter url"],
+    "url_other": [
+        "url_other",
+        "other social media/contact url",
+        "other social url",
+    ],
+    "paid_or_free": [
+        "paid_or_free",
+        "paid or free",
+        "is the event paid or free?",
+    ],
+    "url": [
+        "event_url",
+        "url",
+        "official event registration/information url",
+    ],
+    "image_url": ["image_url", "event image/logo url", "image url"],
+    "location": ["location", "physical location"],
+    "region": ["region", "geographic region"],
+    "language": ["language", "primary language"],
 }
+
+
+def get_field_value(s_ev: dict[str, Any], key: str) -> str:
+    """
+    title: Retrieve event field value from spreadsheet event object.
+    parameters:
+      s_ev:
+        type: dict[str, Any]
+      key:
+        type: str
+    returns:
+      type: str
+    """
+    candidates = FIELD_MAPPING.get(key, [key])
+    s_ev_normalized = {k.strip().lower(): v for k, v in s_ev.items()}
+
+    for candidate in candidates:
+        cand_norm = candidate.strip().lower()
+        if cand_norm in s_ev_normalized:
+            return str(s_ev_normalized[cand_norm]).strip()
+    return ""
 
 
 def clean_boolean(val: Any) -> bool:
@@ -447,22 +493,22 @@ def main() -> None:
 
     # Process events from Sheet
     for s_ev in sheet_events:
-        s_title = str(s_ev.get("event_name", "")).strip()
-        s_date_raw = str(s_ev.get("start_date", "")).strip()
+        s_title = get_field_value(s_ev, "title")
+        s_date_raw = get_field_value(s_ev, "date")
         if not s_title or not s_date_raw:
             continue
 
         s_date, s_time = parse_date_time(s_date_raw)
 
         # End date
-        end_date_raw = str(s_ev.get("end_date", "")).strip()
+        end_date_raw = get_field_value(s_ev, "end_date")
         s_end_date = ""
         if end_date_raw:
             s_end_date, _ = parse_date_time(end_date_raw)
 
         # Normalization of virtual/location
-        virtual_val = clean_boolean(s_ev.get("virtual", False))
-        s_location = str(s_ev.get("location", "")).strip()
+        virtual_val = clean_boolean(get_field_value(s_ev, "virtual"))
+        s_location = get_field_value(s_ev, "location")
         if not s_location:
             s_location = "Online" if virtual_val else "TBD"
 
@@ -470,30 +516,43 @@ def main() -> None:
 
         # Build normalized representation
         mapped_event: dict[str, Any] = {}
-        for target_key, source_key in FIELD_MAPPING.items():
-            mapped_event[target_key] = str(s_ev.get(source_key, "")).strip()
+        for target_key in FIELD_MAPPING.keys():
+            mapped_event[target_key] = get_field_value(s_ev, target_key)
 
         mapped_event["title"] = s_title
         mapped_event["date"] = s_date
         mapped_event["time"] = s_time if s_time else "12:00"
         mapped_event["end_date"] = s_end_date
+        mapped_event["location"] = s_location
 
         # Normalize tags
-        mapped_event["tags"] = clean_tags(s_ev.get("tags", ""))
+        mapped_event["tags"] = clean_tags(get_field_value(s_ev, "tags"))
 
         # Normalize booleans
-        mapped_event["featured"] = clean_boolean(s_ev.get("featured", False))
-        mapped_event["in_person"] = clean_boolean(s_ev.get("in_person", False))
+        mapped_event["featured"] = clean_boolean(
+            get_field_value(s_ev, "featured")
+        )
+        mapped_event["in_person"] = clean_boolean(
+            get_field_value(s_ev, "in_person")
+        )
         mapped_event["virtual"] = virtual_val
 
         # Standardize paid_or_free
-        paid_or_free_val = str(mapped_event.get("paid_or_free", "")).lower()
+        paid_or_free_val = get_field_value(s_ev, "paid_or_free").lower()
         if "free" in paid_or_free_val:
             mapped_event["paid_or_free"] = "free"
         elif "paid" in paid_or_free_val:
             mapped_event["paid_or_free"] = "paid"
+        else:
+            mapped_event["paid_or_free"] = ""
 
-        mapped_event["location"] = s_location
+        # Safe required TBD placeholders to prevent validation failure
+        if not mapped_event.get("description"):
+            mapped_event["description"] = "TBD"
+        if not mapped_event.get("region"):
+            mapped_event["region"] = "Online" if virtual_val else "TBD"
+        if not mapped_event.get("category"):
+            mapped_event["category"] = "TBD"
 
         # Look up in index
         if key in yaml_index:
