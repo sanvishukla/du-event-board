@@ -15,7 +15,8 @@
       "python",
       "programming",
       "community"
-    ]
+    ],
+    "featured": null
   },
   {
     "id": "2",
@@ -33,7 +34,8 @@
       "react",
       "javascript",
       "frontend"
-    ]
+    ],
+    "featured": null
   },
   {
     "id": "3",
@@ -51,7 +53,8 @@
       "open-source",
       "community",
       "programming"
-    ]
+    ],
+    "featured": null
   },
   {
     "id": "4",
@@ -69,7 +72,8 @@
       "data-science",
       "machine-learning",
       "python"
-    ]
+    ],
+    "featured": null
   },
   {
     "id": "5",
@@ -87,7 +91,8 @@
       "devops",
       "docker",
       "kubernetes"
-    ]
+    ],
+    "featured": null
   },
   {
     "id": "6",
@@ -105,7 +110,8 @@
       "design",
       "ux",
       "figma"
-    ]
+    ],
+    "featured": null
   },
   {
     "id": "7",
@@ -123,7 +129,8 @@
       "rust",
       "programming",
       "systems"
-    ]
+    ],
+    "featured": null
   },
   {
     "id": "8",
@@ -141,6 +148,309 @@
       "hackathon",
       "community",
       "innovation"
-    ]
+    ],
+    "featured": null
+  },
+  {
+    "id": "9",
+    "lat": 41.4996574,
+    "lng": -81.6936772,
+    "title": "PyOhio 2026",
+    "description": "Event hosted by PyOhio.",
+    "date": "2026-07-25",
+    "time": "09:30",
+    "location": "Cleveland, OH, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://www.pyohio.org/2026/",
+    "tags": [
+      "python"
+    ],
+    "end_date": "2026-07-26",
+    "featured": false,
+    "organization_name": "PyOhio",
+    "organization_url": "https://www.pyohio.org",
+    "url_linkedin": "https://www.linkedin.com/company/pyohio/about/",
+    "url_twitter": "https://twitter.com/pyohio",
+    "paid_or_free": "paid",
+    "image_url": "https://github.com/data-umbrella/resources/blob/main/events-images/2024/2024-pyohio.png?raw=true",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "10",
+    "lat": 14.693425,
+    "lng": -17.447938,
+    "title": "Indaba 2026",
+    "description": "Event hosted by Deep Learning Indaba Ltd.",
+    "date": "2026-08-02",
+    "time": "09:30",
+    "location": "Dakar, Senegal",
+    "region": "Africa",
+    "category": "Conference",
+    "url": "https://deeplearningindaba.com/2026/",
+    "tags": [
+      "DL"
+    ],
+    "end_date": "2026-08-07",
+    "featured": true,
+    "organization_name": "Deep Learning Indaba Ltd",
+    "organization_url": "https://deeplearningindaba.com/",
+    "url_linkedin": "https://www.linkedin.com/company/deep-learning-indaba/",
+    "url_twitter": "https://twitter.com/deepindaba",
+    "paid_or_free": "paid",
+    "image_url": "https://deeplearningindaba.com/2024/wp-content/uploads/sites/16/2023/12/Monument-to-african-renaissance-senegal-africa-sculpture-statue.jpg",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "11",
+    "lat": 44.9772995,
+    "lng": -93.2654692,
+    "title": "SciPy 2026",
+    "description": "Event hosted by NumFOCUS.",
+    "date": "2026-07-13",
+    "time": "09:30",
+    "location": "Minneapolis, MN, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://www.scipy2026.scipy.org",
+    "tags": [
+      "python",
+      "open",
+      "source"
+    ],
+    "end_date": "2026-07-19",
+    "featured": false,
+    "organization_name": "NumFOCUS",
+    "organization_url": "https://numfocus.org",
+    "url_linkedin": "https://www.linkedin.com/company/numfocus",
+    "url_twitter": "https://twitter.com/scipyconf",
+    "paid_or_free": "paid",
+    "image_url": "https://images.squarespace-cdn.com/content/v1/6596dfc539fa52603ef8b8d4/106aeb0b-a78a-456e-a238-4f9553960c7d/Tacoma_Waterfront_300px_e2638db7-92fe-4751-844d-2e47c2047bab.jpg?format=2500w",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "12",
+    "lat": 50.0619474,
+    "lng": 19.9368564,
+    "title": "EuroPython 2026",
+    "description": "Event hosted by EuroPython Society (EPS).",
+    "date": "2026-07-13",
+    "time": "09:30",
+    "location": "Krakow, Poland",
+    "region": "Europe",
+    "category": "Conference",
+    "url": "https://ep2026.europython.eu",
+    "tags": [
+      "python"
+    ],
+    "end_date": "2026-07-19",
+    "featured": false,
+    "organization_name": "EuroPython Society (EPS)",
+    "organization_url": "https://www.europython-society.org/coc/",
+    "url_linkedin": "https://www.linkedin.com/company/europython/",
+    "url_twitter": "https://twitter.com/europython",
+    "paid_or_free": "paid",
+    "image_url": "https://raw.githubusercontent.com/data-umbrella/resources/main/events-images/2024/2024-europython.png",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "13",
+    "lat": 44.9772995,
+    "lng": -93.2654692,
+    "title": "RecSys 2024",
+    "description": "Event hosted by ACM.",
+    "date": "2026-09-28",
+    "time": "09:30",
+    "location": "Minneapolis, MN, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://recsys.acm.org/recsys26/",
+    "tags": [
+      "ML"
+    ],
+    "end_date": "2026-10-02",
+    "featured": false,
+    "organization_name": "ACM",
+    "organization_url": "https://www.acm.org/",
+    "url_linkedin": "https://www.linkedin.com/company/association-for-computing-machinery/about/",
+    "paid_or_free": "paid",
+    "image_url": "https://recsys.acm.org/wp-content/uploads/2023/11/RecSysBanner_1000_180.png",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "14",
+    "lat": 39.7392364,
+    "lng": -104.984862,
+    "title": "CVPR 2026",
+    "description": "Event hosted by IEEE.",
+    "date": "2026-06-03",
+    "time": "09:30",
+    "location": "Denver, CO, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://cvpr.thecvf.com",
+    "tags": [
+      "ML",
+      "CV"
+    ],
+    "end_date": "2026-06-07",
+    "featured": false,
+    "organization_name": "IEEE",
+    "organization_url": "https://www.ieee.org/",
+    "url_linkedin": "https://www.linkedin.com/company/ieee/",
+    "url_twitter": "https://twitter.com/IEEEorg",
+    "paid_or_free": "paid",
+    "image_url": "https://media.icml.cc/Conferences/CVPR2024/img/homepage_image.jpg",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "15",
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "title": "DjangoCon US 2026",
+    "description": "Event hosted by Django Software Foundation.",
+    "date": "2026-08-24",
+    "time": "09:30",
+    "location": "Chicago, IL, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://2026.djangocon.us",
+    "tags": [],
+    "end_date": "2026-08-28",
+    "featured": false,
+    "organization_name": "Django Software Foundation",
+    "organization_url": "https://2026.djangocon.us",
+    "url_linkedin": "https://www.linkedin.com/company/djangocon/",
+    "url_twitter": "https://twitter.com/djangocon",
+    "url_other": "https://github.com/djangocon/",
+    "paid_or_free": "paid",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "16",
+    "lat": 37.5666791,
+    "lng": 126.9782914,
+    "title": "ICML 2026",
+    "description": "Event hosted by Int'l Conf on Machine Learning.",
+    "date": "2026-07-06",
+    "time": "09:30",
+    "location": "Seoul, South Korea",
+    "region": "Asia",
+    "category": "Conference",
+    "url": "https://icml.cc/Conferences/2026",
+    "tags": [
+      "AI",
+      "ML",
+      "CV"
+    ],
+    "end_date": "2026-07-11",
+    "featured": false,
+    "organization_name": "Int'l Conf on Machine Learning",
+    "organization_url": "https://icml.cc/",
+    "url_linkedin": "None",
+    "url_twitter": "https://twitter.com/icmlconf",
+    "acronym": "ICML",
+    "paid_or_free": "paid",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "17",
+    "lat": 42.3588336,
+    "lng": -71.0578303,
+    "title": "JSM 2026",
+    "description": "Event hosted by ASA.",
+    "date": "2026-08-01",
+    "time": "09:30",
+    "location": "Boston, MA, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://ww2.amstat.org/meetings/jsm/2026/",
+    "tags": [
+      "statistics"
+    ],
+    "end_date": "2026-08-06",
+    "featured": false,
+    "organization_name": "ASA",
+    "organization_url": "https://www.amstat.org",
+    "url_linkedin": "https://www.linkedin.com/company/american-statistical-association---asa/",
+    "url_twitter": "https://twitter.com/AmstatNews?s=20&t=xb_aVg7v6V9g2LZXxAYHJg",
+    "acronym": "JSM",
+    "paid_or_free": "paid",
+    "image_url": "https://ww2.amstat.org/meetings/jsm/2023/images/logo.png?v=2023",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "18",
+    "lat": 39.9622601,
+    "lng": -83.0007065,
+    "title": "DataConnect Conference 2026",
+    "description": "Event hosted by WIA.",
+    "date": "2026-10-29",
+    "time": "09:30",
+    "location": "Columbus, Ohio, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://www.dataconnectconf.com/dataconnect/conference",
+    "tags": [
+      "women-focused"
+    ],
+    "end_date": "2026-10-30",
+    "featured": false,
+    "organization_name": "WIA",
+    "organization_url": "https://www.womeninanalytics.com/",
+    "url_linkedin": "https://www.linkedin.com/company/women-in-analytics-community/",
+    "url_twitter": "http://www.twitter.com/wia_community",
+    "acronym": "WIA-DCC",
+    "paid_or_free": "paid",
+    "image_url": "https://uploads-ssl.webflow.com/6164cdbceec2a908841609b5/61709899316ac23dda1364a8_columbus%20skyline.jpeg",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
+  },
+  {
+    "id": "19",
+    "lat": 39.9622601,
+    "lng": -83.0007065,
+    "title": "new event",
+    "description": "Event hosted by WIA.",
+    "date": "2026-10-29",
+    "time": "09:30",
+    "location": "Columbus, Ohio, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://www.dataconnectconf.com/dataconnect/conference",
+    "tags": [
+      "women-focused"
+    ],
+    "end_date": "2026-10-30",
+    "featured": false,
+    "organization_name": "WIA",
+    "organization_url": "https://www.womeninanalytics.com/",
+    "url_linkedin": "https://www.linkedin.com/company/women-in-analytics-community/",
+    "url_twitter": "http://www.twitter.com/wia_community",
+    "acronym": "WIA-DCC",
+    "paid_or_free": "paid",
+    "image_url": "https://uploads-ssl.webflow.com/6164cdbceec2a908841609b5/61709899316ac23dda1364a8_columbus%20skyline.jpeg",
+    "in_person": true,
+    "virtual": false,
+    "language": "English"
   }
 ]
