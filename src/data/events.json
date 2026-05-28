@@ -42,7 +42,7 @@
     "title": "Open Source Friday - Curitiba",
     "description": "Contribute to open source projects together! We'll pair program on popular OSS projects and help newcomers make their first contribution.",
     "date": "2026-03-22",
-    "time": "18:30",
+    "time": "09:30",
     "location": "Espaço Digital, Rua XV de Novembro 700, Curitiba",
     "region": "Curitiba",
     "category": "Technology",
@@ -144,26 +144,6 @@
     ]
   },
   {
-    "id": "10",
-    "lat": 44.9772995,
-    "lng": -93.2654692,
-    "title": "RecSys 2024",
-    "description": "",
-    "date": "2026-09-28",
-    "time": "09:30",
-    "location": "Minneapolis, MN, USA",
-    "region": "Canada / USA",
-    "category": "Conference",
-    "url": "https://recsys.acm.org/recsys26/",
-    "tags": [
-      "ML"
-    ],
-    "end_date": "2026-10-02",
-    "organization_name": "ACM",
-    "organization_url": "https://www.acm.org/",
-    "url_linkedin": "https://www.linkedin.com/company/association-for-computing-machinery/about/",
-    "paid_or_free": "paid",
-    "image_url": "https://recsys.acm.org/wp-content/uploads/2023/11/RecSysBanner_1000_180.png",
     "id": "9",
     "lat": 41.4996574,
     "lng": -81.6936772,
@@ -187,5 +167,27 @@
     "image_url": "https://github.com/data-umbrella/resources/blob/main/events-images/2024/2024-pyohio.png?raw=true",
     "in_person": true,
     "language": "English"
+  },
+  {
+    "id": "10",
+    "lat": 44.9772995,
+    "lng": -93.2654692,
+    "title": "RecSys 2024",
+    "description": "",
+    "date": "2026-09-28",
+    "time": "09:30",
+    "location": "Minneapolis, MN, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://recsys.acm.org/recsys26/",
+    "tags": [
+      "ML"
+    ],
+    "end_date": "2026-10-02",
+    "organization_name": "ACM",
+    "organization_url": "https://www.acm.org/",
+    "url_linkedin": "https://www.linkedin.com/company/association-for-computing-machinery/about/",
+    "paid_or_free": "paid",
+    "image_url": "https://recsys.acm.org/wp-content/uploads/2023/11/RecSysBanner_1000_180.png"
   }
 ]
