@@ -67,6 +67,9 @@ FIELD_MAPPING = {
     "location": ["location", "physical location"],
     "region": ["region", "geographic region"],
     "language": ["language", "primary language"],
+    "date": ["start_date", "date", "start date", "start date and time"],
+    "virtual": ["virtual", "online"],
+    "in_person": ["in_person", "in person", "in-person"],
 }
 
 
