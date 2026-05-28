@@ -63,22 +63,6 @@ events:
       - machine-learning
       - python
 
-  - id: "5"
-    lat: -19.9227318
-    lng: -43.9450948
-    title: "DevOps Meetup - Belo Horizonte"
-    description: "Monthly DevOps meetup discussing CI/CD pipelines, container orchestration, and infrastructure as code."
-    date: "2026-04-10"
-    time: "19:00"
-    location: "MG Tech Center, Av. Afonso Pena 1500, Belo Horizonte"
-    region: "Belo Horizonte"
-    category: "Technology"
-    url: "https://example.com/devops-bh"
-    tags:
-      - devops
-      - docker
-      - kubernetes
-
   - id: "6"
     lat: -30.0324999
     lng: -51.2303767
@@ -126,25 +110,6 @@ events:
       - hackathon
       - community
       - innovation
-  - id: "10"
-    lat: 44.9772995
-    lng: -93.2654692
-    title: "RecSys 2024"
-    description: ""
-    date: "2026-09-28"
-    time: "09:30"
-    location: "Minneapolis, MN, USA"
-    region: "Canada / USA"
-    category: "Conference"
-    url: "https://recsys.acm.org/recsys26/"
-    tags:
-      - ML
-    end_date: "2026-10-02"
-    organization_name: "ACM"
-    organization_url: "https://www.acm.org/"
-    url_linkedin: "https://www.linkedin.com/company/association-for-computing-machinery/about/"
-    paid_or_free: "paid"
-    image_url: "https://recsys.acm.org/wp-content/uploads/2023/11/RecSysBanner_1000_180.png"
   - id: "9"
     lat: 41.4996574
     lng: -81.6936772
@@ -168,3 +133,22 @@ events:
     in_person: true
     language: "English"
 
+  - id: "10"
+    lat: 44.9772995
+    lng: -93.2654692
+    title: "RecSys 2024"
+    description: ""
+    date: "2026-09-28"
+    time: "09:30"
+    location: "Minneapolis, MN, USA"
+    region: "Canada / USA"
+    category: "Conference"
+    url: "https://recsys.acm.org/recsys26/"
+    tags:
+      - ML
+    end_date: "2026-10-02"
+    organization_name: "ACM"
+    organization_url: "https://www.acm.org/"
+    url_linkedin: "https://www.linkedin.com/company/association-for-computing-machinery/about/"
+    paid_or_free: "paid"
+    image_url: "https://recsys.acm.org/wp-content/uploads/2023/11/RecSysBanner_1000_180.png"
