@@ -142,34 +142,5 @@
       "community",
       "innovation"
     ]
-  },
-  {
-    "id": "9",
-    "lat": 28.6138954,
-    "lng": 77.2090057,
-    "title": "Test",
-    "description": "xyz",
-    "date": "2026-05-21",
-    "time": "10:00",
-    "location": "New Delhi, India",
-    "region": "India",
-    "category": "Workshop",
-    "url": "www.sample.com",
-    "tags": [
-      "python",
-      "CS"
-    ],
-    "end_date": "2026-06-05",
-    "featured": true,
-    "organization_name": "xyz",
-    "organization_url": "www.sample.com",
-    "url_linkedin": "www.sample.com",
-    "url_twitter": "www.sample.com",
-    "url_other": "www.sample.com",
-    "paid_or_free": "free",
-    "image_url": "www.sample.com",
-    "in_person": true,
-    "virtual": true,
-    "language": "English"
   }
 ]
