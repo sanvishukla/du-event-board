@@ -645,9 +645,19 @@ def main() -> None:
             # Check if any field changed
             ev_changed = False
             for k, val in mapped_event.items():
-                if existing_ev.get(k) != val:
-                    ev_changed = True
-                    break
+                existing_val = existing_ev.get(k)
+                if k in ("in_person", "virtual", "featured"):
+                    # Normalize truthiness check for boolean fields (None/False/0/"" are all equivalent)
+                    if bool(existing_val) != bool(val):
+                        ev_changed = True
+                        break
+                else:
+                    if existing_val != val:
+                        # Treat None as equivalent to empty string or empty list
+                        if existing_val is None and (val == "" or val == []):
+                            continue
+                        ev_changed = True
+                        break
 
             if ev_changed:
                 print(f"Edit detected for event: '{s_title}' on {s_date}")

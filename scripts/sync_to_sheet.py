@@ -27,21 +27,46 @@ from sync_from_sheet import parse_date_time  # noqa: E402
 
 def format_boolean(val: Any) -> str:
     """
-    title: Convert boolean/truthy values to Yes/No.
+    title: Convert boolean/truthy values to Yes/No, or empty if undefined.
     parameters:
       val:
         type: Any
     returns:
       type: str
     """
+    if val is None or val == "":
+        return ""
     if isinstance(val, bool):
         return "Yes" if val else "No"
     val_str = str(val).strip().lower()
+    if val_str == "":
+        return ""
     if val_str in ("true", "yes", "1", "y", "t", "x", "checked"):
         return "Yes"
-    if val_str in ("false", "no", "0", "n", "f", ""):
+    if val_str in ("false", "no", "0", "n", "f"):
         return "No"
     return str(val)
+
+
+def format_featured(val: Any) -> str:
+    """
+    title: Format featured value as '0' or '1' for Google Sheet.
+    parameters:
+      val:
+        type: Any
+    returns:
+      type: str
+    """
+    if val is None or val == "":
+        return "0"
+    if isinstance(val, bool):
+        return "1" if val else "0"
+    val_str = str(val).strip().lower()
+    if val_str in ("true", "yes", "1", "y", "t", "x", "checked"):
+        return "1"
+    if val_str in ("false", "no", "0", "n", "f"):
+        return "0"
+    return "0"
 
 
 def main() -> None:
@@ -167,7 +192,7 @@ def main() -> None:
             "start_date": event.get("date", ""),
             "end_date": event.get("end_date", ""),
             "event_type": event.get("category", ""),
-            "featured": format_boolean(event.get("featured", "")),
+            "featured": format_featured(event.get("featured", "")),
             "tags": tags_val,
             "event_description (200 char)": event.get("description", ""),
             "organization_name": event.get("organization_name", ""),
