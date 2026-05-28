@@ -239,6 +239,105 @@ def create_pull_request(
         raise e
 
 
+def close_pull_request(repo: str, token: str, pr_num: int) -> None:
+    """
+    title: Close a Pull Request via GitHub REST API.
+    parameters:
+      repo:
+        type: str
+      token:
+        type: str
+      pr_num:
+        type: int
+    """
+    url = f"https://api.github.com/repos/{repo}/pulls/{pr_num}"
+    data = {"state": "closed"}
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(data).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json",
+            "User-Agent": "GitHubActions-Sync",
+        },
+        method="PATCH",
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            print(
+                f"Successfully closed pull request #{pr_num}: {res.get('html_url')}"
+            )
+    except Exception as e:
+        print(f"Error closing pull request #{pr_num}: {e}", file=sys.stderr)
+
+
+def get_open_sync_prs(
+    repo: str, token: str
+) -> dict[tuple[str, str, str], dict[str, Any]]:
+    """
+    title: Fetch open sync PRs and parse their event details from PR descriptions.
+    parameters:
+      repo:
+        type: str
+      token:
+        type: str
+    returns:
+      type: dict[tuple[str, str, str], dict[str, Any]]
+    """
+    url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "GitHubActions-Sync",
+        },
+        method="GET",
+    )
+    open_prs = {}
+    try:
+        with urllib.request.urlopen(req) as response:
+            prs = json.loads(response.read().decode("utf-8"))
+            for pr in prs:
+                body = pr.get("body") or ""
+                branch = pr.get("head", {}).get("ref") or ""
+                if not branch.startswith("sync/"):
+                    continue
+
+                # Parse event details using regex
+                id_match = re.search(
+                    r"-\s+\*\*Event ID\*\*:\s*`([^`]+)`", body
+                )
+                title_match = re.search(
+                    r"-\s+\*\*Title\*\*:\s*`([^`]+)`", body
+                )
+                date_match = re.search(
+                    r"-\s+\*\*Start Date\*\*:\s*`([^`]+)`", body
+                )
+                loc_match = re.search(
+                    r"-\s+\*\*Location\*\*:\s*`([^`]+)`", body
+                )
+
+                if title_match and date_match:
+                    e_id = id_match.group(1) if id_match else ""
+                    e_title = title_match.group(1).strip()
+                    e_date = date_match.group(1).strip()
+                    e_loc = loc_match.group(1).strip() if loc_match else ""
+
+                    key = (e_title.lower(), e_date, e_loc.lower())
+                    open_prs[key] = {
+                        "number": pr["number"],
+                        "branch": branch,
+                        "id": e_id,
+                        "title": e_title,
+                    }
+    except Exception as e:
+        print(f"Warning: Failed to fetch open PRs: {e}", file=sys.stderr)
+    return open_prs
+
+
 def get_field_value(s_ev: dict[str, Any], key: str) -> str:
     """
     title: Retrieve event field value from spreadsheet event object.
@@ -648,11 +747,29 @@ def main() -> None:
     updated_yaml_events: list[dict[str, Any]] = []
     detected_changes: list[dict[str, Any]] = []
 
+    github_token = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+
+    # Fetch open PRs to calculate max_id and map pending additions
+    open_sync_prs = {}
+    if github_token and repo:
+        print("Fetching open sync pull requests from GitHub...")
+        open_sync_prs = get_open_sync_prs(repo, github_token)
+
     # Track existing IDs to calculate next ID
     max_id = 0
     for ev in yaml_events:
         try:
             eid = int(ev.get("id", 0))
+            if eid > max_id:
+                max_id = eid
+        except ValueError:
+            pass
+
+    # Also factor in IDs of open sync PRs to avoid ID reuse
+    for pr_info in open_sync_prs.values():
+        try:
+            eid = int(pr_info["id"])
             if eid > max_id:
                 max_id = eid
         except ValueError:
@@ -758,35 +875,173 @@ def main() -> None:
                 updated_yaml_events.append(existing_ev)
         else:
             # Addition detected
-            print(f"New event detected: '{s_title}' on {s_date}")
-            max_id += 1
-            mapped_event["id"] = str(max_id)
-
-            coords = geocode_location(str(mapped_event["location"]))
-            mapped_event["lat"] = coords[0] if coords else ""
-            mapped_event["lng"] = coords[1] if coords else ""
-
-            updated_yaml_events.append(mapped_event)
-            detected_changes.append(
-                {
-                    "type": "add",
-                    "id": str(max_id),
-                    "title": s_title,
-                    "date": s_date,
-                    "location": s_location,
-                    "event_data": mapped_event,
-                }
+            # Check if there is an open PR for this new event
+            pr_key = (
+                s_title.lower().strip(),
+                s_date.strip(),
+                s_location.lower().strip(),
             )
+            if pr_key in open_sync_prs:
+                pr_info = open_sync_prs[pr_key]
+                event_id = pr_info["id"]
+                branch_name = pr_info["branch"]
+                mapped_event["id"] = event_id
 
-    # Keep events from YAML that were not matched by any sheet event.
-    # They will be synced back to the sheet on merge.
+                # Fetch the branch from origin to compare details
+                is_changed = True
+                existing_pr_ev = None
+                try:
+                    run_git_cmd(["git", "fetch", "origin", branch_name])
+                    branch_yaml = run_git_cmd(
+                        [
+                            "git",
+                            "show",
+                            f"origin/{branch_name}:data/events.yaml",
+                        ]
+                    )
+                    branch_data = yaml.safe_load(branch_yaml) or {"events": []}
+                    branch_events = branch_data.get("events", [])
+                    existing_pr_ev = next(
+                        (
+                            x
+                            for x in branch_events
+                            if str(x.get("id")) == str(event_id)
+                        ),
+                        None,
+                    )
+                    if existing_pr_ev:
+                        # Compare fields
+                        is_changed = False
+                        for k, val in mapped_event.items():
+                            existing_val = existing_pr_ev.get(k)
+                            if k in ("in_person", "virtual", "featured"):
+                                if bool(existing_val) != bool(val):
+                                    is_changed = True
+                                    break
+                            else:
+                                if existing_val != val:
+                                    if existing_val is None and (
+                                        val == "" or val == []
+                                    ):
+                                        continue
+                                    is_changed = True
+                                    break
+                except Exception as ex:
+                    print(
+                        f"Warning: Could not fetch branch {branch_name} for comparison: {ex}"
+                    )
+
+                if is_changed:
+                    print(
+                        f"Edit detected for pending addition: '{s_title}' on {s_date}"
+                    )
+                    if existing_pr_ev:
+                        mapped_event["lat"] = existing_pr_ev.get("lat", "")
+                        mapped_event["lng"] = existing_pr_ev.get("lng", "")
+                    else:
+                        coords = geocode_location(
+                            str(mapped_event["location"])
+                        )
+                        mapped_event["lat"] = coords[0] if coords else ""
+                        mapped_event["lng"] = coords[1] if coords else ""
+
+                    updated_yaml_events.append(mapped_event)
+                    detected_changes.append(
+                        {
+                            "type": "add",
+                            "id": event_id,
+                            "title": s_title,
+                            "date": s_date,
+                            "location": s_location,
+                            "event_data": mapped_event,
+                        }
+                    )
+                else:
+                    print(
+                        f"Pending addition '{s_title}' is unchanged on branch '{branch_name}'."
+                    )
+                    if existing_pr_ev:
+                        updated_yaml_events.append(existing_pr_ev)
+            else:
+                # Brand new event
+                print(f"New event detected: '{s_title}' on {s_date}")
+                max_id += 1
+                mapped_event["id"] = str(max_id)
+
+                coords = geocode_location(str(mapped_event["location"]))
+                mapped_event["lat"] = coords[0] if coords else ""
+                mapped_event["lng"] = coords[1] if coords else ""
+
+                updated_yaml_events.append(mapped_event)
+                detected_changes.append(
+                    {
+                        "type": "add",
+                        "id": str(max_id),
+                        "title": s_title,
+                        "date": s_date,
+                        "location": s_location,
+                        "event_data": mapped_event,
+                    }
+                )
+
+    # Detect deletions from the sheet
     for ev in yaml_events:
         event_id = str(ev.get("id", ""))
         if event_id not in processed_yaml_ids:
+            title = ev.get("title", "")
+            date = ev.get("date", "")
+            location = ev.get("location", "")
             print(
-                f"Event in YAML but not in Google Sheet (keeping in database): '{ev.get('title')}' on {ev.get('date')}"
+                f"Event deleted from Google Sheet: '{title}' on {date} (ID: {event_id})"
             )
-            updated_yaml_events.append(ev)
+            detected_changes.append(
+                {
+                    "type": "delete",
+                    "id": event_id,
+                    "title": title,
+                    "date": date,
+                    "location": location,
+                    "event_data": None,
+                }
+            )
+
+    # Auto-close open PRs for pending additions that were deleted from the sheet
+    if github_token and repo:
+        sheet_keys = set()
+        for s_ev in sheet_events:
+            s_title = get_field_value(s_ev, "title")
+            s_date_raw = get_field_value(s_ev, "date")
+            if not s_title or not s_date_raw:
+                continue
+            s_date, _ = parse_date_time(s_date_raw)
+            s_location = get_field_value(s_ev, "location")
+            sheet_keys.add(
+                (
+                    s_title.lower().strip(),
+                    s_date.strip(),
+                    s_location.lower().strip(),
+                )
+            )
+
+        for pr_key, pr_info in open_sync_prs.items():
+            if pr_key not in sheet_keys:
+                pr_num = pr_info["number"]
+                branch_name = pr_info["branch"]
+                print(
+                    f"Closing pull request #{pr_num} for deleted event '{pr_info['title']}'..."
+                )
+                close_pull_request(repo, github_token, pr_num)
+                try:
+                    run_git_cmd(
+                        ["git", "push", "origin", "--delete", branch_name]
+                    )
+                    print(
+                        f"Deleted remote branch '{branch_name}' for closed PR."
+                    )
+                except Exception as ex:
+                    print(
+                        f"Warning: Could not delete remote branch '{branch_name}': {ex}"
+                    )
 
     github_token = os.environ.get("GITHUB_TOKEN")
 
@@ -919,6 +1174,12 @@ def main() -> None:
 
             if change_type == "add":
                 temp_yaml_events.append(event_data)
+            elif change_type == "delete":
+                temp_yaml_events = [
+                    ev
+                    for ev in temp_yaml_events
+                    if str(ev.get("id")) != str(event_id)
+                ]
             else:  # edit
                 for i, ev in enumerate(temp_yaml_events):
                     if str(ev.get("id")) == str(event_id):
@@ -978,7 +1239,11 @@ def main() -> None:
             run_git_cmd(
                 ["git", "add", "data/events.yaml", "src/data/events.json"]
             )
-            change_desc = "addition of" if change_type == "add" else "edits to"
+            change_desc = (
+                "addition of"
+                if change_type == "add"
+                else ("deletion of" if change_type == "delete" else "edits to")
+            )
             commit_msg = f"feat: sync {change_desc} event '{title}'"
             run_git_cmd(["git", "commit", "-m", commit_msg])
 

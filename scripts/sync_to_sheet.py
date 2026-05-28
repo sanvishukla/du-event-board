@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
@@ -64,9 +65,133 @@ def format_featured(val: Any) -> str:
     val_str = str(val).strip().lower()
     if val_str in ("true", "yes", "1", "y", "t", "x", "checked"):
         return "1"
-    if val_str in ("false", "no", "0", "n", "f"):
-        return "0"
     return "0"
+
+
+def get_open_sync_prs(
+    repo: str, token: str
+) -> dict[tuple[str, str, str], dict[str, Any]]:
+    """
+    title: Fetch open sync PRs and parse their event details from PR descriptions.
+    parameters:
+      repo:
+        type: str
+      token:
+        type: str
+    returns:
+      type: dict[tuple[str, str, str], dict[str, Any]]
+    """
+    url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "GitHubActions-Sync",
+        },
+        method="GET",
+    )
+    open_prs = {}
+    try:
+        with urllib.request.urlopen(req) as response:
+            prs = json.loads(response.read().decode("utf-8"))
+            for pr in prs:
+                body = pr.get("body") or ""
+                branch = pr.get("head", {}).get("ref") or ""
+                if not branch.startswith("sync/"):
+                    continue
+
+                # Parse event details using regex
+                id_match = re.search(
+                    r"-\s+\*\*Event ID\*\*:\s*`([^`]+)`", body
+                )
+                title_match = re.search(
+                    r"-\s+\*\*Title\*\*:\s*`([^`]+)`", body
+                )
+                date_match = re.search(
+                    r"-\s+\*\*Start Date\*\*:\s*`([^`]+)`", body
+                )
+                loc_match = re.search(
+                    r"-\s+\*\*Location\*\*:\s*`([^`]+)`", body
+                )
+
+                if title_match and date_match:
+                    e_id = id_match.group(1) if id_match else ""
+                    e_title = title_match.group(1).strip()
+                    e_date = date_match.group(1).strip()
+                    e_loc = loc_match.group(1).strip() if loc_match else ""
+
+                    key = (e_title.lower(), e_date, e_loc.lower())
+                    open_prs[key] = {
+                        "number": pr["number"],
+                        "branch": branch,
+                        "id": e_id,
+                        "title": e_title,
+                    }
+    except Exception as e:
+        print(f"Warning: Failed to fetch open PRs: {e}", file=sys.stderr)
+    return open_prs
+
+
+def delete_sheet_event(
+    webapp_url: str,
+    secret_token: str,
+    title: str,
+    date: str,
+    location: str,
+) -> None:
+    """
+    title: Delete an event from the Google Sheet via Web App.
+    parameters:
+      webapp_url:
+        type: str
+      secret_token:
+        type: str
+      title:
+        type: str
+      date:
+        type: str
+      location:
+        type: str
+    """
+    parsed_url = urllib.parse.urlparse(webapp_url)
+    query_params = urllib.parse.parse_qs(parsed_url.query)
+    query_params["action"] = ["delete_event"]
+    query_params["token"] = [secret_token]
+    new_query = urllib.parse.urlencode(query_params, doseq=True)
+    delete_url = urllib.parse.urlunparse(
+        (
+            parsed_url.scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            new_query,
+            parsed_url.fragment,
+        )
+    )
+    payload = {"event_name": title, "start_date": date, "location": location}
+    req_data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        delete_url,
+        data=req_data,
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "GitHubActions-Sync",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_body = json.loads(response.read().decode())
+            if isinstance(res_body, dict) and "error" in res_body:
+                print(
+                    f"Error deleting event '{title}': {res_body['error']}",
+                    file=sys.stderr,
+                )
+            else:
+                print(f"Successfully deleted event from sheet: '{title}'")
+    except Exception as e:
+        print(f"Failed to delete event '{title}': {e}", file=sys.stderr)
 
 
 def main() -> None:
@@ -146,6 +271,48 @@ def main() -> None:
     events = data.get("events", [])
     print(f"Loaded {len(events)} events from events.yaml.")
 
+    github_token = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+
+    # Fetch open PRs to build a set of pending additions
+    pending_additions = set()
+    if github_token and repo:
+        print("Fetching open pull requests to map pending additions...")
+        open_sync_prs = get_open_sync_prs(repo, github_token)
+        for e_title, e_date, e_loc in open_sync_prs.keys():
+            pending_additions.add((e_title, e_date, e_loc))
+
+    yaml_keys = set()
+    for event in events:
+        title = str(event.get("title", "")).strip().lower()
+        date = str(event.get("date", "")).strip()
+        location = str(event.get("location", "")).strip().lower()
+        if title and date:
+            yaml_keys.add((title, date, location))
+
+    # Identify events in sheet but deleted from YAML
+    deleted_events = []
+    if github_token:
+        for s_ev in res_body:
+            s_title = str(s_ev.get("event_name", "")).strip().lower()
+            s_date_raw = str(s_ev.get("start_date", "")).strip()
+            s_date, _ = parse_date_time(s_date_raw)
+            s_location = str(s_ev.get("location", "")).strip().lower()
+            if not s_title or not s_date:
+                continue
+            sheet_key = (s_title, s_date, s_location)
+            if (
+                sheet_key not in yaml_keys
+                and sheet_key not in pending_additions
+            ):
+                deleted_events.append(
+                    (
+                        s_ev.get("event_name", ""),
+                        s_date,
+                        s_ev.get("location", ""),
+                    )
+                )
+
     missing_events = []
     for event in events:
         title = str(event.get("title", "")).strip().lower()
@@ -158,13 +325,27 @@ def main() -> None:
         if key not in existing_keys:
             missing_events.append(event)
 
-    if not missing_events:
+    if not missing_events and not deleted_events:
         print(
-            "All events are already synced to the Google Sheet. No action needed."
+            "All events are already in sync with the Google Sheet. No action needed."
         )
         sys.exit(0)
 
-    print(f"Found {len(missing_events)} new event(s) to sync to Google Sheet.")
+    # Process deletions first
+    if deleted_events:
+        print(
+            f"Found {len(deleted_events)} event(s) deleted from YAML. Syncing deletions to Google Sheet..."
+        )
+        for d_title, d_date, d_location in deleted_events:
+            print(f"Deleting event from sheet: '{d_title}' ({d_date})...")
+            delete_sheet_event(
+                webapp_url, secret_token, d_title, d_date, d_location
+            )
+
+    if missing_events:
+        print(
+            f"Found {len(missing_events)} new event(s) to sync to Google Sheet."
+        )
 
     parsed_post_url = urllib.parse.urlparse(webapp_url)
     post_query_params = urllib.parse.parse_qs(parsed_post_url.query)
