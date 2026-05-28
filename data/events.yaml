@@ -127,3 +127,29 @@ events:
       - community
       - innovation
 
+
+  - id: "9"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: Test Event
+    description: xyz
+    date: '2026-05-27'
+    time: '10:00'
+    location: Delhi, India
+    region: India
+    category: workshop
+    url: www.sample.com
+    tags:
+      - python
+    end_date: '2026-06-06'
+    featured: false
+    organization_name: xyz
+    organization_url: www.sample.com
+    url_linkedin: www.sample.com
+    url_twitter: www.sample.com
+    url_other: www.sample.com
+    paid_or_free: paid
+    image_url: www.sample.com
+    in_person: true
+    virtual: true
+    language: English
