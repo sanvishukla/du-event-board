@@ -474,6 +474,13 @@ def normalize_time(t_str: str) -> str:
     t_str = t_str.strip()
     if not t_str:
         return ""
+
+    # Extract time component if input starts with a date (e.g. "1899-12-31 05:21:10")
+    if " " in t_str:
+        parts = t_str.split()
+        if "-" in parts[0] or "/" in parts[0]:
+            t_str = " ".join(parts[1:])
+
     match = re.match(r"^(\d{1,2}):(\d{2})(?::\d{2})?$", t_str)
     if match:
         return f"{int(match.group(1)):02d}:{int(match.group(2)):02d}"
