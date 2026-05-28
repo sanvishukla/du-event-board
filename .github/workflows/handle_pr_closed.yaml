@@ -1,0 +1,32 @@
+name: Handle PR Closed
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup_submission:
+    # Only run if closed without merging AND it was a form submission PR
+    if: github.event.pull_request.merged == false && startsWith(github.event.pull_request.head.ref, 'event-submission-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Delete pending submission from sheet
+        env:
+          GOOGLE_SHEET_WEBAPP_URL: ${{ secrets.GOOGLE_SHEET_WEBAPP_URL }}
+          GOOGLE_SHEET_SECRET_TOKEN: ${{ secrets.GOOGLE_SHEET_SECRET_TOKEN }}
+        run: python scripts/delete_pending_submission.py
