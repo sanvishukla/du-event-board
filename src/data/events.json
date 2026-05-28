@@ -142,5 +142,34 @@
       "community",
       "innovation"
     ]
+  },
+  {
+    "id": "9",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "title": "test",
+    "description": "gvjhb",
+    "date": "2026-05-30",
+    "time": "10:10",
+    "location": "delhi",
+    "region": "india",
+    "category": "fds",
+    "url": "www.sample.com",
+    "tags": [
+      "vfsdfk"
+    ],
+    "end_date": "2026-05-30",
+    "featured": false,
+    "organization_name": "kjbk",
+    "organization_url": "www.sample.com",
+    "url_linkedin": "www.sample.com",
+    "url_twitter": "www.sample.com",
+    "url_other": "www.sample.com",
+    "acronym": "kjbb",
+    "paid_or_free": "paid",
+    "image_url": "www.sample.com",
+    "in_person": false,
+    "virtual": true,
+    "language": "english"
   }
 ]
