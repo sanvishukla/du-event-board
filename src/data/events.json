@@ -108,24 +108,6 @@
     ]
   },
   {
-    "id": "7",
-    "lat": -23.5506507,
-    "lng": -46.6333824,
-    "title": "Rust Programming Intro - São Paulo",
-    "description": "Introduction to the Rust programming language. We'll cover ownership, borrowing, and building your first CLI tool.",
-    "date": "2026-04-18",
-    "time": "18:00",
-    "location": "Hacker House SP, Rua Augusta 2690, São Paulo",
-    "region": "São Paulo",
-    "category": "Technology",
-    "url": "https://example.com/rust-intro-sp",
-    "tags": [
-      "rust",
-      "programming",
-      "systems"
-    ]
-  },
-  {
     "id": "8",
     "lat": -27.544562,
     "lng": -48.4999697,
@@ -144,26 +126,6 @@
     ]
   },
   {
-    "id": "10",
-    "lat": 44.9772995,
-    "lng": -93.2654692,
-    "title": "RecSys 2024",
-    "description": "",
-    "date": "2026-09-28",
-    "time": "09:30",
-    "location": "Minneapolis, MN, USA",
-    "region": "Canada / USA",
-    "category": "Conference",
-    "url": "https://recsys.acm.org/recsys26/",
-    "tags": [
-      "ML"
-    ],
-    "end_date": "2026-10-02",
-    "organization_name": "ACM",
-    "organization_url": "https://www.acm.org/",
-    "url_linkedin": "https://www.linkedin.com/company/association-for-computing-machinery/about/",
-    "paid_or_free": "paid",
-    "image_url": "https://recsys.acm.org/wp-content/uploads/2023/11/RecSysBanner_1000_180.png",
     "id": "9",
     "lat": 41.4996574,
     "lng": -81.6936772,
@@ -187,5 +149,27 @@
     "image_url": "https://github.com/data-umbrella/resources/blob/main/events-images/2024/2024-pyohio.png?raw=true",
     "in_person": true,
     "language": "English"
+  },
+  {
+    "id": "10",
+    "lat": 44.9772995,
+    "lng": -93.2654692,
+    "title": "RecSys 2024",
+    "description": "",
+    "date": "2026-09-28",
+    "time": "09:30",
+    "location": "Minneapolis, MN, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://recsys.acm.org/recsys26/",
+    "tags": [
+      "ML"
+    ],
+    "end_date": "2026-10-02",
+    "organization_name": "ACM",
+    "organization_url": "https://www.acm.org/",
+    "url_linkedin": "https://www.linkedin.com/company/association-for-computing-machinery/about/",
+    "paid_or_free": "paid",
+    "image_url": "https://recsys.acm.org/wp-content/uploads/2023/11/RecSysBanner_1000_180.png"
   }
 ]
