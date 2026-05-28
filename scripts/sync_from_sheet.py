@@ -858,6 +858,8 @@ def main() -> None:
 
         # Look up existing event in YAML
         s_id = get_field_value(s_ev, "id").strip()
+        if s_id.endswith(".0"):
+            s_id = s_id[:-2]
         existing_ev = None
         if s_id and s_id in yaml_by_id:
             existing_ev = yaml_by_id[s_id]
@@ -1283,7 +1285,7 @@ def main() -> None:
             location = change["location"]
             event_data = change["event_data"]
 
-            branch_name = f"sync/{change_type}-{event_id}"
+            branch_name = f"sync/{change_type}-{event_id}-{int(time.time())}"
             print(
                 f"Processing {change_type} change for event '{title}' "
                 f"(ID: {event_id}) on branch '{branch_name}'..."

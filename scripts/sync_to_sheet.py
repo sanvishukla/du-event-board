@@ -406,10 +406,16 @@ def main() -> None:
                 if candidate in s_ev_lower:
                     s_id = str(s_ev_lower[candidate]).strip()
                     break
+            if s_id.endswith(".0"):
+                s_id = s_id[:-2]
             if not s_id:
                 events_needing_id_update.append(event)
 
-    if not missing_events and not deleted_events and not events_needing_id_update:
+    if (
+        not missing_events
+        and not deleted_events
+        and not events_needing_id_update
+    ):
         print(
             "All events are already in sync with the Google Sheet. No action needed."
         )
