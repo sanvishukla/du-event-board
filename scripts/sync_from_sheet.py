@@ -101,6 +101,53 @@ def run_git_cmd(args: list[str]) -> str:
         raise e
 
 
+def update_pull_request(
+    repo: str,
+    token: str,
+    pr_num: int,
+    title: str,
+    body: str,
+) -> None:
+    """
+    title: Update a Pull Request's title and body via GitHub REST API.
+    parameters:
+      repo:
+        type: str
+      token:
+        type: str
+      pr_num:
+        type: int
+      title:
+        type: str
+      body:
+        type: str
+    """
+    url = f"https://api.github.com/repos/{repo}/pulls/{pr_num}"
+    data = {
+        "title": title,
+        "body": body,
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(data).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json",
+            "User-Agent": "GitHubActions-Sync",
+        },
+        method="PATCH",
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            print(
+                f"Successfully updated pull request #{pr_num}: {res.get('html_url')}"
+            )
+    except Exception as e:
+        print(f"Error updating pull request #{pr_num}: {e}", file=sys.stderr)
+
+
 def create_pull_request(
     repo: str,
     token: str,
@@ -152,8 +199,37 @@ def create_pull_request(
         if e.code == 422 and "already exists" in err_body:
             print(
                 f"Pull request already exists for branch {branch}. "
-                "Branch was pushed and updated."
+                "Attempting to update the PR title and description..."
             )
+            try:
+                owner = repo.split("/")[0]
+                query_url = f"https://api.github.com/repos/{repo}/pulls?head={owner}:{branch}&state=open"
+                query_req = urllib.request.Request(
+                    query_url,
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Accept": "application/vnd.github+json",
+                        "User-Agent": "GitHubActions-Sync",
+                    },
+                    method="GET",
+                )
+                with urllib.request.urlopen(query_req) as query_response:
+                    prs = json.loads(query_response.read().decode("utf-8"))
+                    if prs and len(prs) > 0:
+                        pr_num = prs[0]["number"]
+                        update_pull_request(
+                            repo=repo,
+                            token=token,
+                            pr_num=pr_num,
+                            title=title,
+                            body=body,
+                        )
+                        return
+            except Exception as ex:
+                print(
+                    f"Failed to update existing pull request: {ex}",
+                    file=sys.stderr,
+                )
             return
         print(
             f"Error creating pull request: {e.code} - {e.reason}",
@@ -902,7 +978,8 @@ def main() -> None:
             run_git_cmd(
                 ["git", "add", "data/events.yaml", "src/data/events.json"]
             )
-            commit_msg = f"feat: sync {change_type} event '{title}'"
+            change_desc = "addition of" if change_type == "add" else "edits to"
+            commit_msg = f"feat: sync {change_desc} event '{title}'"
             run_git_cmd(["git", "commit", "-m", commit_msg])
 
             print(f"  Pushing branch '{branch_name}' to origin...")
@@ -910,9 +987,9 @@ def main() -> None:
 
             # 6. Raise PR via REST API
             print("  Creating/updating pull request...")
-            pr_title = f"feat: sync {change_type} event '{title}'"
+            pr_title = f"feat: sync {change_desc} event '{title}'"
             pr_body = (
-                f"This PR was automatically raised to sync the {change_type} to event '{title}' "
+                f"This PR was automatically raised to sync the {change_desc} event '{title}' "
                 f"from Google Sheet back to the repository's events database.\n\n"
                 f"### Event Details\n"
                 f"- **Event ID**: `{event_id}`\n"
