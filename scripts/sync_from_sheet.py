@@ -474,6 +474,13 @@ def normalize_time(t_str: str) -> str:
     t_str = t_str.strip()
     if not t_str:
         return ""
+
+    # Extract time component if input starts with a date (e.g. "1899-12-31 05:21:10")
+    if " " in t_str:
+        parts = t_str.split()
+        if "-" in parts[0] or "/" in parts[0]:
+            t_str = " ".join(parts[1:])
+
     match = re.match(r"^(\d{1,2}):(\d{2})(?::\d{2})?$", t_str)
     if match:
         return f"{int(match.group(1)):02d}:{int(match.group(2)):02d}"
@@ -858,6 +865,8 @@ def main() -> None:
 
         # Look up existing event in YAML
         s_id = get_field_value(s_ev, "id").strip()
+        if s_id.endswith(".0"):
+            s_id = s_id[:-2]
         existing_ev = None
         if s_id and s_id in yaml_by_id:
             existing_ev = yaml_by_id[s_id]
@@ -1283,7 +1292,7 @@ def main() -> None:
             location = change["location"]
             event_data = change["event_data"]
 
-            branch_name = f"sync/{change_type}-{event_id}"
+            branch_name = f"sync/{change_type}-{event_id}-{int(time.time())}"
             print(
                 f"Processing {change_type} change for event '{title}' "
                 f"(ID: {event_id}) on branch '{branch_name}'..."
