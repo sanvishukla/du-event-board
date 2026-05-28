@@ -11,8 +11,10 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -71,6 +73,94 @@ FIELD_MAPPING = {
     "virtual": ["virtual", "online"],
     "in_person": ["in_person", "in person", "in-person"],
 }
+
+
+def run_git_cmd(args: list[str]) -> str:
+    """
+    title: Run a git command and return its stdout.
+    parameters:
+      args:
+        type: list[str]
+    returns:
+      type: str
+    """
+    try:
+        res = subprocess.run(
+            args,
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return res.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Git command failed: {' '.join(args)}", file=sys.stderr)
+        print(f"Exit code: {e.returncode}", file=sys.stderr)
+        print(f"Stdout: {e.stdout}", file=sys.stderr)
+        print(f"Stderr: {e.stderr}", file=sys.stderr)
+        raise e
+
+
+def create_pull_request(
+    repo: str,
+    token: str,
+    branch: str,
+    base: str,
+    title: str,
+    body: str,
+) -> None:
+    """
+    title: Create a Pull Request via GitHub REST API.
+    parameters:
+      repo:
+        type: str
+      token:
+        type: str
+      branch:
+        type: str
+      base:
+        type: str
+      title:
+        type: str
+      body:
+        type: str
+    """
+    url = f"https://api.github.com/repos/{repo}/pulls"
+    data = {
+        "title": title,
+        "head": branch,
+        "base": base,
+        "body": body,
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(data).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json",
+            "User-Agent": "GitHubActions-Sync",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            print(f"Successfully created pull request: {res.get('html_url')}")
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8")
+        if e.code == 422 and "already exists" in err_body:
+            print(
+                f"Pull request already exists for branch {branch}. "
+                "Branch was pushed and updated."
+            )
+            return
+        print(
+            f"Error creating pull request: {e.code} - {e.reason}",
+            file=sys.stderr,
+        )
+        print(err_body, file=sys.stderr)
+        raise e
 
 
 def get_field_value(s_ev: dict[str, Any], key: str) -> str:
@@ -480,6 +570,7 @@ def main() -> None:
 
     # We will build a list of updated events, keeping the order of IDs
     updated_yaml_events: list[dict[str, Any]] = []
+    detected_changes: list[dict[str, Any]] = []
 
     # Track existing IDs to calculate next ID
     max_id = 0
@@ -491,7 +582,6 @@ def main() -> None:
         except ValueError:
             pass
 
-    has_changes = False
     processed_yaml_ids = set()
 
     # Process events from Sheet
@@ -561,20 +651,28 @@ def main() -> None:
 
             if ev_changed:
                 print(f"Edit detected for event: '{s_title}' on {s_date}")
-                has_changes = True
                 mapped_event["id"] = existing_ev.get("id")
                 # Location is part of the key and identical, so coordinates can be preserved
                 mapped_event["lat"] = existing_ev.get("lat", "")
                 mapped_event["lng"] = existing_ev.get("lng", "")
 
                 updated_yaml_events.append(mapped_event)
+                detected_changes.append(
+                    {
+                        "type": "edit",
+                        "id": str(existing_ev.get("id")),
+                        "title": s_title,
+                        "date": s_date,
+                        "location": s_location,
+                        "event_data": mapped_event,
+                    }
+                )
             else:
                 # Keep existing unmodified event
                 updated_yaml_events.append(existing_ev)
         else:
             # Addition detected
             print(f"New event detected: '{s_title}' on {s_date}")
-            has_changes = True
             max_id += 1
             mapped_event["id"] = str(max_id)
 
@@ -583,6 +681,16 @@ def main() -> None:
             mapped_event["lng"] = coords[1] if coords else ""
 
             updated_yaml_events.append(mapped_event)
+            detected_changes.append(
+                {
+                    "type": "add",
+                    "id": str(max_id),
+                    "title": s_title,
+                    "date": s_date,
+                    "location": s_location,
+                    "event_data": mapped_event,
+                }
+            )
 
     # Keep events from YAML that were not matched by any sheet event.
     # They will be synced back to the sheet on merge.
@@ -594,70 +702,235 @@ def main() -> None:
             )
             updated_yaml_events.append(ev)
 
-    if not has_changes:
+    github_token = os.environ.get("GITHUB_TOKEN")
+
+    if not detected_changes:
         print(
-            "No additions, edits, or deletions detected. Workspace is in sync with Google Sheet."
+            "No additions or edits detected. Workspace is in sync with Google Sheet."
         )
         sys.exit(0)
 
-    # Sort events by ID (as integers) to keep order consistent
-    try:
-        updated_yaml_events.sort(key=lambda x: int(x.get("id", 0)))
-    except Exception:
-        pass
-
-    # Load original blocks to preserve formatting and quotes for unmodified events
-    header, blocks = split_yaml_into_blocks(INPUT_FILE)
-
-    yaml_blocks = []
-    for ev in updated_yaml_events:
-        event_id = str(ev.get("id", ""))
-
-        # Check if this event was modified compared to the original parsed events
-        original_ev = next(
-            (x for x in yaml_events if str(x.get("id")) == event_id), None
+    if not github_token:
+        # LOCAL FALLBACK: Apply all changes at once
+        print(
+            "GITHUB_TOKEN not present in environment. "
+            "Applying all changes locally to events.yaml at once..."
         )
 
-        is_modified = True
-        if original_ev is not None:
-            is_modified = False
-            for k in set(list(ev.keys()) + list(original_ev.keys())):
-                if ev.get(k) != original_ev.get(k):
-                    is_modified = True
-                    break
+        # Sort events by ID (as integers) to keep order consistent
+        try:
+            updated_yaml_events.sort(key=lambda x: int(x.get("id", 0)))
+        except Exception:
+            pass
 
-        if not is_modified and event_id in blocks:
-            yaml_blocks.append(blocks[event_id])
-        else:
-            yaml_blocks.append(format_event_as_yaml(ev) + "\n")
+        # Load original blocks to preserve formatting and quotes for unmodified events
+        header, blocks = split_yaml_into_blocks(INPUT_FILE)
 
-    with open(INPUT_FILE, "w", encoding="utf-8") as f:
-        final_header = header
-        if final_header and not final_header.endswith("\n"):
-            final_header += "\n"
-        f.write(final_header + "".join(yaml_blocks))
+        yaml_blocks = []
+        for ev in updated_yaml_events:
+            event_id = str(ev.get("id", ""))
 
-    print("Successfully updated events.yaml")
+            # Check if this event was modified compared to the original parsed events
+            original_ev = next(
+                (x for x in yaml_events if str(x.get("id")) == event_id), None
+            )
 
-    # Re-generate src/data/events.json
-    print("Re-generating events.json...")
-    try:
-        import subprocess
+            is_modified = True
+            if original_ev is not None:
+                is_modified = False
+                for k in set(list(ev.keys()) + list(original_ev.keys())):
+                    if ev.get(k) != original_ev.get(k):
+                        is_modified = True
+                        break
 
-        result = subprocess.run(
+            if not is_modified and event_id in blocks:
+                yaml_blocks.append(blocks[event_id])
+            else:
+                yaml_blocks.append(format_event_as_yaml(ev) + "\n")
+
+        with open(INPUT_FILE, "w", encoding="utf-8") as f:
+            final_header = header
+            if final_header and not final_header.endswith("\n"):
+                final_header += "\n"
+            f.write(final_header + "".join(yaml_blocks))
+
+        print("Successfully updated events.yaml")
+
+        # Re-generate src/data/events.json
+        print("Re-generating events.json...")
+        try:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(PROJECT_ROOT / "scripts" / "generate_events_json.py"),
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(
+                f"Error running generate_events_json.py: {e}", file=sys.stderr
+            )
+            print(e.stderr, file=sys.stderr)
+            sys.exit(1)
+
+    else:
+        # CI Workflow: Process each change in a separate branch/PR
+        print(
+            f"GITHUB_TOKEN detected. Processing {len(detected_changes)} "
+            "changes individually..."
+        )
+
+        repo = os.environ.get("GITHUB_REPOSITORY")
+        if not repo:
+            print(
+                "Error: GITHUB_REPOSITORY environment variable is required in CI.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        base_branch = os.environ.get("GITHUB_REF_NAME") or "main"
+
+        # Configure local git user
+        run_git_cmd(["git", "config", "user.name", "github-actions[bot]"])
+        run_git_cmd(
             [
-                sys.executable,
-                str(PROJECT_ROOT / "scripts" / "generate_events_json.py"),
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
+                "git",
+                "config",
+                "user.email",
+                "github-actions[bot]@users.noreply.github.com",
+            ]
         )
-        print(result.stdout)
-    except subprocess.CalledProcessError as e:
-        print(f"Error running generate_events_json.py: {e}", file=sys.stderr)
-        print(e.stderr, file=sys.stderr)
-        sys.exit(1)
+
+        for change in detected_changes:
+            change_type = change["type"]
+            event_id = change["id"]
+            title = change["title"]
+            date = change["date"]
+            location = change["location"]
+            event_data = change["event_data"]
+
+            branch_name = f"sync/{change_type}-{event_id}"
+            print(
+                f"Processing {change_type} change for event '{title}' "
+                f"(ID: {event_id}) on branch '{branch_name}'..."
+            )
+
+            # 1. Reset to clean base branch
+            run_git_cmd(["git", "checkout", base_branch])
+            run_git_cmd(["git", "reset", "--hard", f"origin/{base_branch}"])
+            run_git_cmd(["git", "clean", "-fd"])
+
+            # 2. Check out new branch
+            run_git_cmd(["git", "checkout", "-B", branch_name])
+
+            # 3. Apply ONLY this change to events.yaml
+            with open(INPUT_FILE, "r", encoding="utf-8") as f:
+                temp_yaml_data = yaml.safe_load(f) or {"events": []}
+            temp_yaml_events = temp_yaml_data.get("events", [])
+
+            if change_type == "add":
+                temp_yaml_events.append(event_data)
+            else:  # edit
+                for i, ev in enumerate(temp_yaml_events):
+                    if str(ev.get("id")) == str(event_id):
+                        temp_yaml_events[i] = event_data
+                        break
+
+            # Sort events by ID (as integers) to keep order consistent
+            try:
+                temp_yaml_events.sort(key=lambda x: int(x.get("id", 0)))
+            except Exception:
+                pass
+
+            # Split clean INPUT_FILE into blocks
+            header, blocks = split_yaml_into_blocks(INPUT_FILE)
+
+            yaml_blocks = []
+            for ev in temp_yaml_events:
+                ev_id = str(ev.get("id", ""))
+                if ev_id == str(event_id):
+                    yaml_blocks.append(format_event_as_yaml(ev) + "\n")
+                elif ev_id in blocks:
+                    yaml_blocks.append(blocks[ev_id])
+                else:
+                    yaml_blocks.append(format_event_as_yaml(ev) + "\n")
+
+            with open(INPUT_FILE, "w", encoding="utf-8") as f:
+                final_header = header
+                if final_header and not final_header.endswith("\n"):
+                    final_header += "\n"
+                f.write(final_header + "".join(yaml_blocks))
+
+            # 4. Re-generate src/data/events.json
+            print("  Re-generating events.json...")
+            try:
+                subprocess.run(
+                    [
+                        sys.executable,
+                        str(
+                            PROJECT_ROOT
+                            / "scripts"
+                            / "generate_events_json.py"
+                        ),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+            except subprocess.CalledProcessError as e:
+                print(
+                    f"  Error running generate_events_json.py: {e}",
+                    file=sys.stderr,
+                )
+                print(e.stderr, file=sys.stderr)
+                continue
+
+            # 5. Commit and push
+            run_git_cmd(
+                ["git", "add", "data/events.yaml", "src/data/events.json"]
+            )
+            commit_msg = f"feat: sync {change_type} event '{title}'"
+            run_git_cmd(["git", "commit", "-m", commit_msg])
+
+            print(f"  Pushing branch '{branch_name}' to origin...")
+            run_git_cmd(["git", "push", "origin", branch_name, "--force"])
+
+            # 6. Raise PR via REST API
+            print("  Creating/updating pull request...")
+            pr_title = f"feat: sync {change_type} event '{title}'"
+            pr_body = (
+                f"This PR was automatically raised to sync the {change_type} to event '{title}' "
+                f"from Google Sheet back to the repository's events database.\n\n"
+                f"### Event Details\n"
+                f"- **Event ID**: `{event_id}`\n"
+                f"- **Title**: `{title}`\n"
+                f"- **Start Date**: `{date}`\n"
+                f"- **Location**: `{location}`\n\n"
+                f"*This pull request was automatically generated by GitHub Actions.*"
+            )
+
+            try:
+                create_pull_request(
+                    repo=repo,
+                    token=github_token,
+                    branch=branch_name,
+                    base=base_branch,
+                    title=pr_title,
+                    body=pr_body,
+                )
+            except Exception as e:
+                print(
+                    f"  Error creating pull request for event '{title}': {e}",
+                    file=sys.stderr,
+                )
+                continue
+
+        # Clean up: reset workspace back to base branch
+        run_git_cmd(["git", "checkout", base_branch])
+        print("Successfully processed all event updates.")
 
 
 if __name__ == "__main__":
