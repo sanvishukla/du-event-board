@@ -194,6 +194,75 @@ def delete_sheet_event(
         print(f"Failed to delete event '{title}': {e}", file=sys.stderr)
 
 
+def update_sheet_event(
+    webapp_url: str,
+    secret_token: str,
+    event: dict[str, Any],
+) -> None:
+    """
+    title: Update an event's ID and times in the Google Sheet via Web App.
+    parameters:
+      webapp_url:
+        type: str
+      secret_token:
+        type: str
+      event:
+        type: dict[str, Any]
+    """
+    parsed_url = urllib.parse.urlparse(webapp_url)
+    query_params = urllib.parse.parse_qs(parsed_url.query)
+    query_params["action"] = ["update_event"]
+    query_params["token"] = [secret_token]
+    new_query = urllib.parse.urlencode(query_params, doseq=True)
+    update_url = urllib.parse.urlunparse(
+        (
+            parsed_url.scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            new_query,
+            parsed_url.fragment,
+        )
+    )
+
+    payload = {
+        "id": event.get("id", ""),
+        "start_time": event.get("time", ""),
+        "end_time": event.get("end_time", ""),
+        "event_name": event.get("title", ""),
+        "start_date": event.get("date", ""),
+        "location": event.get("location", ""),
+    }
+
+    req_data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        update_url,
+        data=req_data,
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "GitHubActions-Sync",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_body = json.loads(response.read().decode())
+            if isinstance(res_body, dict) and "error" in res_body:
+                print(
+                    f"Error updating event '{payload['event_name']}': {res_body['error']}",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"Successfully updated event ID in sheet: '{payload['event_name']}'"
+                )
+    except Exception as e:
+        print(
+            f"Failed to update event '{payload['event_name']}': {e}",
+            file=sys.stderr,
+        )
+
+
 def main() -> None:
     """
     title: Retrieve YAML events, compare with Google Sheet, and sync.
@@ -239,6 +308,7 @@ def main() -> None:
                 sys.exit(1)
 
             existing_keys = set()
+            sheet_events_by_key = {}
             for s_ev in res_body:
                 s_title = str(s_ev.get("event_name", "")).strip().lower()
                 s_date_raw = str(s_ev.get("start_date", "")).strip()
@@ -252,9 +322,9 @@ def main() -> None:
 
                 s_location = str(s_ev.get("location", "")).strip().lower()
                 if s_title and s_date:
-                    existing_keys.add(
-                        (s_title, s_date, s_end_date, s_location)
-                    )
+                    key = (s_title, s_date, s_end_date, s_location)
+                    existing_keys.add(key)
+                    sheet_events_by_key[key] = s_ev
     except Exception as e:
         print(f"Error calling Web App to fetch events: {e}", file=sys.stderr)
         sys.exit(1)
@@ -314,6 +384,7 @@ def main() -> None:
                 )
 
     missing_events = []
+    events_needing_id_update = []
     for event in events:
         title = str(event.get("title", "")).strip().lower()
         date = str(event.get("date", "")).strip()
@@ -324,8 +395,21 @@ def main() -> None:
         key = (title, date, end_date, location)
         if key not in existing_keys:
             missing_events.append(event)
+        else:
+            s_ev = sheet_events_by_key[key]
+            s_id = ""
+            for candidate in ["id", "event_id", "event id"]:
+                if candidate in s_ev:
+                    s_id = str(s_ev[candidate]).strip()
+                    break
+                s_ev_lower = {k.lower().strip(): v for k, v in s_ev.items()}
+                if candidate in s_ev_lower:
+                    s_id = str(s_ev_lower[candidate]).strip()
+                    break
+            if not s_id:
+                events_needing_id_update.append(event)
 
-    if not missing_events and not deleted_events:
+    if not missing_events and not deleted_events and not events_needing_id_update:
         print(
             "All events are already in sync with the Google Sheet. No action needed."
         )
@@ -341,6 +425,15 @@ def main() -> None:
             delete_sheet_event(
                 webapp_url, secret_token, d_title, d_date, d_location
             )
+
+    # Process ID updates
+    if events_needing_id_update:
+        print(
+            f"Found {len(events_needing_id_update)} event(s) in sheet missing their assigned ID. Syncing IDs..."
+        )
+        for event in events_needing_id_update:
+            print(f"Updating ID in sheet for event: '{event.get('title')}'...")
+            update_sheet_event(webapp_url, secret_token, event)
 
     if missing_events:
         print(
