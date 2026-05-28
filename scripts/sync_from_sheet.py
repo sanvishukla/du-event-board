@@ -28,6 +28,7 @@ INPUT_FILE = PROJECT_ROOT / "data" / "events.yaml"
 CACHE_FILE = PROJECT_ROOT / "data" / ".geocode_cache.json"
 
 FIELD_MAPPING = {
+    "id": ["id", "event_id", "event id"],
     "title": ["event_name", "title", "event name"],
     "end_date": ["end_date", "end date"],
     "category": ["event_type", "category", "event type"],
@@ -70,6 +71,8 @@ FIELD_MAPPING = {
     "region": ["region", "geographic region"],
     "language": ["language", "primary language"],
     "date": ["start_date", "date", "start date", "start date and time"],
+    "time": ["start_time", "start time", "time"],
+    "end_time": ["end_time", "end time"],
     "virtual": ["virtual", "online"],
     "in_person": ["in_person", "in person", "in-person"],
 }
@@ -459,6 +462,31 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     return date_val, time_val
 
 
+def normalize_time(t_str: str) -> str:
+    """
+    title: Normalize a time string to HH:MM format.
+    parameters:
+      t_str:
+        type: str
+    returns:
+      type: str
+    """
+    t_str = t_str.strip()
+    if not t_str:
+        return ""
+    match = re.match(r"^(\d{1,2}):(\d{2})(?::\d{2})?$", t_str)
+    if match:
+        return f"{int(match.group(1)):02d}:{int(match.group(2)):02d}"
+
+    for fmt in ["%I:%M %p", "%I:%M%p", "%H:%M:%S", "%H:%M"]:
+        try:
+            dt = datetime.strptime(t_str, fmt)
+            return dt.strftime("%H:%M")
+        except ValueError:
+            continue
+    return t_str
+
+
 def get_cache() -> dict[str, Any]:
     """
     title: Retrieve geocoding cache.
@@ -618,6 +646,7 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
         "url",
         "tags",
         "end_date",
+        "end_time",
         "featured",
         "organization_name",
         "organization_url",
@@ -736,12 +765,16 @@ def main() -> None:
 
     # Index yaml events by (title.lower, date, end_date, location.lower) for lookup
     yaml_index = {}
+    yaml_by_id = {}
     for ev in yaml_events:
         t = str(ev.get("title", "")).strip().lower()
         d = str(ev.get("date", "")).strip()
         ed = str(ev.get("end_date", "")).strip()
         loc = str(ev.get("location", "")).strip().lower()
         yaml_index[(t, d, ed, loc)] = ev
+        eid = str(ev.get("id", "")).strip()
+        if eid:
+            yaml_by_id[eid] = ev
 
     # We will build a list of updated events, keeping the order of IDs
     updated_yaml_events: list[dict[str, Any]] = []
@@ -756,22 +789,29 @@ def main() -> None:
         print("Fetching open sync pull requests from GitHub...")
         open_sync_prs = get_open_sync_prs(repo, github_token)
 
+    # Index open PRs by ID
+    open_prs_by_id = {}
+    for pr_key, pr_info in open_sync_prs.items():
+        pr_id = pr_info.get("id")
+        if pr_id:
+            open_prs_by_id[str(pr_id).strip()] = pr_info
+
     # Track existing IDs to calculate next ID
     max_id = 0
     for ev in yaml_events:
         try:
-            eid = int(ev.get("id", 0))
-            if eid > max_id:
-                max_id = eid
+            int_eid = int(ev.get("id", 0))
+            if int_eid > max_id:
+                max_id = int_eid
         except ValueError:
             pass
 
     # Also factor in IDs of open sync PRs to avoid ID reuse
     for pr_info in open_sync_prs.values():
         try:
-            eid = int(pr_info["id"])
-            if eid > max_id:
-                max_id = eid
+            int_eid = int(pr_info["id"])
+            if int_eid > max_id:
+                max_id = int_eid
         except ValueError:
             pass
 
@@ -805,9 +845,48 @@ def main() -> None:
 
         mapped_event["title"] = s_title
         mapped_event["date"] = s_date
-        mapped_event["time"] = s_time if s_time else "12:00"
         mapped_event["end_date"] = s_end_date
         mapped_event["location"] = s_location
+
+        # Look up existing event in YAML
+        s_id = get_field_value(s_ev, "id").strip()
+        existing_ev = None
+        if s_id and s_id in yaml_by_id:
+            existing_ev = yaml_by_id[s_id]
+        else:
+            if key in yaml_index:
+                existing_ev = yaml_index[key]
+
+        # Time and end_time preservation
+        sheet_time = get_field_value(s_ev, "time").strip()
+        sheet_end_time = get_field_value(s_ev, "end_time").strip()
+        norm_sheet_time = normalize_time(sheet_time) if sheet_time else ""
+        norm_sheet_end_time = (
+            normalize_time(sheet_end_time) if sheet_end_time else ""
+        )
+
+        has_explicit_time_in_date = bool(
+            re.search(r"\d{1,2}:\d{2}", s_date_raw)
+        )
+
+        if norm_sheet_time:
+            final_time = norm_sheet_time
+        elif has_explicit_time_in_date:
+            final_time = s_time
+        elif existing_ev and existing_ev.get("time"):
+            final_time = existing_ev.get("time")
+        else:
+            final_time = ""
+
+        if norm_sheet_end_time:
+            final_end_time = norm_sheet_end_time
+        elif existing_ev and existing_ev.get("end_time"):
+            final_end_time = existing_ev.get("end_time")
+        else:
+            final_end_time = ""
+
+        mapped_event["time"] = final_time if final_time else "12:00"
+        mapped_event["end_time"] = final_end_time
 
         # Normalize tags
         mapped_event["tags"] = clean_tags(get_field_value(s_ev, "tags"))
@@ -831,8 +910,7 @@ def main() -> None:
             mapped_event["paid_or_free"] = ""
 
         # Look up in index
-        if key in yaml_index:
-            existing_ev = yaml_index[key]
+        if existing_ev:
             processed_yaml_ids.add(str(existing_ev.get("id")))
 
             # Check if any field changed
@@ -855,9 +933,14 @@ def main() -> None:
             if ev_changed:
                 print(f"Edit detected for event: '{s_title}' on {s_date}")
                 mapped_event["id"] = existing_ev.get("id")
-                # Location is part of the key and identical, so coordinates can be preserved
-                mapped_event["lat"] = existing_ev.get("lat", "")
-                mapped_event["lng"] = existing_ev.get("lng", "")
+                # If location hasn't changed, coordinates can be preserved
+                if existing_ev.get("location") == mapped_event["location"]:
+                    mapped_event["lat"] = existing_ev.get("lat", "")
+                    mapped_event["lng"] = existing_ev.get("lng", "")
+                else:
+                    coords = geocode_location(str(mapped_event["location"]))
+                    mapped_event["lat"] = coords[0] if coords else ""
+                    mapped_event["lng"] = coords[1] if coords else ""
 
                 updated_yaml_events.append(mapped_event)
                 detected_changes.append(
@@ -876,15 +959,21 @@ def main() -> None:
         else:
             # Addition detected
             # Check if there is an open PR for this new event
-            pr_key = (
-                s_title.lower().strip(),
-                s_date.strip(),
-                s_location.lower().strip(),
-            )
-            if pr_key in open_sync_prs:
-                pr_info = open_sync_prs[pr_key]
-                event_id = pr_info["id"]
-                branch_name = pr_info["branch"]
+            matched_pr = None
+            if s_id and s_id in open_prs_by_id:
+                matched_pr = open_prs_by_id[s_id]
+            else:
+                pr_key = (
+                    s_title.lower().strip(),
+                    s_date.strip(),
+                    s_location.lower().strip(),
+                )
+                if pr_key in open_sync_prs:
+                    matched_pr = open_sync_prs[pr_key]
+
+            if matched_pr:
+                event_id = matched_pr["id"]
+                branch_name = matched_pr["branch"]
                 mapped_event["id"] = event_id
 
                 # Fetch the branch from origin to compare details
@@ -909,7 +998,36 @@ def main() -> None:
                         ),
                         None,
                     )
+                    if not existing_pr_ev:
+                        # Fallback key matching on branch
+                        existing_pr_ev = next(
+                            (
+                                x
+                                for x in branch_events
+                                if str(x.get("title", "")).strip().lower()
+                                == s_title.lower()
+                                and str(x.get("date", "")).strip() == s_date
+                                and str(x.get("location", "")).strip().lower()
+                                == s_location.lower()
+                            ),
+                            None,
+                        )
+
                     if existing_pr_ev:
+                        # If time was empty/fallback in sheet, preserve from branch
+                        if (
+                            not norm_sheet_time
+                            and not has_explicit_time_in_date
+                            and existing_pr_ev.get("time")
+                        ):
+                            mapped_event["time"] = existing_pr_ev.get("time")
+                        if not norm_sheet_end_time and existing_pr_ev.get(
+                            "end_time"
+                        ):
+                            mapped_event["end_time"] = existing_pr_ev.get(
+                                "end_time"
+                            )
+
                         # Compare fields
                         is_changed = False
                         for k, val in mapped_event.items():
@@ -935,7 +1053,11 @@ def main() -> None:
                     print(
                         f"Edit detected for pending addition: '{s_title}' on {s_date}"
                     )
-                    if existing_pr_ev:
+                    if (
+                        existing_pr_ev
+                        and existing_pr_ev.get("location")
+                        == mapped_event["location"]
+                    ):
                         mapped_event["lat"] = existing_pr_ev.get("lat", "")
                         mapped_event["lng"] = existing_pr_ev.get("lng", "")
                     else:

@@ -369,6 +369,9 @@ def main() -> None:
             tags_val = ", ".join(tags_val)
 
         payload = {
+            "id": event.get("id", ""),
+            "start_time": event.get("time", ""),
+            "end_time": event.get("end_time", ""),
             "event_name": event.get("title", ""),
             "start_date": event.get("date", ""),
             "end_date": event.get("end_date", ""),
