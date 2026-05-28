@@ -306,7 +306,7 @@ def get_open_sync_prs(
             for pr in prs:
                 body = pr.get("body") or ""
                 branch = pr.get("head", {}).get("ref") or ""
-                if not branch.startswith("sync/"):
+                if not (branch.startswith("sync/") or branch.startswith("event-submission-")):
                     continue
 
                 # Parse event details using regex
@@ -316,6 +316,10 @@ def get_open_sync_prs(
                 title_match = re.search(
                     r"-\s+\*\*Title\*\*:\s*`([^`]+)`", body
                 )
+                if not title_match:
+                    title_match = re.search(
+                        r"-\s+\*\*Event Name\*\*:\s*`([^`]+)`", body
+                    )
                 date_match = re.search(
                     r"-\s+\*\*Start Date\*\*:\s*`([^`]+)`", body
                 )
@@ -324,7 +328,36 @@ def get_open_sync_prs(
                 )
 
                 if title_match and date_match:
-                    e_id = id_match.group(1) if id_match else ""
+                    e_id = ""
+                    if id_match:
+                        e_id = id_match.group(1).strip()
+                    else:
+                        # Fetch the branch from origin to inspect its events.yaml directly
+                        try:
+                            subprocess.run(
+                                ["git", "fetch", "origin", branch],
+                                check=True,
+                                capture_output=True,
+                            )
+                            branch_yaml = subprocess.run(
+                                [
+                                    "git",
+                                    "show",
+                                    f"origin/{branch}:data/events.yaml",
+                                ],
+                                check=True,
+                                capture_output=True,
+                            ).stdout.decode("utf-8")
+                            branch_data = yaml.safe_load(branch_yaml) or {"events": []}
+                            branch_events = branch_data.get("events", [])
+                            if branch_events:
+                                e_id = str(branch_events[-1].get("id", "")).strip()
+                        except Exception as err:
+                            print(
+                                f"Warning: Failed to fetch ID from branch {branch}: {err}",
+                                file=sys.stderr,
+                            )
+
                     e_title = title_match.group(1).strip()
                     e_date = date_match.group(1).strip()
                     e_loc = loc_match.group(1).strip() if loc_match else ""
