@@ -746,6 +746,14 @@ def main() -> None:
 
     print(f"Successfully loaded {len(sheet_events)} events from Google Sheet.")
 
+    try:
+        debug_file = PROJECT_ROOT / "data" / "debug_sheet_events.json"
+        with open(debug_file, "w", encoding="utf-8") as f:
+            json.dump(sheet_events, f, indent=2)
+        print("Wrote debug sheet events to data/debug_sheet_events.json")
+    except Exception as e:
+        print(f"Warning: Failed to write debug sheet events: {e}")
+
     if not INPUT_FILE.exists():
         print(f"Error: {INPUT_FILE} not found.", file=sys.stderr)
         sys.exit(1)
@@ -1358,9 +1366,21 @@ def main() -> None:
                 continue
 
             # 5. Commit and push
-            run_git_cmd(
-                ["git", "add", "data/events.yaml", "src/data/events.json"]
-            )
+            debug_file_path = PROJECT_ROOT / "data" / "debug_sheet_events.json"
+            if debug_file_path.exists():
+                run_git_cmd(
+                    [
+                        "git",
+                        "add",
+                        "data/events.yaml",
+                        "src/data/events.json",
+                        "data/debug_sheet_events.json",
+                    ]
+                )
+            else:
+                run_git_cmd(
+                    ["git", "add", "data/events.yaml", "src/data/events.json"]
+                )
             change_desc = (
                 "addition of"
                 if change_type == "add"
