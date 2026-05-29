@@ -142,5 +142,33 @@
       "community",
       "innovation"
     ]
+  },
+  {
+    "id": "9",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "title": "Test",
+    "description": "lkkn",
+    "date": "2026-05-27",
+    "time": "10:00",
+    "location": "delhi",
+    "region": "india",
+    "category": "jhkn",
+    "url": "www.sample.com",
+    "tags": [
+      "lj/"
+    ],
+    "end_date": "2026-06-05",
+    "featured": true,
+    "organization_name": "k.n",
+    "organization_url": "www.sample.com",
+    "url_linkedin": "www.sample.com",
+    "url_twitter": "www.sample.com",
+    "url_other": "www.sample.com",
+    "paid_or_free": "paid",
+    "image_url": "www.sample.com",
+    "in_person": true,
+    "virtual": false,
+    "language": "jknkn"
   }
 ]
