@@ -63,22 +63,6 @@ events:
       - machine-learning
       - python
 
-  - id: "5"
-    lat: -19.9227318
-    lng: -43.9450948
-    title: "DevOps Meetup - Belo Horizonte"
-    description: "Monthly DevOps meetup discussing CI/CD pipelines, container orchestration, and infrastructure as code."
-    date: "2026-04-10"
-    time: "19:00"
-    location: "MG Tech Center, Av. Afonso Pena 1500, Belo Horizonte"
-    region: "Belo Horizonte"
-    category: "Technology"
-    url: "https://example.com/devops-bh"
-    tags:
-      - devops
-      - docker
-      - kubernetes
-
   - id: "6"
     lat: -30.0324999
     lng: -51.2303767
