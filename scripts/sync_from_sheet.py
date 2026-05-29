@@ -1028,6 +1028,25 @@ def main() -> None:
                 )
                 if pr_key in open_sync_prs:
                     matched_pr = open_sync_prs[pr_key]
+                else:
+                    # Fallback: match by date + location only.
+                    # This handles the case where the event was renamed in the
+                    # sheet (title changed) but the PR was opened with the old
+                    # title. If exactly one open PR shares the same date and
+                    # location, treat it as the same event.
+                    date_loc_matches = [
+                        pr_info
+                        for (pt, pd, pl), pr_info in open_sync_prs.items()
+                        if pd == s_date.strip()
+                        and pl == s_location.lower().strip()
+                    ]
+                    if len(date_loc_matches) == 1:
+                        matched_pr = date_loc_matches[0]
+                        print(
+                            f"  Matched open PR #{matched_pr['number']} to "
+                            f"renamed event '{s_title}' via date+location "
+                            f"(old title: '{matched_pr['title']}')"
+                        )
 
             if matched_pr:
                 event_id = matched_pr["id"]
