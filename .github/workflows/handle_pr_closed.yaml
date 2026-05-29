@@ -6,8 +6,10 @@ on:
 
 jobs:
   cleanup_submission:
-    # Only run if closed without merging AND it was a form submission PR
-    if: github.event.pull_request.merged == false && startsWith(github.event.pull_request.head.ref, 'event-submission-')
+    # Run when a PR is closed (merged OR rejected) if it was a form submission or sync/add branch
+    if: |
+      startsWith(github.event.pull_request.head.ref, 'event-submission-') ||
+      startsWith(github.event.pull_request.head.ref, 'sync/add-')
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
