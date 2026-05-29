@@ -142,30 +142,5 @@
       "community",
       "innovation"
     ]
-  },
-  {
-    "id": "9",
-    "lat": 28.6138954,
-    "lng": 77.2090057,
-    "title": "test1",
-    "description": "",
-    "date": "2026-05-30",
-    "time": "10:10",
-    "location": "delhi",
-    "region": "india",
-    "category": "fsdgd",
-    "url": "www.sample.com",
-    "tags": [],
-    "end_date": "2026-05-30",
-    "featured": true,
-    "organization_url": "www.sample.com",
-    "url_linkedin": "www.sample.com",
-    "url_twitter": "www.sample.com",
-    "url_other": "www.sample.com",
-    "paid_or_free": "free",
-    "image_url": "www.sample.com",
-    "in_person": true,
-    "virtual": true,
-    "language": "english"
   }
 ]
