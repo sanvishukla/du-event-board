@@ -79,22 +79,6 @@ events:
       - docker
       - kubernetes
 
-  - id: "6"
-    lat: -30.0324999
-    lng: -51.2303767
-    title: "UX Design Workshop - Porto Alegre"
-    description: "Learn user experience design principles and create wireframes using Figma. Perfect for beginners and developers wanting to improve their design skills."
-    date: "2026-04-12"
-    time: "10:00"
-    location: "Design Lab POA, Rua Mostardeiro 120, Porto Alegre"
-    region: "Porto Alegre"
-    category: "Design"
-    url: "https://example.com/ux-workshop-poa"
-    tags:
-      - design
-      - ux
-      - figma
-
   - id: "7"
     lat: -23.5506507
     lng: -46.6333824
