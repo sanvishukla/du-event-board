@@ -22,7 +22,6 @@ REQUIRED_FIELDS = [
     "id",
     "title",
     "date",
-    "time",
 ]
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
