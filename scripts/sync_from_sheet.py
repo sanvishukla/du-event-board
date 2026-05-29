@@ -1191,9 +1191,6 @@ def main() -> None:
     # Auto-close open PRs for pending additions that were deleted from the sheet
     if github_token and repo:
         sheet_keys = set()
-        # Also track which PR IDs are still referenced by sheet events so we
-        # don't close PRs for events that were merely renamed (not deleted).
-        sheet_pr_ids = set()
         for s_ev in sheet_events:
             s_title = get_field_value(s_ev, "title")
             s_date_raw = get_field_value(s_ev, "date")
@@ -1208,17 +1205,19 @@ def main() -> None:
                     s_location.lower().strip(),
                 )
             )
-            # If the sheet row has an ID that maps to an open PR, mark it alive
-            s_id_val = get_field_value(s_ev, "id").strip()
-            if s_id_val.endswith(".0"):
-                s_id_val = s_id_val[:-2]
-            if s_id_val and s_id_val in open_prs_by_id:
-                sheet_pr_ids.add(s_id_val)
+
+        # Build a set of event IDs that are still alive in updated_yaml_events.
+        # This covers renamed events: their ID persists in updated_yaml_events
+        # even though their (title, date, location) key changed.
+        live_yaml_ids = {
+            str(ev.get("id", "")).strip() for ev in updated_yaml_events
+        }
 
         for pr_key, pr_info in open_sync_prs.items():
             pr_id = str(pr_info.get("id", "")).strip()
-            # Skip closing if the event was renamed (ID still present in sheet)
-            if pr_id and pr_id in sheet_pr_ids:
+            # If the PR's event ID is still alive in the sheet-derived YAML,
+            # the event still exists (possibly renamed) — don't close the PR.
+            if pr_id and pr_id in live_yaml_ids:
                 continue
             if pr_key not in sheet_keys:
                 pr_num = pr_info["number"]
