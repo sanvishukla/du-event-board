@@ -280,7 +280,8 @@ def get_open_sync_prs(
     repo: str, token: str
 ) -> dict[tuple[str, str, str], dict[str, Any]]:
     """
-    title: Fetch open sync PRs and parse their event details from PR descriptions.
+    title: >-
+      Fetch open sync PRs and parse their event details from PR descriptions.
     parameters:
       repo:
         type: str
@@ -306,7 +307,10 @@ def get_open_sync_prs(
             for pr in prs:
                 body = pr.get("body") or ""
                 branch = pr.get("head", {}).get("ref") or ""
-                if not (branch.startswith("sync/") or branch.startswith("event-submission-")):
+                if not (
+                    branch.startswith("sync/")
+                    or branch.startswith("event-submission-")
+                ):
                     continue
 
                 # Parse event details using regex
@@ -348,10 +352,14 @@ def get_open_sync_prs(
                                 check=True,
                                 capture_output=True,
                             ).stdout.decode("utf-8")
-                            branch_data = yaml.safe_load(branch_yaml) or {"events": []}
+                            branch_data = yaml.safe_load(branch_yaml) or {
+                                "events": []
+                            }
                             branch_events = branch_data.get("events", [])
                             if branch_events:
-                                e_id = str(branch_events[-1].get("id", "")).strip()
+                                e_id = str(
+                                    branch_events[-1].get("id", "")
+                                ).strip()
                         except Exception as err:
                             print(
                                 f"Warning: Failed to fetch ID from branch {branch}: {err}",
@@ -1126,6 +1134,9 @@ def main() -> None:
                             "date": s_date,
                             "location": s_location,
                             "event_data": mapped_event,
+                            # Reuse the existing PR branch so we don't open a new PR
+                            "existing_branch": branch_name,
+                            "existing_pr_num": matched_pr["number"],
                         }
                     )
                 else:
@@ -1180,6 +1191,9 @@ def main() -> None:
     # Auto-close open PRs for pending additions that were deleted from the sheet
     if github_token and repo:
         sheet_keys = set()
+        # Also track which PR IDs are still referenced by sheet events so we
+        # don't close PRs for events that were merely renamed (not deleted).
+        sheet_pr_ids = set()
         for s_ev in sheet_events:
             s_title = get_field_value(s_ev, "title")
             s_date_raw = get_field_value(s_ev, "date")
@@ -1194,8 +1208,18 @@ def main() -> None:
                     s_location.lower().strip(),
                 )
             )
+            # If the sheet row has an ID that maps to an open PR, mark it alive
+            s_id_val = get_field_value(s_ev, "id").strip()
+            if s_id_val.endswith(".0"):
+                s_id_val = s_id_val[:-2]
+            if s_id_val and s_id_val in open_prs_by_id:
+                sheet_pr_ids.add(s_id_val)
 
         for pr_key, pr_info in open_sync_prs.items():
+            pr_id = str(pr_info.get("id", "")).strip()
+            # Skip closing if the event was renamed (ID still present in sheet)
+            if pr_id and pr_id in sheet_pr_ids:
+                continue
             if pr_key not in sheet_keys:
                 pr_num = pr_info["number"]
                 branch_name = pr_info["branch"]
@@ -1324,19 +1348,31 @@ def main() -> None:
             date = change["date"]
             location = change["location"]
             event_data = change["event_data"]
+            # If this edit targets an existing pending PR, reuse its branch
+            existing_branch = change.get("existing_branch")
+            existing_pr_num = change.get("existing_pr_num")
 
-            branch_name = f"sync/{change_type}-{event_id}-{int(time.time())}"
-            print(
-                f"Processing {change_type} change for event '{title}' "
-                f"(ID: {event_id}) on branch '{branch_name}'..."
-            )
+            if existing_branch:
+                branch_name = existing_branch
+                print(
+                    f"Updating existing branch '{branch_name}' for event '{title}' "
+                    f"(ID: {event_id})..."
+                )
+            else:
+                branch_name = (
+                    f"sync/{change_type}-{event_id}-{int(time.time())}"
+                )
+                print(
+                    f"Processing {change_type} change for event '{title}' "
+                    f"(ID: {event_id}) on branch '{branch_name}'..."
+                )
 
             # 1. Reset to clean base branch
             run_git_cmd(["git", "checkout", base_branch])
             run_git_cmd(["git", "reset", "--hard", f"origin/{base_branch}"])
             run_git_cmd(["git", "clean", "-fd"])
 
-            # 2. Check out new branch
+            # 2. Check out branch (new or existing)
             run_git_cmd(["git", "checkout", "-B", branch_name])
 
             # 3. Apply ONLY this change to events.yaml
@@ -1434,7 +1470,7 @@ def main() -> None:
             print(f"  Pushing branch '{branch_name}' to origin...")
             run_git_cmd(["git", "push", "origin", branch_name, "--force"])
 
-            # 6. Raise PR via REST API
+            # 6. Raise or update PR via REST API
             print("  Creating/updating pull request...")
             pr_title = f"feat: sync {change_desc} event '{title}'"
             pr_body = (
@@ -1449,17 +1485,27 @@ def main() -> None:
             )
 
             try:
-                create_pull_request(
-                    repo=repo,
-                    token=github_token,
-                    branch=branch_name,
-                    base=base_branch,
-                    title=pr_title,
-                    body=pr_body,
-                )
+                if existing_pr_num:
+                    # Reuse existing PR — just update its title and body
+                    update_pull_request(
+                        repo=repo,
+                        token=github_token,
+                        pr_num=existing_pr_num,
+                        title=pr_title,
+                        body=pr_body,
+                    )
+                else:
+                    create_pull_request(
+                        repo=repo,
+                        token=github_token,
+                        branch=branch_name,
+                        base=base_branch,
+                        title=pr_title,
+                        body=pr_body,
+                    )
             except Exception as e:
                 print(
-                    f"  Error creating pull request for event '{title}': {e}",
+                    f"  Error creating/updating pull request for event '{title}': {e}",
                     file=sys.stderr,
                 )
                 continue
