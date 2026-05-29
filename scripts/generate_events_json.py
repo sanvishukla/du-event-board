@@ -77,7 +77,7 @@ def geocode_location(location_str: str) -> Union[tuple[float, float], None]:
       location_str:
         type: str
     returns:
-      type: tuple[float, float] | None
+      type: Union[tuple[float, float], None]
     """
     if not location_str or location_str.lower() == "online":
         return None
@@ -142,8 +142,8 @@ def validate_event(event: dict[str, Any], index: int) -> list[str]:
                 f"Event #{index}: Invalid date format '{event['date']}' (expected YYYY-MM-DD)"
             )
 
-    # Validate time format
-    if "time" in event:
+    # Validate time format (only if a non-empty time is provided)
+    if "time" in event and event["time"]:
         try:
             # Handle time objects if PyYAML parsed them
             if not isinstance(event["time"], str):

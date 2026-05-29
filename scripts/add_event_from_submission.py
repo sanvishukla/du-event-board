@@ -137,9 +137,7 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     for fmt in formats:
         try:
             dt = datetime.strptime(dt_str, fmt)
-            time_val = (
-                dt.strftime("%H:%M") if "H" in fmt or "M" in fmt else "12:00"
-            )
+            time_val = dt.strftime("%H:%M") if "H" in fmt or "M" in fmt else ""
             return dt.strftime("%Y-%m-%d"), time_val
         except ValueError:
             continue
@@ -151,7 +149,7 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     time_match = re.search(r"(\d{1,2}:\d{2}(?::\d{2})?)", dt_str)
 
     date_val = ""
-    time_val = "12:00"
+    time_val = ""
 
     if date_match:
         raw_date = date_match.group(0).replace("/", "-")
@@ -317,7 +315,7 @@ def main() -> None:
 
     date_val, time_val = parse_date_time(str(event_data.get("date", "")))
     event_data["date"] = date_val
-    event_data["time"] = time_val if time_val else "12:00"
+    event_data["time"] = time_val
 
     end_date_val, _ = parse_date_time(str(event_data.get("end_date", "")))
     event_data["end_date"] = end_date_val
