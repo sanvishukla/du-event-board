@@ -21,7 +21,6 @@ import yaml  # type: ignore
 REQUIRED_FIELDS = [
     "id",
     "title",
-    "description",
     "date",
     "location",
     "region",
@@ -144,7 +143,7 @@ def validate_event(event: dict[str, Any], index: int) -> list[str]:
                 f"Event #{index}: Invalid date format '{event['date']}' (expected YYYY-MM-DD)"
             )
 
-    # Validate time format
+    # Validate time format (only if a non-empty time is provided)
     if "time" in event and event["time"]:
         try:
             # Handle time objects if PyYAML parsed them
