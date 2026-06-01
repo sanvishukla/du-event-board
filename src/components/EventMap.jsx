@@ -167,8 +167,48 @@ export default function EventMap({ events, onSelectEvent }) {
                     }}
                   >
                     <Calendar size={14} />
-                    {event.date}
-                    {event.time ? ` • ${event.time}` : ""}
+                    {(() => {
+                      const formatDate = (dateStr) => {
+                        if (!dateStr) return "";
+                        try {
+                          return new Date(
+                            dateStr + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          });
+                        } catch (e) {
+                          return dateStr;
+                        }
+                      };
+                      const formattedDate = formatDate(event.date);
+                      const formattedEndDate = formatDate(event.end_date);
+
+                      const hasEndDate =
+                        event.end_date && event.end_date !== event.date;
+                      const hasTimes = event.start_time && event.end_time;
+
+                      let dateDisplay = formattedDate;
+                      let displayTime = event.time;
+
+                      if (hasEndDate) {
+                        if (hasTimes) {
+                          return `${formattedDate}, ${event.start_time} – ${formattedEndDate}, ${event.end_time}`;
+                        } else {
+                          return `${formattedDate} – ${formattedEndDate}`;
+                        }
+                      } else {
+                        if (hasTimes) {
+                          displayTime = `${event.start_time} – ${event.end_time}`;
+                        } else {
+                          displayTime = event.time || event.start_time;
+                        }
+                      }
+                      return displayTime
+                        ? `${dateDisplay} • ${displayTime}`
+                        : dateDisplay;
+                    })()}
                   </div>
 
                   <p

@@ -201,8 +201,9 @@ export default function App() {
     })();
 
     return baseEvents.filter((event) => {
-      const eventDate = parseISODate(event.date);
-      if (!eventDate) return false;
+      const startDate = parseISODate(event.date);
+      const endDate = parseISODate(event.end_date) || startDate;
+      if (!startDate) return false;
 
       // Region filter
       const matchesRegion = !selectedRegion || event.region === selectedRegion;
@@ -216,18 +217,21 @@ export default function App() {
 
       switch (dateFilterType) {
         case "upcoming":
-          matchesDate = eventDate >= today;
+          matchesDate = endDate >= today;
           break;
         case "thisWeek":
-          matchesDate = eventDate >= weekStart && eventDate <= weekEnd;
+          matchesDate = startDate <= weekEnd && endDate >= weekStart;
           break;
         case "thisMonth":
-          matchesDate = eventDate >= monthStart && eventDate <= monthEnd;
+          matchesDate = startDate <= monthEnd && endDate >= monthStart;
           break;
         case "customDate":
-          matchesDate =
-            !selectedCustomDate ||
-            eventDate.getTime() === selectedCustomDate.getTime();
+          if (!selectedCustomDate) {
+            matchesDate = true;
+          } else {
+            matchesDate =
+              startDate <= selectedCustomDate && endDate >= selectedCustomDate;
+          }
           break;
         case "customRange":
           if (
@@ -239,11 +243,11 @@ export default function App() {
             break;
           }
 
-          if (selectedRangeStart && eventDate < selectedRangeStart) {
+          if (selectedRangeStart && endDate < selectedRangeStart) {
             matchesDate = false;
           }
 
-          if (selectedRangeEnd && eventDate > selectedRangeEnd) {
+          if (selectedRangeEnd && startDate > selectedRangeEnd) {
             matchesDate = false;
           }
           break;

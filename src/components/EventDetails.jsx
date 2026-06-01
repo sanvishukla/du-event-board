@@ -53,6 +53,8 @@ export default function EventDetails({ event, onBack }) {
   const language = event.language;
   const lat = event.lat;
   const lng = event.lng;
+  const startTime = event.start_time;
+  const endTime = event.end_time;
 
   // Format dates
   const formatDate = (dateStr) => {
@@ -74,6 +76,24 @@ export default function EventDetails({ event, onBack }) {
     endDate && endDate !== date
       ? `${formattedDate} – ${formattedEndDate}`
       : formattedDate;
+
+  // Format time display
+  let timeDisplay = "";
+  if (startTime && endTime) {
+    if (endDate && endDate !== date) {
+      // Multi-day event with start/end times
+      timeDisplay = `Starts: ${formattedDate} at ${startTime}\nEnds: ${formattedEndDate} at ${endTime}`;
+    } else {
+      // Single day event with start/end times
+      timeDisplay = `${startTime} – ${endTime}`;
+    }
+  } else if (startTime) {
+    timeDisplay = `Starts: ${startTime}`;
+  } else if (endTime) {
+    timeDisplay = `Ends: ${endTime}`;
+  } else if (time) {
+    timeDisplay = time;
+  }
 
   // Determine coordinates availability
   const hasCoords = lat !== undefined && lng !== undefined;
@@ -193,12 +213,16 @@ export default function EventDetails({ event, onBack }) {
               </div>
             </div>
 
-            {time && (
+            {timeDisplay && (
               <div className="event-details__sidebar-item">
                 <Clock size={18} className="event-details__sidebar-icon" />
                 <div>
                   <p className="event-details__sidebar-label">Time</p>
-                  <p className="event-details__sidebar-value">{time}</p>
+                  {timeDisplay.split("\n").map((line, idx) => (
+                    <p key={idx} className="event-details__sidebar-value">
+                      {line}
+                    </p>
+                  ))}
                 </div>
               </div>
             )}

@@ -6,14 +6,44 @@ export default function EventCard({
   onSelectEvent,
 }) {
   const status = getEventStatus(event.date);
-  const formattedDate = new Date(event.date + "T00:00:00").toLocaleDateString(
-    "en-US",
-    {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    },
-  );
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  const formattedDate = formatDate(event.date);
+  const formattedEndDate = formatDate(event.end_date);
+
+  const hasEndDate = event.end_date && event.end_date !== event.date;
+  const hasTimes = event.start_time && event.end_time;
+
+  let dateDisplay = formattedDate;
+
+  if (hasEndDate) {
+    if (hasTimes) {
+      dateDisplay = `${formattedDate}, ${event.start_time} – ${formattedEndDate}, ${event.end_time}`;
+    } else {
+      dateDisplay = `${formattedDate} – ${formattedEndDate}`;
+    }
+  } else {
+    // Single day event
+    const timeVal =
+      event.time ||
+      (event.start_time && event.end_time
+        ? `${event.start_time} – ${event.end_time}`
+        : event.start_time);
+    if (timeVal) {
+      dateDisplay = `${formattedDate} • ${timeVal}`;
+    }
+  }
 
   const statusMap = {
     live: "status-badge--live",
@@ -46,7 +76,7 @@ export default function EventCard({
               {status === "live" ? "Live" : status}
             </div>
           )}
-          <span className="event-list-row__date">{formattedDate}</span>
+          <span className="event-list-row__date">{dateDisplay}</span>
         </div>
       </article>
     );
@@ -85,16 +115,9 @@ export default function EventCard({
           <span className="event-card__meta-icon" aria-hidden="true">
             📅
           </span>
-          <span>{formattedDate}</span>
+          <span>{dateDisplay}</span>
         </div>
-        {event.time && (
-          <div className="event-card__meta-item">
-            <span className="event-card__meta-icon" aria-hidden="true">
-              🕐
-            </span>
-            <span>{event.time}</span>
-          </div>
-        )}
+
         <div className="event-card__meta-item">
           <span className="event-card__meta-icon" aria-hidden="true">
             📍
