@@ -142,5 +142,29 @@
       "community",
       "innovation"
     ]
+  },
+  {
+    "id": "9",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "title": "oljljk",
+    "description": "kjnkjbl",
+    "date": "2026-06-07",
+    "location": "delhi",
+    "region": "india",
+    "category": "Webinar",
+    "tags": [
+      "python",
+      "ml"
+    ],
+    "featured": 1,
+    "organization_name": "dbkjcb",
+    "paid_or_free": "paid",
+    "url": "www.sample.com",
+    "in_person": "Unknown",
+    "virtual": "Unknown",
+    "language": [
+      "englsih"
+    ]
   }
 ]
