@@ -74,12 +74,17 @@ export default function EventCard({ event, viewMode = "grid" }) {
           </span>
           <span>{formattedDate}</span>
         </div>
-        <div className="event-card__meta-item">
-          <span className="event-card__meta-icon" aria-hidden="true">
-            🕐
-          </span>
-          <span>{event.time}</span>
-        </div>
+        {(event.time || event.start_time || event.end_time) && (
+          <div className="event-card__meta-item">
+            <span className="event-card__meta-icon" aria-hidden="true">
+              🕐
+            </span>
+            <span>
+              {event.time ||
+                [event.start_time, event.end_time].filter(Boolean).join(" - ")}
+            </span>
+          </div>
+        )}
         <div className="event-card__meta-item">
           <span className="event-card__meta-icon" aria-hidden="true">
             📍
