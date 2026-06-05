@@ -78,7 +78,7 @@ function MapController({ events }) {
   return null;
 }
 
-export default function EventMap({ events }) {
+export default function EventMap({ events, onSelectEvent }) {
   // Filter events with valid coords
   const mapEvents = events.filter((e) => e.lat && e.lng);
 
@@ -167,7 +167,48 @@ export default function EventMap({ events }) {
                     }}
                   >
                     <Calendar size={14} />
-                    {event.date} • {event.time}
+                    {(() => {
+                      const formatDate = (dateStr) => {
+                        if (!dateStr) return "";
+                        try {
+                          return new Date(
+                            dateStr + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          });
+                        } catch (e) {
+                          return dateStr;
+                        }
+                      };
+                      const formattedDate = formatDate(event.date);
+                      const formattedEndDate = formatDate(event.end_date);
+
+                      const hasEndDate =
+                        event.end_date && event.end_date !== event.date;
+                      const hasTimes = event.start_time && event.end_time;
+
+                      let dateDisplay = formattedDate;
+                      let displayTime = event.time;
+
+                      if (hasEndDate) {
+                        if (hasTimes) {
+                          return `${formattedDate}, ${event.start_time} – ${formattedEndDate}, ${event.end_time}`;
+                        } else {
+                          return `${formattedDate} – ${formattedEndDate}`;
+                        }
+                      } else {
+                        if (hasTimes) {
+                          displayTime = `${event.start_time} – ${event.end_time}`;
+                        } else {
+                          displayTime = event.time || event.start_time;
+                        }
+                      }
+                      return displayTime
+                        ? `${dateDisplay} • ${displayTime}`
+                        : dateDisplay;
+                    })()}
                   </div>
 
                   <p
@@ -186,9 +227,11 @@ export default function EventMap({ events }) {
                   </p>
 
                   <a
-                    href={event.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`?page=event-details&eventId=${event.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSelectEvent(event.id);
+                    }}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -203,6 +246,7 @@ export default function EventMap({ events }) {
                       transition: "all 0.2s",
                       width: "100%",
                       justifyContent: "center",
+                      cursor: "pointer",
                     }}
                   >
                     View Details <ExternalLink size={14} />

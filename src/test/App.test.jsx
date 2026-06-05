@@ -178,7 +178,22 @@ describe("App", () => {
       screen.queryByText("Rust Programming Intro - São Paulo"),
     ).not.toBeInTheDocument();
   });
+  it("matches multi-day events on any day in their range for customDate filter", () => {
+    // Find a multi-day event dynamically
+    const testEvent = events.find((e) => e.end_date && e.end_date !== e.date);
+    if (!testEvent) return;
 
+    render(<App />);
+    setDateFilter("customDate");
+
+    const customDateInput = screen.getByLabelText("Custom date");
+    fireEvent.change(customDateInput, {
+      target: { value: testEvent.end_date },
+    });
+
+    const title = testEvent.title || testEvent.event_name;
+    expect(screen.getByText(title)).toBeInTheDocument();
+  });
   it("filters events by customRange", () => {
     render(<App />);
     setDateFilter("customRange");
@@ -220,5 +235,78 @@ describe("App", () => {
     });
 
     expect(screen.getByText("No events found")).toBeInTheDocument();
+  });
+
+  it("navigates to event details page when clicking View Details and back to main list when clicking Back to Events", () => {
+    render(<App />);
+
+    // Click "View Details" on the first event card
+    const viewDetailsButtons = screen.getAllByText("View Details");
+    fireEvent.click(viewDetailsButtons[0]);
+
+    // Should render the event details page structure
+    expect(screen.getByText("About this Event")).toBeInTheDocument();
+
+    // Click back button
+    const backButton = screen.getByRole("button", { name: /Back to Events/i });
+    fireEvent.click(backButton);
+
+    // Should return to the main board page
+    expect(screen.getByText("DU Event Board")).toBeInTheDocument();
+    expect(screen.queryByText("About this Event")).not.toBeInTheDocument();
+  });
+
+  it("displays correct start and end times for multi-day events on details page", () => {
+    // Find a multi-day event with start_time and end_time dynamically
+    const testEvent = events.find(
+      (e) => e.end_date && e.end_date !== e.date && e.start_time && e.end_time,
+    );
+
+    if (!testEvent) return;
+
+    render(<App />);
+
+    const title = testEvent.title || testEvent.event_name;
+    const titleLink = screen.getByText(title);
+    fireEvent.click(titleLink);
+
+    expect(screen.getByText("About this Event")).toBeInTheDocument();
+
+    const formatDate = (dateStr) => {
+      return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    };
+
+    const expectedStartStr = `Starts: ${formatDate(testEvent.date)} at ${testEvent.start_time}`;
+    const expectedEndStr = `Ends: ${formatDate(testEvent.end_date)} at ${testEvent.end_time}`;
+
+    expect(screen.getByText(expectedStartStr)).toBeInTheDocument();
+    expect(screen.getByText(expectedEndStr)).toBeInTheDocument();
+  });
+
+  it("displays computed start and end times along with start and end dates on the main grid/list event card", () => {
+    // Find a multi-day event with start_time and end_time dynamically
+    const testEvent = events.find(
+      (e) => e.end_date && e.end_date !== e.date && e.start_time && e.end_time,
+    );
+
+    if (!testEvent) return;
+
+    render(<App />);
+
+    const formatDate = (dateStr) => {
+      return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    };
+
+    const expectedString = `${formatDate(testEvent.date)}, ${testEvent.start_time} – ${formatDate(testEvent.end_date)}, ${testEvent.end_time}`;
+
+    expect(screen.getByText(expectedString)).toBeInTheDocument();
   });
 });

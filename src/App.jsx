@@ -7,6 +7,7 @@ import EventMap from "./components/EventMap";
 import Footer from "./components/Footer";
 import AboutUs from "./components/AboutUs";
 import Sponsors from "./components/Sponsors";
+import EventDetails from "./components/EventDetails";
 import events from "./data/events.json";
 import { useUrlState } from "./hooks/useUrlState";
 import BackToTop from "./components/BackToTop";
@@ -27,7 +28,8 @@ const fuse = new Fuse(events, fuseOptions);
 
 function parseISODate(dateString) {
   if (!dateString) return null;
-  const [year, month, day] = dateString.split("-").map(Number);
+  const datePart = dateString.split("T")[0].split(" ")[0];
+  const [year, month, day] = datePart.split("-").map(Number);
   if (!year || !month || !day) return null;
   return new Date(year, month - 1, day);
 }
@@ -43,12 +45,36 @@ export default function App() {
   const [selectedRegion, setSelectedRegion] = useUrlState("region", "");
   const [selectedCategory, setSelectedCategory] = useUrlState("category", "");
   const [currentPage, setCurrentPage] = useUrlState("page", "events");
+  const [selectedEventId, setSelectedEventId] = useUrlState("eventId", "");
   const [viewMode, setViewMode] = useUrlState("view", "grid");
 
   const [dateFilterType, setDateFilterType] = useUrlState("dateType", "all");
   const [customDate, setCustomDate] = useUrlState("customDate", "");
   const [rangeStart, setRangeStart] = useUrlState("rangeStart", "");
   const [rangeEnd, setRangeEnd] = useUrlState("rangeEnd", "");
+
+  const selectedEvent = useMemo(() => {
+    if (!selectedEventId) return null;
+    return events.find((e) => String(e.id) === String(selectedEventId));
+  }, [selectedEventId]);
+
+  useEffect(() => {
+    if (currentPage === "event-details" && !selectedEvent) {
+      setCurrentPage("events");
+    }
+  }, [currentPage, selectedEvent, setCurrentPage]);
+
+  const handleNavigate = (page) => {
+    setCurrentPage(page);
+    if (page !== "event-details") {
+      setSelectedEventId("");
+    }
+  };
+
+  const handleSelectEvent = (eventId) => {
+    setSelectedEventId(eventId);
+    setCurrentPage("event-details");
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -138,12 +164,22 @@ export default function App() {
     const baseEvents = (() => {
       if (!term) return events;
 
+      let searchDate = parseISODate(term);
+      if (!searchDate && term.length >= 6) {
+        const d = new Date(term);
+        if (!isNaN(d.getTime())) {
+          searchDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        }
+      }
+
       // 1. Exact Substring/Prefix matches always come first
       const exactMatches = events
         .map((event) => {
           let score = 0;
-          const title = event.title.toLowerCase();
-          const description = event.description.toLowerCase();
+          const title = event.title ? event.title.toLowerCase() : "";
+          const description = event.description
+            ? event.description.toLowerCase()
+            : "";
           const tags = event.tags
             ? event.tags.map((t) => t.toLowerCase())
             : [];
@@ -155,6 +191,20 @@ export default function App() {
           else if (tags.some((t) => t.includes(term))) score += 10;
 
           if (description.includes(term)) score += 5;
+
+          if (searchDate) {
+            const startDate = parseISODate(event.date || event.start_date);
+            const endDate =
+              parseISODate(event.end_date || event.endDate) || startDate;
+            if (
+              startDate &&
+              endDate &&
+              startDate <= searchDate &&
+              endDate >= searchDate
+            ) {
+              score += 100;
+            }
+          }
 
           return { ...event, _score: score };
         })
@@ -176,8 +226,10 @@ export default function App() {
     })();
 
     return baseEvents.filter((event) => {
-      const eventDate = parseISODate(event.date);
-      if (!eventDate) return false;
+      const startDate = parseISODate(event.date || event.start_date);
+      const endDate =
+        parseISODate(event.end_date || event.endDate) || startDate;
+      if (!startDate) return false;
 
       // Region filter
       const matchesRegion = !selectedRegion || event.region === selectedRegion;
@@ -191,18 +243,21 @@ export default function App() {
 
       switch (dateFilterType) {
         case "upcoming":
-          matchesDate = eventDate >= today;
+          matchesDate = endDate >= today;
           break;
         case "thisWeek":
-          matchesDate = eventDate >= weekStart && eventDate <= weekEnd;
+          matchesDate = startDate <= weekEnd && endDate >= weekStart;
           break;
         case "thisMonth":
-          matchesDate = eventDate >= monthStart && eventDate <= monthEnd;
+          matchesDate = startDate <= monthEnd && endDate >= monthStart;
           break;
         case "customDate":
-          matchesDate =
-            !selectedCustomDate ||
-            eventDate.getTime() === selectedCustomDate.getTime();
+          if (!selectedCustomDate) {
+            matchesDate = true;
+          } else {
+            matchesDate =
+              startDate <= selectedCustomDate && endDate >= selectedCustomDate;
+          }
           break;
         case "customRange":
           if (
@@ -214,11 +269,11 @@ export default function App() {
             break;
           }
 
-          if (selectedRangeStart && eventDate < selectedRangeStart) {
+          if (selectedRangeStart && endDate < selectedRangeStart) {
             matchesDate = false;
           }
 
-          if (selectedRangeEnd && eventDate > selectedRangeEnd) {
+          if (selectedRangeEnd && startDate > selectedRangeEnd) {
             matchesDate = false;
           }
           break;
@@ -243,7 +298,7 @@ export default function App() {
     if (viewMode !== "list") return null;
     const groups = {};
     filteredEvents.forEach((event) => {
-      const date = parseISODate(event.date);
+      const date = parseISODate(event.date || event.start_date);
       if (!date) return;
       const key = date.toLocaleDateString("en-US", {
         month: "long",
@@ -260,7 +315,7 @@ export default function App() {
       <Header
         theme={theme}
         onToggleTheme={toggleTheme}
-        onNavigate={setCurrentPage}
+        onNavigate={handleNavigate}
       />
       {currentPage === "events" ? (
         <>
@@ -437,7 +492,12 @@ export default function App() {
               <div className="events-grid" id="events-grid">
                 {filteredEvents && filteredEvents.length > 0 ? (
                   filteredEvents.map((event) => (
-                    <EventCard key={event.id} event={event} viewMode="grid" />
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      viewMode="grid"
+                      onSelectEvent={handleSelectEvent}
+                    />
                   ))
                 ) : (
                   <div className="empty-state" id="empty-state">
@@ -472,6 +532,7 @@ export default function App() {
                             key={event.id}
                             event={event}
                             viewMode="list"
+                            onSelectEvent={handleSelectEvent}
                           />
                         ))}
                       </div>
@@ -499,16 +560,24 @@ export default function App() {
                 )}
               </div>
             ) : (
-              <EventMap events={filteredEvents} />
+              <EventMap
+                events={filteredEvents}
+                onSelectEvent={handleSelectEvent}
+              />
             )}
           </main>
         </>
+      ) : currentPage === "event-details" && selectedEvent ? (
+        <EventDetails
+          event={selectedEvent}
+          onBack={() => handleNavigate("events")}
+        />
       ) : currentPage === "about" ? (
         <AboutUs />
       ) : currentPage === "sponsors" ? (
         <Sponsors />
       ) : null}
-      <Footer onNavigate={setCurrentPage} />
+      <Footer onNavigate={handleNavigate} />
       <BackToTop />
     </>
   );
