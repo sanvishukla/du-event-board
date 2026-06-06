@@ -220,12 +220,38 @@ def main() -> None:
             label = [lbl for lbl, k in LABEL_TO_KEY.items() if k == key][0]
             errors.append(f"Missing required field: **{label}**")
 
+    # Validate URL fields
+    url_keys = [
+        "url",
+        "organization_url",
+        "url_linkedin",
+        "url_twitter",
+        "url_other",
+        "image_url",
+    ]
+    for url_key in url_keys:
+        url_val = event.get(url_key)
+        if url_val:
+            if not re.match(r"^(https?://|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(/\S*)?$", url_val):
+                label = [lbl for lbl, k in LABEL_TO_KEY.items() if k == url_key][0]
+                errors.append(
+                    f"Invalid format for **{label}**: '{url_val}' (expected a valid URL starting with http://, https://, or www.)"
+                )
+            elif url_val.startswith("www."):
+                event[url_key] = "https://" + url_val
+
     # Validate/format date fields
+    date_obj = None
+    end_date_obj = None
     for date_key in ["date", "end_date"]:
         date_val = event.get(date_key)
         if date_val:
             try:
-                datetime.strptime(date_val, "%Y-%m-%d")
+                dt = datetime.strptime(date_val, "%Y-%m-%d")
+                if date_key == "date":
+                    date_obj = dt
+                elif date_key == "end_date":
+                    end_date_obj = dt
             except ValueError:
                 label = [
                     lbl for lbl, k in LABEL_TO_KEY.items() if k == date_key
@@ -234,12 +260,24 @@ def main() -> None:
                     f"Invalid format for **{label}**: '{date_val}' (expected YYYY-MM-DD)"
                 )
 
+    if date_obj and end_date_obj:
+        if end_date_obj < date_obj:
+            label_end = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "end_date"][0]
+            label_start = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "date"][0]
+            errors.append(f"**{label_end}** ({event['end_date']}) must be on or after **{label_start}** ({event['date']}).")
+
     # Validate/format time fields
+    start_time_obj = None
+    end_time_obj = None
     for time_key in ["time", "start_time", "end_time"]:
         time_val = event.get(time_key)
         if time_val:
             try:
-                datetime.strptime(time_val, "%H:%M")
+                dt = datetime.strptime(time_val, "%H:%M")
+                if time_key == "start_time":
+                    start_time_obj = dt
+                elif time_key == "end_time":
+                    end_time_obj = dt
             except ValueError:
                 label = [
                     lbl for lbl, k in LABEL_TO_KEY.items() if k == time_key
@@ -247,6 +285,16 @@ def main() -> None:
                 errors.append(
                     f"Invalid format for **{label}**: '{time_val}' (expected HH:MM)"
                 )
+
+    if start_time_obj and end_time_obj:
+        is_same_day = True
+        if date_obj and end_date_obj and date_obj != end_date_obj:
+            is_same_day = False
+            
+        if is_same_day and end_time_obj <= start_time_obj:
+            label_end = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "end_time"][0]
+            label_start = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "start_time"][0]
+            errors.append(f"**{label_end}** ({event['end_time']}) must be after **{label_start}** ({event['start_time']}) when on the same day.")
 
     # Validate description length
     desc = event.get("description", "")
