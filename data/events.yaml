@@ -152,3 +152,21 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+
+  - id: "10"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: "Test"
+    description: "xyz"
+    date: "2026-08-25"
+    location: "New Delhi"
+    region: "India"
+    category: ""
+    tags:
+      - python
+      - cpp
+    featured: 0
+    url: "www.sample.com"
+    in_person: "Yes"
+    language:
+      - English
