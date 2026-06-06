@@ -87,7 +87,7 @@ def geocode_location_forced(
       cache:
         type: dict[str, list[float]]
     returns:
-      type: tuple[float, float] | None
+      type: Optional[tuple[float, float]]
     """
     if not location_str or location_str.lower() == "online":
         return None
@@ -232,8 +232,13 @@ def main() -> None:
     for url_key in url_keys:
         url_val = event.get(url_key)
         if url_val:
-            if not re.match(r"^(https?://|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(/\S*)?$", url_val):
-                label = [lbl for lbl, k in LABEL_TO_KEY.items() if k == url_key][0]
+            if not re.match(
+                r"^(https?://|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(/\S*)?$",
+                url_val,
+            ):
+                label = [
+                    lbl for lbl, k in LABEL_TO_KEY.items() if k == url_key
+                ][0]
                 errors.append(
                     f"Invalid format for **{label}**: '{url_val}' (expected a valid URL starting with http://, https://, or www.)"
                 )
@@ -262,9 +267,15 @@ def main() -> None:
 
     if date_obj and end_date_obj:
         if end_date_obj < date_obj:
-            label_end = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "end_date"][0]
-            label_start = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "date"][0]
-            errors.append(f"**{label_end}** ({event['end_date']}) must be on or after **{label_start}** ({event['date']}).")
+            label_end = [
+                lbl for lbl, k in LABEL_TO_KEY.items() if k == "end_date"
+            ][0]
+            label_start = [
+                lbl for lbl, k in LABEL_TO_KEY.items() if k == "date"
+            ][0]
+            errors.append(
+                f"**{label_end}** ({event['end_date']}) must be on or after **{label_start}** ({event['date']})."
+            )
 
     # Validate/format time fields
     start_time_obj = None
@@ -290,11 +301,17 @@ def main() -> None:
         is_same_day = True
         if date_obj and end_date_obj and date_obj != end_date_obj:
             is_same_day = False
-            
+
         if is_same_day and end_time_obj <= start_time_obj:
-            label_end = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "end_time"][0]
-            label_start = [lbl for lbl, k in LABEL_TO_KEY.items() if k == "start_time"][0]
-            errors.append(f"**{label_end}** ({event['end_time']}) must be after **{label_start}** ({event['start_time']}) when on the same day.")
+            label_end = [
+                lbl for lbl, k in LABEL_TO_KEY.items() if k == "end_time"
+            ][0]
+            label_start = [
+                lbl for lbl, k in LABEL_TO_KEY.items() if k == "start_time"
+            ][0]
+            errors.append(
+                f"**{label_end}** ({event['end_time']}) must be after **{label_start}** ({event['start_time']}) when on the same day."
+            )
 
     # Validate description length
     desc = event.get("description", "")
