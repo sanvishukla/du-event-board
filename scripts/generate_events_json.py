@@ -12,7 +12,7 @@ import sys
 import time
 import urllib.request
 import urllib.parse
-from typing import Any
+from typing import Any, Optional
 from datetime import datetime
 from pathlib import Path
 
@@ -73,8 +73,6 @@ def save_cache() -> None:
             json.dump(_geocode_cache, f, indent=2)
 
 
-from typing import Any, Optional
-
 def geocode_location(location_str: str) -> Optional[tuple[float, float]]:
     """
     title: Uses Nominatim API to get lat/long for a location string.
@@ -82,7 +80,7 @@ def geocode_location(location_str: str) -> Optional[tuple[float, float]]:
       location_str:
         type: str
     returns:
-      type: tuple[float, float] | None
+      type: Optional[tuple[float, float]]
     """
     if not location_str or location_str.lower() == "online":
         return None

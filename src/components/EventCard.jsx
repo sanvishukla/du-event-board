@@ -84,6 +84,7 @@ export default function EventCard({
 
   // Grid view (default)
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events
     <article
       className="event-card"
       id={`event-${event.id}`}

@@ -78,7 +78,7 @@ export default function SearchableSelect({
         )}
       </div>
       {isOpen && (
-        <ul className="searchable-select__dropdown">
+        <ul className="searchable-select__dropdown" role="listbox">
           {inputValue && clearable && (
             <li
               className="searchable-select__option searchable-select__option--clear"
@@ -87,6 +87,16 @@ export default function SearchableSelect({
                 onChange("");
                 setIsOpen(false);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  setInputValue("");
+                  onChange("");
+                  setIsOpen(false);
+                }
+              }}
+              role="option"
+              aria-selected="false"
+              tabIndex={0}
             >
               Clear selection
             </li>
@@ -95,12 +105,23 @@ export default function SearchableSelect({
             filteredOptions.map((opt) => (
               <li
                 key={opt}
-                className="searchable-select__option"
+                className={`searchable-select__option ${opt === value ? "selected" : ""}`}
                 onClick={() => {
                   setInputValue(opt);
                   onChange(opt);
                   setIsOpen(false);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setInputValue(opt);
+                    onChange(opt);
+                    setIsOpen(false);
+                  }
+                }}
+                role="option"
+                aria-selected={opt === value}
+                tabIndex={0}
               >
                 {opt}
               </li>
