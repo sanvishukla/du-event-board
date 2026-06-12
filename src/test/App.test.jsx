@@ -17,8 +17,17 @@ describe("App", () => {
   });
 
   const setDateFilter = (value) => {
-    const dateFilterSelect = screen.getByLabelText("Date filter");
-    fireEvent.change(dateFilterSelect, { target: { value } });
+    const labelMap = {
+      upcoming: "Upcoming",
+      thisWeek: "This Week",
+      thisMonth: "This Month",
+      customDate: "Custom Date",
+      customRange: "Custom Range",
+    };
+    const label = labelMap[value] || value;
+    const dateFilterInput = screen.getByPlaceholderText("All Dates");
+    fireEvent.change(dateFilterInput, { target: { value: label } });
+    fireEvent.click(screen.getByText(label, { selector: "li" }));
   };
 
   it("renders the header with the site title", () => {
@@ -72,9 +81,25 @@ describe("App", () => {
 
   it("filters events by region", () => {
     render(<App />);
-    const regionSelect = screen.getByDisplayValue("All Regions");
+    const regionSelect = screen.getByPlaceholderText("Region");
 
-    fireEvent.change(regionSelect, { target: { value: "Porto Alegre" } });
+    fireEvent.change(regionSelect, { target: { value: "South America" } });
+    fireEvent.click(screen.getByText("South America", { selector: "li" }));
+
+    expect(
+      screen.getByText("Python Meetup - Porto Alegre"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("UX Design Workshop - Porto Alegre"),
+    ).toBeInTheDocument();
+  });
+
+  it("filters events by city", () => {
+    render(<App />);
+    const citySelect = screen.getByPlaceholderText("City");
+
+    fireEvent.change(citySelect, { target: { value: "Porto Alegre" } });
+    fireEvent.click(screen.getByText("Porto Alegre", { selector: "li" }));
 
     expect(
       screen.getByText("Python Meetup - Porto Alegre"),
@@ -89,9 +114,10 @@ describe("App", () => {
 
   it("filters events by category", () => {
     render(<App />);
-    const categorySelect = screen.getByDisplayValue("All Categories");
+    const categorySelect = screen.getByPlaceholderText("All Categories");
 
     fireEvent.change(categorySelect, { target: { value: "Education" } });
+    fireEvent.click(screen.getByText("Education", { selector: "li" }));
 
     expect(
       screen.getByText("Data Science Bootcamp - Rio de Janeiro"),
@@ -116,7 +142,7 @@ describe("App", () => {
 
   it("has an accessible date filter select", () => {
     render(<App />);
-    expect(screen.getByLabelText("Date filter")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("All Dates")).toBeInTheDocument();
   });
 
   it("filters events by upcoming", () => {
@@ -237,12 +263,12 @@ describe("App", () => {
     expect(screen.getByText("No events found")).toBeInTheDocument();
   });
 
-  it("navigates to event details page when clicking View Details and back to main list when clicking Back to Events", () => {
+  it("navigates to event details page when clicking event title and back to main list when clicking Back to Events", () => {
     render(<App />);
 
-    // Click "View Details" on the first event card
-    const viewDetailsButtons = screen.getAllByText("View Details");
-    fireEvent.click(viewDetailsButtons[0]);
+    // Click on the first event card
+    const firstEventTitle = screen.getByText("Python Meetup - Porto Alegre");
+    fireEvent.click(firstEventTitle);
 
     // Should render the event details page structure
     expect(screen.getByText("About this Event")).toBeInTheDocument();
