@@ -161,9 +161,33 @@ body:
     id: location
     attributes:
       label: Location
-      placeholder: e.g., Cleveland, OH, USA (or "Online")
+      placeholder: e.g., TechHub Coworking, Rua da República 433 (or "Online")
     validations:
       required: true
+
+  - type: input
+    id: city
+    attributes:
+      label: City
+      placeholder: e.g., Cleveland
+    validations:
+      required: false
+
+  - type: input
+    id: state
+    attributes:
+      label: State/Province
+      placeholder: e.g., Ohio
+    validations:
+      required: false
+
+  - type: input
+    id: country
+    attributes:
+      label: Country
+      placeholder: e.g., USA
+    validations:
+      required: false
 
   - type: input
     id: region
