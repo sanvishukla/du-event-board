@@ -36,6 +36,9 @@ LABEL_TO_KEY = {
     "Event URL": "url",
     "Image URL": "image_url",
     "Location": "location",
+    "City": "city",
+    "State/Province": "state",
+    "Country": "country",
     "Region": "region",
     "In Person": "in_person",
     "Virtual": "virtual",
@@ -140,6 +143,9 @@ def format_event_yaml(event: dict[str, Any]) -> str:
         "description",
         "date",
         "location",
+        "city",
+        "state",
+        "country",
         "region",
         "category",
     ]:
@@ -392,8 +398,29 @@ def main() -> None:
                 f"Warning: Failed to load geocode cache: {e}", file=sys.stderr
             )
 
-    coords = geocode_location_forced(event["location"], cache)
-    if not coords and event["region"]:
+    location_query_parts = [
+        event.get("location"),
+        event.get("city"),
+        event.get("state"),
+        event.get("country"),
+    ]
+    location_query = ", ".join(
+        [p for p in location_query_parts if p and p.lower() != "online"]
+    )
+
+    coords = None
+    if location_query:
+        coords = geocode_location_forced(location_query, cache)
+
+    if not coords and event.get("location"):
+        coords = geocode_location_forced(event["location"], cache)
+
+    if not coords and event.get("city") and event.get("country"):
+        coords = geocode_location_forced(
+            f"{event['city']}, {event['country']}", cache
+        )
+
+    if not coords and event.get("region"):
         coords = geocode_location_forced(event["region"], cache)
 
     if coords:
