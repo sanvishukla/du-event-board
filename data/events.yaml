@@ -179,3 +179,26 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+
+  - id: "10"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: "Test"
+    description: "xyz"
+    date: "2026-08-20"
+    location: "Delhi"
+    city: "Delhi"
+    state: "Delhi"
+    country: "India"
+    region: "Asia"
+    category: ""
+    tags:
+      - python
+      - ml
+    start_time: "09:00"
+    featured: 0
+    url: "https://www.sample.com"
+    in_person: "Yes"
+    virtual: "Yes"
+    language:
+      - English
