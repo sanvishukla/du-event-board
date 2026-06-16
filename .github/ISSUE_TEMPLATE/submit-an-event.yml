@@ -192,7 +192,7 @@ body:
   - type: input
     id: region
     attributes:
-      label: Region
+      label: Region (Continent)
       placeholder: e.g., Canada / USA (or "Online")
     validations:
       required: true

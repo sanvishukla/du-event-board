@@ -39,7 +39,7 @@ LABEL_TO_KEY = {
     "City": "city",
     "State/Province": "state",
     "Country": "country",
-    "Region": "region",
+    "Region (Continent)": "region",
     "In Person": "in_person",
     "Virtual": "virtual",
     "Language": "language",
