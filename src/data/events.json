@@ -202,5 +202,32 @@
     "category": "Conference",
     "url": "https://www.pyohio.org/2026/",
     "description": "PyOhio is an annual conference for Python developers, featuring talks, tutorials, and community events."
+  },
+  {
+    "id": "10",
+    "lat": 28.5706333,
+    "lng": 77.3272147,
+    "title": "Test",
+    "description": "hljl",
+    "date": "2026-06-25",
+    "time": "10:00",
+    "location": "NOIDA",
+    "region": "Asia",
+    "category": "conf",
+    "url": "https://github.com/sanvishukla/du-event-board/pulls",
+    "tags": [
+      "lkj",
+      "huih"
+    ],
+    "end_date": "2026-06-30",
+    "featured": true,
+    "organization_name": "lkml",
+    "organization_url": "https://github.com/sanvishukla/du-event-board/pulls",
+    "acronym": "lknlk",
+    "paid_or_free": "free",
+    "image_url": "mlkm.m",
+    "in_person": false,
+    "virtual": false,
+    "language": "english"
   }
 ]
