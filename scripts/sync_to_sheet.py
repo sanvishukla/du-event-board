@@ -69,6 +69,28 @@ def format_featured(val: Any) -> str:
     return "0"
 
 
+def get_derived_category(in_person: Any, virtual: Any) -> str:
+    """
+    title: Derive event category from in_person and virtual fields.
+    parameters:
+      in_person:
+        type: Any
+      virtual:
+        type: Any
+    returns:
+      type: str
+    """
+    ip = format_boolean(in_person)
+    vt = format_boolean(virtual)
+    if ip == "Yes" and vt == "Yes":
+        return "hybrid"
+    elif ip == "Yes":
+        return "in-person"
+    elif vt == "Yes":
+        return "online"
+    return ""
+
+
 def get_open_sync_prs(
     repo: str, token: str
 ) -> dict[tuple[str, str, str], dict[str, Any]]:
@@ -530,9 +552,15 @@ def main() -> None:
             "event_url": event.get("url", ""),
             "image_url": event.get("image_url", ""),
             "location": event.get("location", ""),
+            "city": event.get("city", ""),
+            "state-province": event.get("state-province", ""),
+            "country": event.get("country", ""),
             "region": event.get("region", ""),
             "in_person": format_boolean(event.get("in_person", "")),
             "virtual": format_boolean(event.get("virtual", "")),
+            "event_category (derived)": get_derived_category(
+                event.get("in_person", ""), event.get("virtual", "")
+            ),
             "language": event.get("language", ""),
         }
 

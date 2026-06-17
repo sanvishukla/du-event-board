@@ -62,6 +62,9 @@ FIELD_MAPPING = {
         "image_url",
     ],
     "location": ["Physical Location (If In-Person: Full Address)", "location"],
+    "city": ["city"],
+    "state-province": ["state-province", "state/province"],
+    "country": ["country"],
     "region": [
         "Geographic Region (e.g., North America, Europe, APAC, Global)",
         "region",
