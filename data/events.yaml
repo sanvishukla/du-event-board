@@ -179,3 +179,24 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+
+  - id: "10"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: Test
+    description: ''
+    date: '2026-06-18'
+    time: '10:00'
+    location: New delhi
+    region: Asia
+    category: Conference
+    url: ''
+    tags:
+      - Python
+      - CPP
+    end_date: '2026-07-01'
+    featured: true
+    paid_or_free: free
+    in_person: true
+    virtual: true
+    language: English
