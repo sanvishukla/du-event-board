@@ -305,7 +305,13 @@ def main() -> None:
 
             # Build an ordered list of geographic components (most to least specific)
             geo_parts = []
-            for field in ["location", "city", "state", "country", "region"]:
+            for field in [
+                "location",
+                "city",
+                "state-province",
+                "country",
+                "region",
+            ]:
                 val = event.get(field)
                 if val and isinstance(val, str) and val.lower() != "online":
                     geo_parts.append(val)
