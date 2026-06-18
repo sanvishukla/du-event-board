@@ -1479,8 +1479,19 @@ def main() -> None:
                 print(e.stderr, file=sys.stderr)
                 continue
 
-            # 5. Commit and push
+            # 5. Generate JSON, format with pre-commit, then Commit and push
             debug_file_path = PROJECT_ROOT / "data" / "debug_sheet_events.json"
+
+            print("  Generating events.json...")
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(PROJECT_ROOT / "scripts" / "generate_events_json.py"),
+                ],
+                cwd=str(PROJECT_ROOT),
+                capture_output=True,
+                check=False,
+            )
 
             print("  Running pre-commit formatting...")
             subprocess.run(
