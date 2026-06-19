@@ -26,8 +26,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install PyYAML
-        run: pip install pyyaml
+      - name: Install Dependencies
+        run: pip install pyyaml pre-commit
 
       - name: Run sync script
         env:
