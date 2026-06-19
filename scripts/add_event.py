@@ -386,8 +386,10 @@ def main() -> None:
         data = yaml.safe_load(f) or {}
 
     events_list = data.get("events", [])
-    # Safe lookup of existing IDs using .get("id") as recommended by the mentor
-    existing_ids = {e.get("id") for e in events_list if e.get("id")}
+    # Safe lookup of existing IDs using .get("id") as recommended by the mentor, casting to string to avoid type mismatches
+    existing_ids = {
+        str(e.get("id")) for e in events_list if e.get("id") is not None
+    }
 
     # Generate unique numeric ID based on current UTC date, time, and a 4-digit random number
     date_part = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
