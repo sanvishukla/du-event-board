@@ -434,6 +434,22 @@ def main() -> None:
             s_location = str(s_ev.get("location", "")).strip().lower()
             if not s_title or not s_date:
                 continue
+
+            # Check if it has an ID assigned. If not, it's a new event
+            # pending sync to the repo, so we should NOT delete it!
+            s_id = ""
+            for candidate in ["id", "event_id", "event id"]:
+                if candidate in s_ev:
+                    s_id = str(s_ev[candidate]).strip()
+                    break
+                s_ev_lower = {k.lower().strip(): v for k, v in s_ev.items()}
+                if candidate in s_ev_lower:
+                    s_id = str(s_ev_lower[candidate]).strip()
+                    break
+
+            if not s_id:
+                continue
+
             sheet_key = (s_title, s_date, s_location)
             if (
                 sheet_key not in yaml_keys
