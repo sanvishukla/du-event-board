@@ -374,7 +374,7 @@ def main() -> None:
         if lang.strip()
     ]
 
-    # Generate sequential ID
+    # Generate unique numeric ID using current timestamp
     if not INPUT_FILE.exists():
         print(
             f"Error: YAML file does not exist: {INPUT_FILE}", file=sys.stderr
@@ -385,14 +385,16 @@ def main() -> None:
         data = yaml.safe_load(f) or {}
 
     events_list = data.get("events", [])
-    existing_ids = []
-    for e in events_list:
-        try:
-            existing_ids.append(int(e["id"]))
-        except ValueError:
-            pass
+    # Safe lookup of existing IDs using .get("id") as recommended by the mentor
+    existing_ids = {e.get("id") for e in events_list if e.get("id")}
 
-    next_id = str(max(existing_ids) + 1) if existing_ids else "1"
+    next_id = str(int(time.time()))
+    # Auto-increment in case of duplicate timestamp submissions
+    counter = 1
+    while next_id in existing_ids:
+        next_id = str(int(time.time()) + counter)
+        counter += 1
+
     event["id"] = next_id
 
     # Load cache and Geocode location
