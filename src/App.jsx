@@ -141,9 +141,8 @@ export default function App() {
 
     // 2. Explicitly tell Google Analytics that the page has changed
     if (typeof window !== "undefined" && typeof window.gtag === "function") {
-      const pagePath = window.location.pathname + window.location.search;
       window.gtag("event", "page_view", {
-        page_path: pagePath,
+        page_location: window.location.href,
         page_title: document.title,
       });
     }
