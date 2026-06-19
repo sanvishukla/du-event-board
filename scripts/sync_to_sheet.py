@@ -482,22 +482,35 @@ def main() -> None:
             continue
         key = (title, date, end_date, location)
         if key not in existing_keys:
-            missing_events.append(event)
+            # Fallback: check if we can match by title, date, and a substring of location
+            fallback_key = None
+            for s_key in existing_keys:
+                if s_key[0] == title and s_key[1] == date:
+                    if s_key[3] in location or location in s_key[3]:
+                        fallback_key = s_key
+                        break
+
+            if fallback_key:
+                s_ev = sheet_events_by_key[fallback_key]
+            else:
+                missing_events.append(event)
+                continue
         else:
             s_ev = sheet_events_by_key[key]
-            s_id = ""
-            for candidate in ["id", "event_id", "event id"]:
-                if candidate in s_ev:
-                    s_id = str(s_ev[candidate]).strip()
-                    break
-                s_ev_lower = {k.lower().strip(): v for k, v in s_ev.items()}
-                if candidate in s_ev_lower:
-                    s_id = str(s_ev_lower[candidate]).strip()
-                    break
-            if s_id.endswith(".0"):
-                s_id = s_id[:-2]
-            if not s_id:
-                events_needing_id_update.append(event)
+
+        s_id = ""
+        for candidate in ["id", "event_id", "event id"]:
+            if candidate in s_ev:
+                s_id = str(s_ev[candidate]).strip()
+                break
+            s_ev_lower = {k.lower().strip(): v for k, v in s_ev.items()}
+            if candidate in s_ev_lower:
+                s_id = str(s_ev_lower[candidate]).strip()
+                break
+        if s_id.endswith(".0"):
+            s_id = s_id[:-2]
+        if not s_id:
+            events_needing_id_update.append(event)
 
     if (
         not missing_events
