@@ -726,6 +726,8 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
                 "description",
                 "date",
                 "time",
+                "end_date",
+                "end_time",
                 "location",
                 "region",
                 "category",
