@@ -920,22 +920,6 @@ def main() -> None:
         else:
             if key in yaml_index:
                 existing_ev = yaml_index[key]
-            else:
-                # Fallback matching by title and date ONLY
-                # because location strings might be slightly different
-                # ("Cleveland" vs "Cleveland, OH, USA")
-                title_date_matches = [
-                    ev
-                    for ev in yaml_events
-                    if str(ev.get("title", ev.get("event_name", "")))
-                    .strip()
-                    .lower()
-                    == s_title.lower()
-                    and str(ev.get("date", ev.get("start_date", ""))).strip()
-                    == s_date
-                ]
-                if len(title_date_matches) == 1:
-                    existing_ev = title_date_matches[0]
 
         # Time and end_time preservation
         sheet_time = get_field_value(s_ev, "time").strip()
