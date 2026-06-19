@@ -179,3 +179,30 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+
+  - id: "202606191810404721"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: "Event"
+    description: "cyz"
+    date: "2026-08-25"
+    location: "New Delhi"
+    city: ""
+    state: ""
+    country: "India"
+    region: "Asia"
+    category: "Conference"
+    tags:
+      - Python
+      - Coding
+    start_time: "10:00"
+    end_time: "16:00"
+    end_date: "2026-08-29"
+    featured: 1
+    organization_name: "XYZ"
+    paid_or_free: "paid"
+    url: "https://www.sample.com"
+    in_person: "No"
+    virtual: "Yes"
+    language:
+      - English
