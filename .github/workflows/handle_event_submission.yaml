@@ -40,8 +40,10 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Format files
-        run: npx prettier --write .
+      - name: Format files with pre-commit
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files || true
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
