@@ -2,11 +2,12 @@
 import json
 import os
 import re
+import random
 import sys
 import time
 import urllib.request
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import yaml  # type: ignore
 from typing import Any, Optional
@@ -388,12 +389,14 @@ def main() -> None:
     # Safe lookup of existing IDs using .get("id") as recommended by the mentor
     existing_ids = {e.get("id") for e in events_list if e.get("id")}
 
-    next_id = str(int(time.time()))
-    # Auto-increment in case of duplicate timestamp submissions
-    counter = 1
+    # Generate unique numeric ID based on current UTC date, time, and a 4-digit random number
+    date_part = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    random_part = f"{random.randint(1000, 9999)}"
+    next_id = date_part + random_part
+    # Auto-increment suffix or pick another random number in case of duplicate submissions
     while next_id in existing_ids:
-        next_id = str(int(time.time()) + counter)
-        counter += 1
+        random_part = f"{random.randint(1000, 9999)}"
+        next_id = date_part + random_part
 
     event["id"] = next_id
 
