@@ -829,8 +829,8 @@ def main() -> None:
     yaml_index = {}
     yaml_by_id = {}
     for ev in yaml_events:
-        t = str(ev.get("title", "")).strip().lower()
-        d = str(ev.get("date", "")).strip()
+        t = str(ev.get("title", ev.get("event_name", ""))).strip().lower()
+        d = str(ev.get("date", ev.get("start_date", ""))).strip()
         ed = str(ev.get("end_date", "")).strip()
         loc = str(ev.get("location", "")).strip().lower()
         yaml_index[(t, d, ed, loc)] = ev
@@ -1196,9 +1196,9 @@ def main() -> None:
     for ev in yaml_events:
         event_id = str(ev.get("id", ""))
         if event_id not in processed_yaml_ids:
-            title = ev.get("title", "")
-            date = ev.get("date", "")
-            location = ev.get("location", "")
+            title = str(ev.get("title", ev.get("event_name", "")))
+            date = str(ev.get("date", ev.get("start_date", "")))
+            location = str(ev.get("location", ""))
             print(
                 f"Event deleted from Google Sheet: '{title}' on {date} (ID: {event_id})"
             )
