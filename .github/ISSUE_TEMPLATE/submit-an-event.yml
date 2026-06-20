@@ -195,7 +195,7 @@ body:
     id: region
     attributes:
       label: Region (Continent)
-      placeholder: e.g., Canada / USA (or "Online")
+      placeholder: e.g., North America (or "Online")
     validations:
       required: true
 
