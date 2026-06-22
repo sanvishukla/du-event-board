@@ -1013,17 +1013,78 @@ def main() -> None:
                     mapped_event["lat"] = coords[0] if coords else ""
                     mapped_event["lng"] = coords[1] if coords else ""
 
+                s_id_str = str(existing_ev.get("id"))
+                matched_pr = open_prs_by_id.get(s_id_str)
+                existing_branch = None
+                existing_pr_num = None
+
+                if matched_pr:
+                    existing_branch = matched_pr["branch"]
+                    existing_pr_num = matched_pr["number"]
+                    is_changed_from_pr = True
+                    try:
+                        run_git_cmd(
+                            ["git", "fetch", "origin", existing_branch]
+                        )
+                        branch_yaml = run_git_cmd(
+                            [
+                                "git",
+                                "show",
+                                f"origin/{existing_branch}:data/events.yaml",
+                            ]
+                        )
+                        branch_data = yaml.safe_load(branch_yaml) or {
+                            "events": []
+                        }
+                        existing_pr_ev = next(
+                            (
+                                x
+                                for x in branch_data.get("events", [])
+                                if str(x.get("id")) == s_id_str
+                            ),
+                            None,
+                        )
+                        if existing_pr_ev:
+                            is_changed_from_pr = False
+                            for k, val in mapped_event.items():
+                                existing_val = existing_pr_ev.get(k)
+                                if k in ("in_person", "virtual", "featured"):
+                                    if bool(existing_val) != bool(val):
+                                        is_changed_from_pr = True
+                                        break
+                                else:
+                                    if existing_val != val:
+                                        if existing_val is None and (
+                                            val == "" or val == []
+                                        ):
+                                            continue
+                                        is_changed_from_pr = True
+                                        break
+                    except Exception as ex:
+                        print(
+                            f"Warning: Could not fetch branch {existing_branch} for comparison: {ex}"
+                        )
+
+                    if not is_changed_from_pr:
+                        print(
+                            f"Edit for '{s_title}' is unchanged on branch '{existing_branch}'."
+                        )
+                        updated_yaml_events.append(existing_ev)
+                        continue
+
                 updated_yaml_events.append(mapped_event)
-                detected_changes.append(
-                    {
-                        "type": "edit",
-                        "id": str(existing_ev.get("id")),
-                        "title": s_title,
-                        "date": s_date,
-                        "location": s_location,
-                        "event_data": mapped_event,
-                    }
-                )
+                change_dict: dict[str, Any] = {
+                    "type": "edit",
+                    "id": s_id_str,
+                    "title": s_title,
+                    "date": s_date,
+                    "location": s_location,
+                    "event_data": mapped_event,
+                }
+                if matched_pr:
+                    change_dict["existing_branch"] = existing_branch
+                    change_dict["existing_pr_num"] = existing_pr_num
+                detected_changes.append(change_dict)
             else:
                 # Keep existing unmodified event
                 updated_yaml_events.append(existing_ev)
