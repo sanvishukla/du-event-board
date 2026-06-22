@@ -375,15 +375,20 @@ def main() -> None:
             )
             sys.exit(0)
 
-    max_id = 0
-    for event in events:
-        try:
-            eid = int(event.get("id", 0))
-            if eid > max_id:
-                max_id = eid
-        except ValueError:
-            pass
-    next_id = str(max_id + 1)
+    import random
+    from datetime import timezone
+
+    existing_ids = {
+        str(ev.get("id")) for ev in events if ev.get("id") is not None
+    }
+
+    date_part = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    random_part = f"{random.randint(1000, 9999)}"
+    next_id = date_part + random_part
+    while next_id in existing_ids:
+        random_part = f"{random.randint(1000, 9999)}"
+        next_id = date_part + random_part
+
     event_data["id"] = next_id
 
     coords = None

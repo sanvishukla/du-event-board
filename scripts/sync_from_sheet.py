@@ -1059,6 +1059,9 @@ def main() -> None:
                                         ):
                                             continue
                                         is_changed_from_pr = True
+                                        print(
+                                            f"DEBUG(edit): changed key '{k}': sheet='{val}', branch='{existing_val}'"
+                                        )
                                         break
                     except Exception as ex:
                         print(
@@ -1194,6 +1197,9 @@ def main() -> None:
                                     ):
                                         continue
                                     is_changed = True
+                                    print(
+                                        f"DEBUG: changed key '{k}': sheet='{val}', branch='{existing_val}'"
+                                    )
                                     break
                 except Exception as ex:
                     print(
