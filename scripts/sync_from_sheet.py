@@ -14,10 +14,11 @@ import re
 import subprocess
 import sys
 import time
+import random
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 import yaml
@@ -860,24 +861,12 @@ def main() -> None:
         if pr_id:
             open_prs_by_id[str(pr_id).strip()] = pr_info
 
-    # Track existing IDs to calculate next ID
-    max_id = 0
-    for ev in yaml_events:
-        try:
-            int_eid = int(ev.get("id", 0))
-            if int_eid > max_id:
-                max_id = int_eid
-        except ValueError:
-            pass
-
-    # Also factor in IDs of open sync PRs to avoid ID reuse
+    existing_ids = {
+        str(ev.get("id")) for ev in yaml_events if ev.get("id") is not None
+    }
     for pr_info in open_sync_prs.values():
-        try:
-            int_eid = int(pr_info["id"])
-            if int_eid > max_id:
-                max_id = int_eid
-        except ValueError:
-            pass
+        if "id" in pr_info:
+            existing_ids.add(str(pr_info["id"]))
 
     processed_yaml_ids = set()
 
@@ -1191,9 +1180,15 @@ def main() -> None:
             else:
                 # Brand new event
                 print(f"New event detected: '{s_title}' on {s_date}")
-                max_id += 1
-                mapped_event["id"] = str(max_id)
-
+                date_part = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+                random_part = f"{random.randint(1000, 9999)}"
+                next_id = date_part + random_part
+                while next_id in existing_ids:
+                    random_part = f"{random.randint(1000, 9999)}"
+                    next_id = date_part + random_part
+                existing_ids.add(next_id)
+                processed_yaml_ids.add(next_id)
+                mapped_event["id"] = next_id
                 coords = geocode_location(str(mapped_event["location"]))
                 mapped_event["lat"] = coords[0] if coords else ""
                 mapped_event["lng"] = coords[1] if coords else ""
@@ -1202,7 +1197,7 @@ def main() -> None:
                 detected_changes.append(
                     {
                         "type": "add",
-                        "id": str(max_id),
+                        "id": next_id,
                         "title": s_title,
                         "date": s_date,
                         "location": s_location,
