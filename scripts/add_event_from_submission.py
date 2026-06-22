@@ -320,8 +320,12 @@ def main() -> None:
     event_data["date"] = date_val
     event_data["time"] = time_val
 
-    end_date_val, _ = parse_date_time(str(event_data.get("end_date", "")))
+    end_date_val, end_time_val = parse_date_time(
+        str(event_data.get("end_date", ""))
+    )
     event_data["end_date"] = end_date_val
+    if end_time_val:
+        event_data["end_time"] = end_time_val
 
     location_type = str(normalized_raw.get("location type", "")).lower()
     in_person_val = False
