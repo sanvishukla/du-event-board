@@ -179,3 +179,27 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+  - id: "202606221604098588"
+    lat: 39.9622601
+    lng: -83.0007065
+    title: "DataConnect Conference 2026"
+    description: ""
+    date: "2026-10-29"
+    time: ""
+    location: "Columbus, Ohio, USA"
+    region: "Canada / USA"
+    category: "Conference"
+    url: "https://www.dataconnectconf.com/dataconnect/conference"
+    tags:
+      - women-focused
+    end_date: "2026-10-30"
+    end_time: ""
+    organization_name: "WIA"
+    organization_url: "https://www.womeninanalytics.com/"
+    url_linkedin: "https://www.linkedin.com/company/women-in-analytics-community/"
+    url_twitter: "http://www.twitter.com/wia_community"
+    acronym: "WIA-DCC"
+    paid_or_free: "paid"
+    image_url: "https://uploads-ssl.webflow.com/6164cdbceec2a908841609b5/61709899316ac23dda1364a8_columbus%20skyline.jpeg"
+    in_person: true
+    language: "English"
