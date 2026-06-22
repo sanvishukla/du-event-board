@@ -200,6 +200,7 @@ def get_open_sync_prs(
 def delete_sheet_event(
     webapp_url: str,
     secret_token: str,
+    event_id: str,
     title: str,
     date: str,
     location: str,
@@ -210,6 +211,8 @@ def delete_sheet_event(
       webapp_url:
         type: str
       secret_token:
+        type: str
+      event_id:
         type: str
       title:
         type: str
@@ -233,7 +236,12 @@ def delete_sheet_event(
             parsed_url.fragment,
         )
     )
-    payload = {"event_name": title, "start_date": date, "location": location}
+    payload = {
+        "id": event_id,
+        "event_name": title,
+        "start_date": date,
+        "location": location,
+    }
     req_data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         delete_url,
@@ -258,13 +266,62 @@ def delete_sheet_event(
         print(f"Failed to delete event '{title}': {e}", file=sys.stderr)
 
 
+def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
+    """
+    title: Generate a full mapping of event fields for the Google Sheet.
+    parameters:
+      event:
+        type: dict[str, Any]
+    returns:
+      type: dict[str, Any]
+    """
+    tags_val = event.get("tags", "")
+    if isinstance(tags_val, list):
+        tags_val = ", ".join(tags_val)
+
+    return {
+        "id": event.get("id", ""),
+        "start_time": event.get("time", ""),
+        "end_time": event.get("end_time", ""),
+        "event_name": event.get("title", event.get("event_name", "")),
+        "start_date": event.get("date", event.get("start_date", "")),
+        "end_date": event.get("end_date", ""),
+        "event_type": event.get("category", event.get("event_type", "")),
+        "featured": format_featured(event.get("featured", "")),
+        "tags": tags_val,
+        "event_description (200 char)": event.get(
+            "description", event.get("event_description", "")
+        ),
+        "organization_name": event.get("organization_name", ""),
+        "organization_url": event.get("organization_url", ""),
+        "url_linkedin": event.get("url_linkedin", ""),
+        "url_twitter": event.get("url_twitter", ""),
+        "url_other": event.get("url_other", ""),
+        "acronym": event.get("acronym", ""),
+        "paid_or_free": event.get("paid_or_free", ""),
+        "event_url": event.get("url", event.get("event_url", "")),
+        "image_url": event.get("image_url", ""),
+        "location": event.get("location", ""),
+        "city": event.get("city", ""),
+        "state-province": event.get("state-province", ""),
+        "country": event.get("country", ""),
+        "region": event.get("region", ""),
+        "in_person": format_boolean(event.get("in_person", "")),
+        "virtual": format_boolean(event.get("virtual", "")),
+        "event_category (derived)": get_derived_category(
+            event.get("in_person", ""), event.get("virtual", "")
+        ),
+        "language": event.get("language", ""),
+    }
+
+
 def update_sheet_event(
     webapp_url: str,
     secret_token: str,
     event: dict[str, Any],
 ) -> None:
     """
-    title: Update an event's ID and times in the Google Sheet via Web App.
+    title: Update an event's data in the Google Sheet via Web App.
     parameters:
       webapp_url:
         type: str
@@ -289,14 +346,7 @@ def update_sheet_event(
         )
     )
 
-    payload = {
-        "id": event.get("id", ""),
-        "start_time": event.get("time", ""),
-        "end_time": event.get("end_time", ""),
-        "event_name": event.get("title", ""),
-        "start_date": event.get("date", ""),
-        "location": event.get("location", ""),
-    }
+    payload = create_full_payload(event)
 
     req_data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
@@ -371,20 +421,39 @@ def main() -> None:
                 )
                 sys.exit(1)
 
+            existing_ids = set()
+            sheet_events_by_id = {}
             existing_keys = set()
             sheet_events_by_key = {}
             for s_ev in res_body:
+                # get id
+                s_id = ""
+                for candidate in ["id", "event_id", "event id"]:
+                    if candidate in s_ev:
+                        s_id = str(s_ev[candidate]).strip()
+                        break
+                    s_ev_lower = {
+                        k.lower().strip(): v for k, v in s_ev.items()
+                    }
+                    if candidate in s_ev_lower:
+                        s_id = str(s_ev_lower[candidate]).strip()
+                        break
+                if s_id.endswith(".0"):
+                    s_id = s_id[:-2]
+
+                if s_id:
+                    existing_ids.add(s_id)
+                    sheet_events_by_id[s_id] = s_ev
+
                 s_title = str(s_ev.get("event_name", "")).strip().lower()
                 s_date_raw = str(s_ev.get("start_date", "")).strip()
                 s_date, _ = parse_date_time(s_date_raw)
-
-                # End date
-                end_date_raw = str(s_ev.get("end_date", "")).strip()
+                s_end_date_raw = str(s_ev.get("end_date", "")).strip()
                 s_end_date = ""
-                if end_date_raw:
-                    s_end_date, _ = parse_date_time(end_date_raw)
-
+                if s_end_date_raw:
+                    s_end_date, _ = parse_date_time(s_end_date_raw)
                 s_location = str(s_ev.get("location", "")).strip().lower()
+
                 if s_title and s_date:
                     key = (s_title, s_date, s_end_date, s_location)
                     existing_keys.add(key)
@@ -410,14 +479,23 @@ def main() -> None:
 
     # Fetch open PRs to build a set of pending additions
     pending_additions = set()
+    pending_additions_ids = set()
     if github_token and repo:
         print("Fetching open pull requests to map pending additions...")
         open_sync_prs = get_open_sync_prs(repo, github_token)
-        for e_title, e_date, e_loc in open_sync_prs.keys():
-            pending_additions.add((e_title, e_date, e_loc))
+        for pr_key, pr_info in open_sync_prs.items():
+            pending_additions.add(pr_key)
+            pr_id = pr_info.get("id")
+            if pr_id:
+                pending_additions_ids.add(pr_id)
 
     yaml_keys = set()
+    yaml_ids = set()
     for event in events:
+        e_id = str(event.get("id", "")).strip()
+        if e_id:
+            yaml_ids.add(e_id)
+
         title = (
             str(event.get("title", event.get("event_name", "")))
             .strip()
@@ -450,17 +528,30 @@ def main() -> None:
                 if candidate in s_ev_lower:
                     s_id = str(s_ev_lower[candidate]).strip()
                     break
+            if s_id.endswith(".0"):
+                s_id = s_id[:-2]
 
             if not s_id:
                 continue
 
             sheet_key = (s_title, s_date, s_location)
-            if (
-                sheet_key not in yaml_keys
-                and sheet_key not in pending_additions
-            ):
+
+            # Use ID matching first if available
+            is_deleted = False
+            if s_id:
+                if s_id not in yaml_ids and s_id not in pending_additions_ids:
+                    is_deleted = True
+            else:
+                if (
+                    sheet_key not in yaml_keys
+                    and sheet_key not in pending_additions
+                ):
+                    is_deleted = True
+
+            if is_deleted:
                 deleted_events.append(
                     (
+                        s_id,
                         s_ev.get("event_name", ""),
                         s_date,
                         s_ev.get("location", ""),
@@ -468,8 +559,9 @@ def main() -> None:
                 )
 
     missing_events = []
-    events_needing_id_update = []
+    events_needing_update = []
     for event in events:
+        e_id = str(event.get("id", "")).strip()
         title = (
             str(event.get("title", event.get("event_name", "")))
             .strip()
@@ -480,43 +572,105 @@ def main() -> None:
         location = str(event.get("location", "")).strip().lower()
         if not title or not date:
             continue
-        key = (title, date, end_date, location)
-        if key not in existing_keys:
-            # Fallback: check if we can match by title, date, and a substring of location
-            fallback_key = None
-            for s_key in existing_keys:
-                if s_key[0] == title and s_key[1] == date:
-                    if s_key[3] in location or location in s_key[3]:
-                        fallback_key = s_key
-                        break
 
-            if fallback_key:
-                s_ev = sheet_events_by_key[fallback_key]
-            else:
-                missing_events.append(event)
-                continue
+        s_ev = None
+        if e_id and e_id in sheet_events_by_id:
+            s_ev = sheet_events_by_id[e_id]
         else:
-            s_ev = sheet_events_by_key[key]
+            key = (title, date, end_date, location)
+            if key in existing_keys:
+                s_ev = sheet_events_by_key[key]
+            else:
+                # Fallback: check if we can match by title, date, and a substring of location
+                fallback_key = None
+                for s_key in existing_keys:
+                    if s_key[0] == title and s_key[1] == date:
+                        if s_key[3] in location or location in s_key[3]:
+                            fallback_key = s_key
+                            break
 
-        s_id = ""
+                if fallback_key:
+                    s_ev = sheet_events_by_key[fallback_key]
+
+        if not s_ev:
+            missing_events.append(event)
+            continue
+
+        needs_update = False
+        s_id_in_sheet = ""
         for candidate in ["id", "event_id", "event id"]:
             if candidate in s_ev:
-                s_id = str(s_ev[candidate]).strip()
+                s_id_in_sheet = str(s_ev[candidate]).strip()
                 break
             s_ev_lower = {k.lower().strip(): v for k, v in s_ev.items()}
             if candidate in s_ev_lower:
-                s_id = str(s_ev_lower[candidate]).strip()
+                s_id_in_sheet = str(s_ev_lower[candidate]).strip()
                 break
-        if s_id.endswith(".0"):
-            s_id = s_id[:-2]
-        if not s_id:
-            events_needing_id_update.append(event)
+        if s_id_in_sheet.endswith(".0"):
+            s_id_in_sheet = s_id_in_sheet[:-2]
 
-    if (
-        not missing_events
-        and not deleted_events
-        and not events_needing_id_update
-    ):
+        if s_id_in_sheet != e_id:
+            needs_update = True
+        else:
+            payload = create_full_payload(event)
+            for p_key, p_val in payload.items():
+                if p_key == "id":
+                    continue
+                s_val = str(s_ev.get(p_key, "")).strip()
+
+                # Check for alternative sheet headers for some keys
+                if not s_val:
+                    if p_key == "event_name":
+                        s_val = str(s_ev.get("title", "")).strip()
+                    elif p_key == "start_date":
+                        s_val = str(s_ev.get("date", "")).strip()
+                    elif p_key == "start_time":
+                        s_val = str(s_ev.get("time", "")).strip()
+                    elif p_key == "event_url":
+                        s_val = str(s_ev.get("url", "")).strip()
+
+                if p_key in (
+                    "in_person",
+                    "virtual",
+                    "featured",
+                    "paid_or_free",
+                ):
+                    s_val = s_val.lower()
+                    p_str = str(p_val).lower()
+                    if s_val != p_str:
+                        if s_val in ("yes", "1", "true") and p_str in (
+                            "yes",
+                            "1",
+                            "true",
+                        ):
+                            continue
+                        if s_val in ("no", "0", "false", "") and p_str in (
+                            "no",
+                            "0",
+                            "false",
+                            "",
+                        ):
+                            continue
+                        needs_update = True
+                        break
+                elif p_key in ("start_date", "end_date"):
+                    if (
+                        s_val
+                        and p_val
+                        and parse_date_time(s_val)[0]
+                        != parse_date_time(str(p_val))[0]
+                    ):
+                        needs_update = True
+                        break
+                else:
+                    if s_val != str(p_val).strip():
+                        needs_update = True
+                        break
+
+        if needs_update:
+            events_needing_update.append(event)
+
+    if not missing_events and not deleted_events and not events_needing_update:
         print(
             "All events are already in sync with the Google Sheet. No action needed."
         )
@@ -527,19 +681,19 @@ def main() -> None:
         print(
             f"Found {len(deleted_events)} event(s) deleted from YAML. Syncing deletions to Google Sheet..."
         )
-        for d_title, d_date, d_location in deleted_events:
+        for d_id, d_title, d_date, d_location in deleted_events:
             print(f"Deleting event from sheet: '{d_title}' ({d_date})...")
             delete_sheet_event(
-                webapp_url, secret_token, d_title, d_date, d_location
+                webapp_url, secret_token, d_id, d_title, d_date, d_location
             )
 
-    # Process ID updates
-    if events_needing_id_update:
+    # Process updates
+    if events_needing_update:
         print(
-            f"Found {len(events_needing_id_update)} event(s) in sheet missing their assigned ID. Syncing IDs..."
+            f"Found {len(events_needing_update)} event(s) that need updating in the sheet. Syncing updates..."
         )
-        for event in events_needing_id_update:
-            print(f"Updating ID in sheet for event: '{event.get('title')}'...")
+        for event in events_needing_update:
+            print(f"Updating event in sheet: '{event.get('title')}'...")
             update_sheet_event(webapp_url, secret_token, event)
 
     if missing_events:
@@ -564,44 +718,7 @@ def main() -> None:
 
     success_count = 0
     for event in missing_events:
-        tags_val = event.get("tags", "")
-        if isinstance(tags_val, list):
-            tags_val = ", ".join(tags_val)
-
-        payload = {
-            "id": event.get("id", ""),
-            "start_time": event.get("time", ""),
-            "end_time": event.get("end_time", ""),
-            "event_name": event.get("title", event.get("event_name", "")),
-            "start_date": event.get("date", event.get("start_date", "")),
-            "end_date": event.get("end_date", ""),
-            "event_type": event.get("category", event.get("event_type", "")),
-            "featured": format_featured(event.get("featured", "")),
-            "tags": tags_val,
-            "event_description (200 char)": event.get(
-                "description", event.get("event_description", "")
-            ),
-            "organization_name": event.get("organization_name", ""),
-            "organization_url": event.get("organization_url", ""),
-            "url_linkedin": event.get("url_linkedin", ""),
-            "url_twitter": event.get("url_twitter", ""),
-            "url_other": event.get("url_other", ""),
-            "acronym": event.get("acronym", ""),
-            "paid_or_free": event.get("paid_or_free", ""),
-            "event_url": event.get("url", event.get("event_url", "")),
-            "image_url": event.get("image_url", ""),
-            "location": event.get("location", ""),
-            "city": event.get("city", ""),
-            "state-province": event.get("state-province", ""),
-            "country": event.get("country", ""),
-            "region": event.get("region", ""),
-            "in_person": format_boolean(event.get("in_person", "")),
-            "virtual": format_boolean(event.get("virtual", "")),
-            "event_category (derived)": get_derived_category(
-                event.get("in_person", ""), event.get("virtual", "")
-            ),
-            "language": event.get("language", ""),
-        }
+        payload = create_full_payload(event)
 
         print(
             f"Syncing event: '{payload['event_name']}' ({payload['start_date']})..."
