@@ -1046,11 +1046,44 @@ def main() -> None:
                         )
                         if existing_pr_ev:
                             is_changed_from_pr = False
+                            yaml_keys = {
+                                "id",
+                                "lat",
+                                "lng",
+                                "title",
+                                "description",
+                                "date",
+                                "time",
+                                "location",
+                                "region",
+                                "category",
+                                "url",
+                                "tags",
+                                "end_date",
+                                "end_time",
+                                "featured",
+                                "organization_name",
+                                "organization_url",
+                                "url_linkedin",
+                                "url_twitter",
+                                "url_other",
+                                "acronym",
+                                "paid_or_free",
+                                "image_url",
+                                "in_person",
+                                "virtual",
+                                "language",
+                            }
                             for k, val in mapped_event.items():
+                                if k not in yaml_keys:
+                                    continue
                                 existing_val = existing_pr_ev.get(k)
                                 if k in ("in_person", "virtual", "featured"):
                                     if bool(existing_val) != bool(val):
                                         is_changed_from_pr = True
+                                        print(
+                                            f"DEBUG(edit): changed key '{k}': sheet='{val}', branch='{existing_val}'"
+                                        )
                                         break
                                 else:
                                     if existing_val != val:
@@ -1184,11 +1217,44 @@ def main() -> None:
 
                         # Compare fields
                         is_changed = False
+                        yaml_keys = {
+                            "id",
+                            "lat",
+                            "lng",
+                            "title",
+                            "description",
+                            "date",
+                            "time",
+                            "location",
+                            "region",
+                            "category",
+                            "url",
+                            "tags",
+                            "end_date",
+                            "end_time",
+                            "featured",
+                            "organization_name",
+                            "organization_url",
+                            "url_linkedin",
+                            "url_twitter",
+                            "url_other",
+                            "acronym",
+                            "paid_or_free",
+                            "image_url",
+                            "in_person",
+                            "virtual",
+                            "language",
+                        }
                         for k, val in mapped_event.items():
+                            if k not in yaml_keys:
+                                continue
                             existing_val = existing_pr_ev.get(k)
                             if k in ("in_person", "virtual", "featured"):
                                 if bool(existing_val) != bool(val):
                                     is_changed = True
+                                    print(
+                                        f"DEBUG: changed key '{k}': sheet='{val}', branch='{existing_val}'"
+                                    )
                                     break
                             else:
                                 if existing_val != val:
