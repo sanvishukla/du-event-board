@@ -179,3 +179,25 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+
+  - id: "10"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: djfgbb
+    description: kmklm
+    date: "2026-06-29"
+    time: "10:00"
+    location: delhi
+    region: asia
+    category: jhk,n
+    url: www.sample.com
+    tags:
+      - kj
+      - nk
+    end_date: "2026-07-08"
+    featured: false
+    paid_or_free: free
+    image_url: kjnkn
+    in_person: true
+    virtual: true
+    language: english
