@@ -122,7 +122,31 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [currentPage]);
+
+    // 1. Update Document Title dynamically for any page added now or in the future
+    let newTitle = "DU Event Board - Discover Events Near You";
+
+    if (currentPage === "event-details" && selectedEvent) {
+      newTitle = `${selectedEvent.title} | DU Event Board`;
+    } else if (currentPage && currentPage !== "events") {
+      // Auto-formats "about-us" to "About Us" or "sponsors" to "Sponsors"
+      const formattedPage = currentPage
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      newTitle = `${formattedPage} | DU Event Board`;
+    }
+
+    document.title = newTitle;
+
+    // 2. Explicitly tell Google Analytics that the page has changed
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", "page_view", {
+        page_location: window.location.href,
+        page_title: document.title,
+      });
+    }
+  }, [currentPage, selectedEvent]);
 
   const [theme, setTheme] = useState(() => {
     // Check if we are in a browser and if localStorage.getItem actually exists
