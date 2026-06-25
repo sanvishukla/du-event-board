@@ -202,5 +202,31 @@
     "category": "Conference",
     "url": "https://www.pyohio.org/2026/",
     "description": "PyOhio is an annual conference for Python developers, featuring talks, tutorials, and community events."
+  },
+  {
+    "id": "202606251336064915",
+    "lat": 50.0469432,
+    "lng": 19.9971534,
+    "title": "EuroPython 2026",
+    "description": "",
+    "date": "2026-07-13",
+    "time": "",
+    "location": "Krakow, Poland",
+    "region": "Europe",
+    "category": "Conference",
+    "url": "https://ep2026.europython.eu",
+    "tags": [
+      "python"
+    ],
+    "end_date": "2026-07-19",
+    "end_time": "",
+    "organization_name": "EuroPython Society (EPS)",
+    "organization_url": "https://www.europython-society.org/coc/",
+    "url_linkedin": "https://www.linkedin.com/company/europython/",
+    "url_twitter": "https://twitter.com/europython",
+    "paid_or_free": "paid",
+    "image_url": "https://raw.githubusercontent.com/data-umbrella/resources/main/events-images/2024/2024-europython.png",
+    "in_person": true,
+    "language": "English"
   }
 ]
