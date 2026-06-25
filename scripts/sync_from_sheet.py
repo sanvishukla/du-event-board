@@ -1398,8 +1398,11 @@ def main() -> None:
                 # A deletion PR should be closed if the user re-adds the event to the sheet
                 if pr_key in sheet_keys or event_in_yaml:
                     should_close = True
-            else:
-                # An addition/edit PR should be closed if the user deletes the event from the sheet
+            elif branch_name.startswith(
+                "sync/edit-"
+            ) or branch_name.startswith("sync/add-"):
+                # An addition/edit PR created by sync_from_sheet should be closed
+                # if the user deletes the event from the sheet
                 if pr_key not in sheet_keys and not event_in_yaml:
                     should_close = True
 
