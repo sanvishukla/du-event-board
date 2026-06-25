@@ -179,3 +179,25 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+
+  - id: "202606251337185612"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: Event Test
+    description: xyz
+    date: "2026-06-26"
+    time: "10:00"
+    location: New Delhi
+    region: Asia
+    category: Event xyz
+    url: www.sample.com
+    tags:
+      - xyz
+      - xyz
+    end_date: "2026-07-09"
+    featured: false
+    organization_name: xyz
+    paid_or_free: free
+    in_person: true
+    virtual: true
+    language: English
