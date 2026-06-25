@@ -179,3 +179,27 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+  - id: "202606251336033661"
+    lat: 14.693425
+    lng: -17.447938
+    title: "Indaba 2026"
+    description: ""
+    date: "2026-08-02"
+    time: ""
+    location: "Dakar, Senegal"
+    region: "Africa"
+    category: "Conference"
+    url: "https://deeplearningindaba.com/2026/"
+    tags:
+      - DL
+    end_date: "2026-08-07"
+    end_time: ""
+    featured: true
+    organization_name: "Deep Learning Indaba Ltd"
+    organization_url: "https://deeplearningindaba.com/"
+    url_linkedin: "https://www.linkedin.com/company/deep-learning-indaba/"
+    url_twitter: "https://twitter.com/deepindaba"
+    paid_or_free: "paid"
+    image_url: "https://deeplearningindaba.com/2024/wp-content/uploads/sites/16/2023/12/Monument-to-african-renaissance-senegal-africa-sculpture-statue.jpg"
+    in_person: true
+    language: "English"
