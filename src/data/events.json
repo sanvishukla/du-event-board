@@ -202,5 +202,28 @@
     "category": "Conference",
     "url": "https://www.pyohio.org/2026/",
     "description": "PyOhio is an annual conference for Python developers, featuring talks, tutorials, and community events."
+  },
+  {
+    "id": "202606251336095651",
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "title": "DjangoCon US 2026",
+    "description": "",
+    "date": "2026-08-24",
+    "time": "",
+    "location": "Chicago, IL, USA",
+    "region": "Canada / USA",
+    "category": "Conference",
+    "url": "https://2026.djangocon.us",
+    "end_date": "2026-08-28",
+    "end_time": "",
+    "organization_name": "Django Software Foundation",
+    "organization_url": "https://2026.djangocon.us",
+    "url_linkedin": "https://www.linkedin.com/company/djangocon/",
+    "url_twitter": "https://twitter.com/djangocon",
+    "url_other": "https://github.com/djangocon/",
+    "paid_or_free": "paid",
+    "in_person": true,
+    "language": "English"
   }
 ]
