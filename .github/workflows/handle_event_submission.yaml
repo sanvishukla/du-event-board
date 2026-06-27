@@ -27,6 +27,7 @@ jobs:
         run: pip install pyyaml
 
       - name: Add event to events.yaml and regenerate JSON
+        id: add_event
         env:
           EVENT_PAYLOAD: ${{ toJson(github.event.client_payload.event_data || github.event.client_payload) }}
         run: python scripts/add_event_from_submission.py
@@ -53,6 +54,8 @@ jobs:
           title: "feat: add event '${{ github.event.client_payload.event_data['Event Name'] || github.event.client_payload['Event Name'] || github.event.client_payload.event_name }}'"
           body: |
             A new event has been submitted via the Google Form.
+
+            ${{ steps.add_event.outputs.duplicate_note }}
 
             ### Event Details
             - **Event Name**: `${{ github.event.client_payload.event_data['Event Name'] || github.event.client_payload['Event Name'] || github.event.client_payload.event_name }}`
