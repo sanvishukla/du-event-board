@@ -224,5 +224,27 @@
     "language": [
       "english"
     ]
+  },
+  {
+    "id": "202606271422105201",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "title": "PyOhio 2026",
+    "description": "nkllnlk",
+    "date": "2026-07-08",
+    "time": "10:00",
+    "location": "delhi",
+    "region": "asia",
+    "category": "xyz",
+    "url": "www.sample.com",
+    "tags": [
+      "m",
+      "nn"
+    ],
+    "end_date": "2026-07-10",
+    "featured": true,
+    "in_person": true,
+    "virtual": false,
+    "language": "english"
   }
 ]
