@@ -179,3 +179,17 @@ events:
     in_person: "Yes"
     virtual: "Unknown"
     language: "English"
+  - id: "202606271425444316"
+    title: "New Event"
+    description: "nk,m,m"
+    date: "2026-08-20"
+    time: ""
+    location: "new dellhi"
+    region: "asia"
+    category: ""
+    url: "https://www.sample.com"
+    tags:
+      - python
+    end_date: ""
+    end_time: ""
+    language: "[Ljava.lang.Object;@4a39b957"
