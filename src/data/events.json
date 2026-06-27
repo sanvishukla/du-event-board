@@ -202,27 +202,5 @@
     "category": "Conference",
     "url": "https://www.pyohio.org/2026/",
     "description": "PyOhio is an annual conference for Python developers, featuring talks, tutorials, and community events."
-  },
-  {
-    "id": "202606271332217906",
-    "lat": 51.2086975,
-    "lng": 89.2343748,
-    "title": "New Event",
-    "description": "nk,m,m",
-    "date": "2026-08-20",
-    "location": "new dellhi",
-    "city": "",
-    "state": "",
-    "country": "india",
-    "region": "asia",
-    "category": "",
-    "tags": [
-      "python"
-    ],
-    "featured": 0,
-    "url": "https://www.sample.com",
-    "language": [
-      "english"
-    ]
   }
 ]
