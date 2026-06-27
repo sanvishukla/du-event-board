@@ -224,5 +224,26 @@
     "language": [
       "english"
     ]
+  },
+  {
+    "id": "202606271355252976",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "title": "New Event",
+    "description": "knkml;ml;km",
+    "date": "2026-06-30",
+    "time": "10:00",
+    "location": "delhi",
+    "region": "asia",
+    "category": "",
+    "url": "www.sample.com",
+    "tags": [
+      "knkjn"
+    ],
+    "end_date": "2026-06-30",
+    "featured": false,
+    "in_person": false,
+    "virtual": true,
+    "language": "english"
   }
 ]
