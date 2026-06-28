@@ -147,27 +147,6 @@
     ]
   },
   {
-    "id": "8",
-    "lat": -27.544562,
-    "lng": -48.4999697,
-    "title": "Community Hackathon - Florianópolis",
-    "description": "48-hour hackathon focused on building solutions for local community challenges. Teams of 3-5 people. Prizes for top 3 teams!",
-    "date": "2026-04-25",
-    "time": "08:00",
-    "location": "ACATE, Rodovia SC-401 600",
-    "city": "Florianópolis",
-    "state": "Santa Catarina",
-    "country": "Brazil",
-    "region": "South America",
-    "category": "Community",
-    "url": "https://example.com/hackathon-floripa",
-    "tags": [
-      "hackathon",
-      "community",
-      "innovation"
-    ]
-  },
-  {
     "id": "9",
     "lat": 41.4996574,
     "lng": -81.6936772,
