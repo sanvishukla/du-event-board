@@ -67,13 +67,10 @@
     "lat": -22.9110137,
     "lng": -43.2093727,
     "title": "Data Science Bootcamp - Rio de Janeiro",
-    "description": "A full-day bootcamp on data science fundamentals: pandas, scikit-learn, and visualization with matplotlib.",
+    "description": "",
     "date": "2026-04-05",
     "time": "09:00",
     "location": "Lab Analytics, Rua Visconde de Pirajá 330",
-    "city": "Rio de Janeiro",
-    "state": "Rio de Janeiro",
-    "country": "Brazil",
     "region": "South America",
     "category": "Education",
     "url": "https://example.com/ds-bootcamp-rj",
@@ -81,7 +78,9 @@
       "data-science",
       "machine-learning",
       "python"
-    ]
+    ],
+    "end_date": "",
+    "end_time": ""
   },
   {
     "id": "5",
