@@ -174,3 +174,21 @@ events:
     image_url: "https://github.com/data-umbrella/resources/blob/main/events-images/2024/2024-pyohio.png?raw=true"
     in_person: true
     language: "English"
+
+  - id: "202606281049376377"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: event
+    description: kljlkm
+    date: "2026-06-18"
+    time: "10:00"
+    location: delhi
+    region: asia
+    category: nkljn
+    url: www.sample.com
+    tags: []
+    end_date: "2026-06-30"
+    featured: false
+    in_person: false
+    virtual: true
+    language: english
