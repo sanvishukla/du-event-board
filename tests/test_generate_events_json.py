@@ -41,10 +41,10 @@ def test_validate_event_missing_fields():
     event = {
         "id": "1",
         "title": "Test Event",
-        # missing description, date, location, region, category
+        # missing description, date, location, region
     }
     errors = validate_event(event, 1)
-    assert len(errors) == 5
+    assert len(errors) == 4
     assert any("Missing required field 'description'" in e for e in errors)
 
 def test_validate_event_invalid_date():
