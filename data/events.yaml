@@ -154,28 +154,48 @@ events:
   - id: "9"
     lat: 41.4996574
     lng: -81.6936772
-    event_name: "PyOhio 2026"
-    start_date: "2026-07-25"
-    end_date: "2026-07-26"
-    event_type: "Conference"
-    featured: 0
+    title: "PyOhio 2026"
+    description: ""
+    date: "2026-07-25"
+    time: ""
+    location: "Cleveland, OH, USA"
+    region: "Canada / USA"
+    category: "Conference"
+    url: "https://www.pyohio.org/2026/"
     tags:
       - python
-    event_description: "PyOhio is an annual conference for Python developers, featuring talks, tutorials, and community events."
+    end_date: "2026-07-26"
+    end_time: ""
     organization_name: "PyOhio"
     organization_url: "https://www.pyohio.org"
     url_linkedin: "https://www.linkedin.com/company/pyohio/about/"
     url_twitter: "https://twitter.com/pyohio"
-    url_other: ""
-    acronym: ""
     paid_or_free: "paid"
-    event_url: "https://www.pyohio.org/2026/"
     image_url: "https://github.com/data-umbrella/resources/blob/main/events-images/2024/2024-pyohio.png?raw=true"
-    location: "Cleveland"
-    city: "Cleveland"
-    state: "Ohio"
-    country: "USA"
-    region: "North America"
-    in_person: "Yes"
-    virtual: "Unknown"
+    in_person: true
+    language: "English"
+  - id: "202606281725002919"
+    lat: 37.5666791
+    lng: 126.9782914
+    title: "ICML 2026"
+    description: ""
+    date: "2026-07-06"
+    time: ""
+    location: "Seoul, South Korea"
+    region: "Asia"
+    category: "Conference"
+    url: "https://icml.cc/Conferences/2026"
+    tags:
+      - AI
+      - ML
+      - CV
+    end_date: "2026-07-11"
+    end_time: ""
+    organization_name: "Int'l Conf on Machine Learning"
+    organization_url: "https://icml.cc/"
+    url_linkedin: "None"
+    url_twitter: "https://twitter.com/icmlconf"
+    acronym: "ICML"
+    paid_or_free: "paid"
+    in_person: true
     language: "English"
