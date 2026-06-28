@@ -368,24 +368,16 @@ def main() -> None:
 
     new_title = str(event_data["title"]).lower()
     new_date = str(event_data["date"])
-    duplicate_ids = []
     for event in events:
         if (
             str(event.get("title", "")).lower() == new_title
             and str(event.get("date", "")) == new_date
         ):
-            dup_id = event.get("id")
-            if dup_id:
-                duplicate_ids.append(str(dup_id))
             print(
-                f"Warning: Event '{event_data['title']}' on {new_date} might be a duplicate of existing event (ID: {dup_id}).",
+                f"Event '{event_data['title']}' on {new_date} already exists in events.yaml. Skipping.",
                 file=sys.stderr,
             )
-
-    if "GITHUB_OUTPUT" in os.environ and duplicate_ids:
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
-            note = f"⚠️ **Note:** This event might be a duplicate of existing event(s) with ID(s): {', '.join(duplicate_ids)}"
-            f.write(f"duplicate_note={note}\n")
+            sys.exit(0)
 
     import random
     from datetime import timezone
@@ -437,6 +429,7 @@ def main() -> None:
         "url",
         "tags",
         "end_date",
+        "end_time",
         "featured",
         "organization_name",
         "organization_url",

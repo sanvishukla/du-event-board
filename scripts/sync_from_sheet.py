@@ -31,7 +31,7 @@ CACHE_FILE = PROJECT_ROOT / "data" / ".geocode_cache.json"
 FIELD_MAPPING = {
     "id": ["id", "event_id", "event id"],
     "title": ["event_name", "title", "event name"],
-    "end_date": ["end_date", "end date"],
+    "end_date": ["end_date", "end date", "end date and time"],
     "category": ["event_type", "category", "event type"],
     "description": [
         "event_description (200 char)",
@@ -389,6 +389,54 @@ def get_open_sync_prs(
     except Exception as e:
         print(f"Warning: Failed to fetch open PRs: {e}", file=sys.stderr)
     return open_prs
+
+
+
+
+def delete_sheet_event(
+    webapp_url: str, secret_token: str, title: str, start_date: str
+) -> None:
+    """
+    title: Delete an event from the Google Sheet via Apps Script.
+    parameters:
+      webapp_url:
+        type: str
+      secret_token:
+        type: str
+      title:
+        type: str
+      start_date:
+        type: str
+    """
+    data = {
+        "action": "delete_event",
+        "token": secret_token,
+        "event_name": title,
+        "start_date": start_date,
+    }
+    req = urllib.request.Request(
+        webapp_url,
+        data=json.dumps(data).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            resp_data = json.loads(response.read().decode("utf-8"))
+            if resp_data.get("success"):
+                print(
+                    f"Successfully deleted rejected event from sheet: '{title}'"
+                )
+            else:
+                print(
+                    f"Warning from sheet deletion: {resp_data.get('error')}",
+                    file=sys.stderr,
+                )
+    except Exception as e:
+        print(
+            f"Warning: Failed to delete event '{title}' from sheet: {e}",
+            file=sys.stderr,
+        )
 
 
 def get_field_value(s_ev: dict[str, Any], key: str) -> str:
@@ -851,7 +899,9 @@ def main() -> None:
     # Fetch open PRs to calculate max_id and map pending additions
     open_sync_prs = {}
     if github_token and repo:
-        print("Fetching open sync pull requests from GitHub...")
+        print(
+            "Fetching open sync pull requests from GitHub..."
+        )
         open_sync_prs = get_open_sync_prs(repo, github_token)
 
     # Index open PRs by ID
@@ -882,8 +932,9 @@ def main() -> None:
         # End date
         end_date_raw = get_field_value(s_ev, "end_date")
         s_end_date = ""
+        s_end_time = ""
         if end_date_raw:
-            s_end_date, _ = parse_date_time(end_date_raw)
+            s_end_date, s_end_time = parse_date_time(end_date_raw)
 
         # Normalization of virtual/location
         virtual_val = clean_boolean(get_field_value(s_ev, "virtual"))
@@ -949,8 +1000,16 @@ def main() -> None:
         else:
             final_time = ""
 
+        has_explicit_time_in_end_date = False
+        if end_date_raw:
+            has_explicit_time_in_end_date = bool(
+                re.search(r"\d{1,2}:\d{2}", end_date_raw)
+            )
+
         if norm_sheet_end_time:
             final_end_time = norm_sheet_end_time
+        elif has_explicit_time_in_end_date:
+            final_end_time = s_end_time
         elif existing_ev and existing_ev.get("end_time"):
             final_end_time = existing_ev.get("end_time")
         else:
@@ -1670,6 +1729,11 @@ def main() -> None:
                 run_git_cmd(
                     ["git", "add", "data/events.yaml", "src/data/events.json"]
                 )
+            status_out = run_git_cmd(["git", "status", "--porcelain"])
+            if not status_out:
+                print(f"  No formatting or content changes for event '{title}'. Skipping commit.")
+                continue
+
             change_desc = (
                 "addition of"
                 if change_type == "add"

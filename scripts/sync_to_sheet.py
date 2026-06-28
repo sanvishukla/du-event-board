@@ -286,6 +286,8 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
         "event_name": event.get("title", event.get("event_name", "")),
         "start_date": event.get("date", event.get("start_date", "")),
         "end_date": event.get("end_date", ""),
+        "Start Date and Time": f"{event.get('date', event.get('start_date', ''))} {event.get('time', '')}".strip(),
+        "End Date and Time": f"{event.get('end_date', '')} {event.get('end_time', '')}".strip(),
         "event_type": event.get("category", event.get("event_type", "")),
         "featured": format_featured(event.get("featured", "")),
         "tags": tags_val,
