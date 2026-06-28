@@ -79,13 +79,10 @@ events:
     lat: -19.9227318
     lng: -43.9450948
     title: "DevOps Meetup - Belo Horizonte"
-    description: "Monthly DevOps meetup discussing CI/CD pipelines, container orchestration, and infrastructure as code."
+    description: ""
     date: "2026-04-10"
     time: "19:00"
     location: "MG Tech Center, Av. Afonso Pena 1500"
-    city: "Belo Horizonte"
-    state: "Minas Gerais"
-    country: "Brazil"
     region: "South America"
     category: "Technology"
     url: "https://example.com/devops-bh"
@@ -93,6 +90,8 @@ events:
       - devops
       - docker
       - kubernetes
+    end_date: ""
+    end_time: ""
 
   - id: "6"
     lat: -30.0324999
