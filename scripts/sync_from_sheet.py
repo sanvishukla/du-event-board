@@ -898,13 +898,11 @@ def main() -> None:
 
     # Fetch open PRs to calculate max_id and map pending additions
     open_sync_prs = {}
-    closed_unmerged_prs = {}
     if github_token and repo:
         print(
-            "Fetching open and recently closed sync pull requests from GitHub..."
+            "Fetching open sync pull requests from GitHub..."
         )
         open_sync_prs = get_open_sync_prs(repo, github_token)
-        closed_unmerged_prs = get_closed_unmerged_sync_prs(repo, github_token)
 
     # Index open PRs by ID
     open_prs_by_id = {}
