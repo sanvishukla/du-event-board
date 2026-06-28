@@ -391,75 +391,6 @@ def get_open_sync_prs(
     return open_prs
 
 
-def get_closed_unmerged_sync_prs(
-    repo: str, token: str
-) -> dict[tuple[str, str, str], dict[str, Any]]:
-    """
-    title: >-
-      Fetch recently closed, unmerged sync PRs and parse their event details.
-    parameters:
-      repo:
-        type: str
-      token:
-        type: str
-    returns:
-      type: dict[tuple[str, str, str], dict[str, Any]]
-    """
-    url = f"https://api.github.com/repos/{repo}/pulls?state=closed&sort=updated&direction=desc&per_page=100"
-    req = urllib.request.Request(
-        url,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "GitHubActions-Sync",
-        },
-        method="GET",
-    )
-    closed_prs = {}
-    try:
-        with urllib.request.urlopen(req) as response:
-            prs = json.loads(response.read().decode("utf-8"))
-            for pr in prs:
-                # We only care about PRs that were closed without merging
-                if pr.get("merged_at") is not None:
-                    continue
-
-                body = pr.get("body") or ""
-                branch = pr.get("head", {}).get("ref") or ""
-                if not (
-                    branch.startswith("sync/add-")
-                    or branch.startswith("event-submission-")
-                ):
-                    continue
-
-                title_match = re.search(
-                    r"-\s+\*\*Title\*\*:\s*`([^`]+)`", body
-                )
-                if not title_match:
-                    title_match = re.search(
-                        r"-\s+\*\*Event Name\*\*:\s*`([^`]+)`", body
-                    )
-                date_match = re.search(
-                    r"-\s+\*\*Start Date\*\*:\s*`([^`]+)`", body
-                )
-                loc_match = re.search(
-                    r"-\s+\*\*Location\*\*:\s*`([^`]+)`", body
-                )
-
-                if title_match and date_match:
-                    e_title = title_match.group(1).strip()
-                    e_date = date_match.group(1).strip()
-                    e_loc = loc_match.group(1).strip() if loc_match else ""
-                    key = (e_title.lower(), e_date, e_loc.lower())
-                    if key not in closed_prs:
-                        closed_prs[key] = {
-                            "number": pr["number"],
-                            "branch": branch,
-                            "title": e_title,
-                        }
-    except Exception as e:
-        print(f"Warning: Failed to fetch closed PRs: {e}", file=sys.stderr)
-    return closed_prs
 
 
 def delete_sheet_event(
@@ -1432,19 +1363,6 @@ def main() -> None:
                     if existing_pr_ev:
                         updated_yaml_events.append(existing_pr_ev)
             else:
-                # Before assuming it's a brand new event, check if the user recently closed a PR for it!
-                if pr_key in closed_unmerged_prs:
-                    print(
-                        f"Self-healing: Found recently closed PR for '{s_title}'. Deleting from sheet..."
-                    )
-                    webapp_url = os.environ.get("GOOGLE_SHEET_WEBAPP_URL")
-                    secret_token = os.environ.get("GOOGLE_SHEET_SECRET_TOKEN")
-                    if webapp_url and secret_token:
-                        delete_sheet_event(
-                            webapp_url, secret_token, s_title, s_date
-                        )
-                    continue
-
                 # Brand new event
                 print(f"New event detected: '{s_title}' on {s_date}")
                 date_part = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
