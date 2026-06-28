@@ -1720,6 +1720,11 @@ def main() -> None:
                 run_git_cmd(
                     ["git", "add", "data/events.yaml", "src/data/events.json"]
                 )
+            status_out = run_git_cmd(["git", "status", "--porcelain"])
+            if not status_out:
+                print(f"  No formatting or content changes for event '{title}'. Skipping commit.")
+                continue
+
             change_desc = (
                 "addition of"
                 if change_type == "add"
