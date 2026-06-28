@@ -9,6 +9,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: sync-from-sheet
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
