@@ -4,9 +4,6 @@ on:
   repository_dispatch:
     types: [sync_from_sheet]
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: write
