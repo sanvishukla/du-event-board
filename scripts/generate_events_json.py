@@ -21,9 +21,12 @@ import yaml  # type: ignore
 REQUIRED_FIELDS = [
     "id",
     "title",
+    "description",
     "date",
     "location",
     "region",
+    "category",
+    "tags",
 ]
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent

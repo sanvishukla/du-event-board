@@ -391,8 +391,6 @@ def get_open_sync_prs(
     return open_prs
 
 
-
-
 def delete_sheet_event(
     webapp_url: str, secret_token: str, title: str, start_date: str
 ) -> None:
@@ -899,9 +897,7 @@ def main() -> None:
     # Fetch open PRs to calculate max_id and map pending additions
     open_sync_prs = {}
     if github_token and repo:
-        print(
-            "Fetching open sync pull requests from GitHub..."
-        )
+        print("Fetching open sync pull requests from GitHub...")
         open_sync_prs = get_open_sync_prs(repo, github_token)
 
     # Index open PRs by ID
@@ -1731,7 +1727,9 @@ def main() -> None:
                 )
             status_out = run_git_cmd(["git", "status", "--porcelain"])
             if not status_out:
-                print(f"  No formatting or content changes for event '{title}'. Skipping commit.")
+                print(
+                    f"  No formatting or content changes for event '{title}'. Skipping commit."
+                )
                 continue
 
             change_desc = (
