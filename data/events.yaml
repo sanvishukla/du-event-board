@@ -17,6 +17,8 @@ events:
       - python
       - programming
       - community
+    end_date: ""
+    end_time: ""
 
   - id: "2"
     lat: -23.5506507
