@@ -150,6 +150,8 @@ events:
       - hackathon
       - community
       - innovation
+    end_date: ""
+    end_time: ""
 
   - id: "9"
     lat: 41.4996574
