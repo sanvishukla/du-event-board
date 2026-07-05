@@ -285,92 +285,6 @@ def close_pull_request(repo: str, token: str, pr_num: int) -> None:
         print(f"Error closing pull request #{pr_num}: {e}", file=sys.stderr)
 
 
-def add_event_to_sheet(
-    event: dict[str, Any], webapp_url: str, secret_token: str
-) -> None:
-    """
-    title: Add an event missing from the Google Sheet back to the Google Sheet.
-    parameters:
-      event:
-        type: dict[str, Any]
-      webapp_url:
-        type: str
-      secret_token:
-        type: str
-    """
-    parsed_post_url = urllib.parse.urlparse(webapp_url)
-    post_query_params = urllib.parse.parse_qs(parsed_post_url.query)
-    post_query_params["token"] = [secret_token]
-    new_post_query = urllib.parse.urlencode(post_query_params, doseq=True)
-    post_url = urllib.parse.urlunparse(
-        (
-            parsed_post_url.scheme,
-            parsed_post_url.netloc,
-            parsed_post_url.path,
-            parsed_post_url.params,
-            new_post_query,
-            parsed_post_url.fragment,
-        )
-    )
-
-    tags_val = event.get("tags", "")
-    if isinstance(tags_val, list):
-        tags_val = ", ".join(tags_val)
-
-    payload = {
-        "id": event.get("id", ""),
-        "start_time": event.get("time", ""),
-        "end_time": event.get("end_time", ""),
-        "event_name": event.get("title", event.get("event_name", "")),
-        "start_date": event.get("date", event.get("start_date", "")),
-        "end_date": event.get("end_date", ""),
-        "Start Date and Time": f"{event.get('date', event.get('start_date', ''))} {event.get('time', '')}".strip(),
-        "End Date and Time": f"{event.get('end_date', '')} {event.get('end_time', '')}".strip(),
-        "event_type": event.get("category", event.get("event_type", "")),
-        "featured": "Yes" if event.get("featured") else "No",
-        "tags": tags_val,
-        "event_description (200 char)": event.get(
-            "description", event.get("event_description", "")
-        ),
-        "organization_name": event.get("organization_name", ""),
-        "organization_url": event.get("organization_url", ""),
-        "url_linkedin": event.get("url_linkedin", ""),
-        "url_twitter": event.get("url_twitter", ""),
-        "url_other": event.get("url_other", ""),
-        "acronym": event.get("acronym", ""),
-        "paid_or_free": event.get("paid_or_free", ""),
-        "event_url": event.get("url", event.get("event_url", "")),
-        "image_url": event.get("image_url", ""),
-        "location": event.get("location", ""),
-        "city": event.get("city", ""),
-        "state-province": event.get("state-province", ""),
-        "country": event.get("country", ""),
-        "region": event.get("region", ""),
-        "in_person": "Yes" if event.get("in_person") else "No",
-        "virtual": "Yes" if event.get("virtual") else "No",
-        "event_category (derived)": "hybrid"
-        if (event.get("in_person") and event.get("virtual"))
-        else ("virtual" if event.get("virtual") else "in-person"),
-        "language": event.get("language", ""),
-    }
-
-    req_data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        post_url,
-        data=req_data,
-        headers={
-            "Content-Type": "application/json",
-            "User-Agent": "GitHubActions-Sync",
-        },
-        method="POST",
-    )
-    with urllib.request.urlopen(req) as response:
-        res = json.loads(response.read().decode("utf-8"))
-        print(
-            f"Synced missing event back to sheet: '{payload['event_name']}' -> {res}"
-        )
-
-
 def get_open_sync_prs(
     repo: str, token: str
 ) -> dict[tuple[str, str, str], dict[str, Any]]:
@@ -1532,26 +1446,26 @@ def main() -> None:
                     }
                 )
 
-    # Ensure any event present in the codebase but missing from the Google Sheet is synced BACK to the Google Sheet instead of raising a deletion PR
+    # Detect deletions from the sheet
     for ev in yaml_events:
         event_id = str(ev.get("id", ""))
         if event_id not in processed_yaml_ids:
             title = str(ev.get("title", ev.get("event_name", "")))
             date = str(ev.get("date", ev.get("start_date", "")))
+            location = str(ev.get("location", ""))
             print(
-                f"Event in codebase missing from Google Sheet: '{title}' on {date} (ID: {event_id}). Syncing to Google Sheet..."
+                f"Event deleted from Google Sheet: '{title}' on {date} (ID: {event_id})"
             )
-            webapp_url = os.environ.get("GOOGLE_SHEET_WEBAPP_URL")
-            secret_token = os.environ.get("GOOGLE_SHEET_SECRET_TOKEN")
-            if webapp_url and secret_token:
-                try:
-                    add_event_to_sheet(ev, webapp_url, secret_token)
-                except Exception as ex:
-                    print(
-                        f"Failed to sync missing event '{title}' to Google Sheet: {ex}",
-                        file=sys.stderr,
-                    )
-            updated_yaml_events.append(ev)
+            detected_changes.append(
+                {
+                    "type": "delete",
+                    "id": event_id,
+                    "title": title,
+                    "date": date,
+                    "location": location,
+                    "event_data": None,
+                }
+            )
 
     # Auto-close open PRs for pending additions that were deleted from the sheet
     if github_token and repo:
