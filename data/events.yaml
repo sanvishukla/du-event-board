@@ -26,9 +26,6 @@ events:
     date: "2026-03-20"
     time: "14:00"
     location: "InovaBR Hub, Av. Paulista 1578"
-    city: "São Paulo"
-    state: "São Paulo"
-    country: "Brazil"
     region: "South America"
     category: "Technology"
     url: "https://example.com/react-sp"
@@ -36,6 +33,8 @@ events:
       - react
       - javascript
       - frontend
+    end_date: ""
+    end_time: ""
 
   - id: "3"
     lat: -25.4295963
