@@ -963,14 +963,42 @@ def main() -> None:
         if s_id.endswith(".0"):
             s_id = s_id[:-2]
         existing_ev = None
-        similar_events = []
-        if s_id and s_id in yaml_by_id:
+        similar_events: list[dict[str, Any]] = []
+        if (
+            s_id
+            and s_id in yaml_by_id
+            and str(yaml_by_id[s_id].get("id")) not in processed_yaml_ids
+        ):
             existing_ev = yaml_by_id[s_id]
-        elif not s_id:
-            # Newly pasted event: do not deduplicate, but find similar ones to warn
+        else:
+            if (
+                key in yaml_index
+                and str(yaml_index[key].get("id")) not in processed_yaml_ids
+            ):
+                existing_ev = yaml_index[key]
+            else:
+                # Fallback matching by title and date ONLY
+                # because location strings might be slightly different
+                # ("Cleveland" vs "Cleveland, OH, USA")
+                title_date_matches = [
+                    ev
+                    for ev in yaml_events
+                    if str(ev.get("title", ev.get("event_name", "")))
+                    .strip()
+                    .lower()
+                    == s_title.lower()
+                    and str(ev.get("date", ev.get("start_date", ""))).strip()
+                    == s_date
+                    and str(ev.get("id")) not in processed_yaml_ids
+                ]
+                if title_date_matches:
+                    existing_ev = title_date_matches[0]
+
+        similar_events = []
+        if not existing_ev:
             if key in yaml_index:
                 similar_events.append(yaml_index[key])
-            title_date_matches = [
+            td_matches = [
                 ev
                 for ev in yaml_events
                 if str(ev.get("title", ev.get("event_name", "")))
@@ -981,7 +1009,7 @@ def main() -> None:
                 == s_date
                 and ev not in similar_events
             ]
-            similar_events.extend(title_date_matches)
+            similar_events.extend(td_matches)
 
             # Also check open PRs for similar events (by title)
             for pr_info in open_sync_prs.values():
@@ -998,25 +1026,6 @@ def main() -> None:
                         similar_events.append(
                             {"title": pr_title, "date": pr_date}
                         )
-        else:
-            if key in yaml_index:
-                existing_ev = yaml_index[key]
-            else:
-                # Fallback matching by title and date ONLY
-                # because location strings might be slightly different
-                # ("Cleveland" vs "Cleveland, OH, USA")
-                title_date_matches = [
-                    ev
-                    for ev in yaml_events
-                    if str(ev.get("title", ev.get("event_name", "")))
-                    .strip()
-                    .lower()
-                    == s_title.lower()
-                    and str(ev.get("date", ev.get("start_date", ""))).strip()
-                    == s_date
-                ]
-                if len(title_date_matches) == 1:
-                    existing_ev = title_date_matches[0]
 
         # Time and end_time preservation
         sheet_time = get_field_value(s_ev, "time").strip()
