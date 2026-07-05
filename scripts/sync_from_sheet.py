@@ -946,7 +946,17 @@ def main() -> None:
         mapped_event["title"] = s_title
         mapped_event["date"] = s_date
         mapped_event["end_date"] = s_end_date
-        mapped_event["location"] = s_location
+        mapped_event["location"] = s_location or "Online"
+
+        # Ensure required fields are not empty to prevent generate_events_json.py from failing
+        if not mapped_event.get("description"):
+            mapped_event["description"] = "No description provided."
+        if not mapped_event.get("region"):
+            mapped_event["region"] = "Unknown"
+        if not mapped_event.get("category"):
+            mapped_event["category"] = "Uncategorized"
+        if not mapped_event.get("tags"):
+            mapped_event["tags"] = "general"
 
         # Look up existing event in YAML
         s_id = get_field_value(s_ev, "id").strip()
