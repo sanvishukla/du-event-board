@@ -174,27 +174,3 @@ events:
     image_url: "https://github.com/data-umbrella/resources/blob/main/events-images/2024/2024-pyohio.png?raw=true"
     in_person: true
     language: "English"
-
-  - id: "202607051103206032"
-    lat: 28.6138954
-    lng: 77.2090057
-    title: NE
-    description: njknm,
-    date: "2026-07-22"
-    time: "10:00"
-    location: delhi
-    region: asia
-    category: mlm.,
-    url: www.sample.com
-    tags:
-      - lsdcs
-    end_date: "2026-07-29"
-    end_time: 00:00
-    featured: true
-    organization_name: kmklmk
-    organization_url: www.sample.com
-    paid_or_free: paid
-    image_url: www.sample.com
-    in_person: false
-    virtual: true
-    language: english
