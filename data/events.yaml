@@ -112,6 +112,8 @@ events:
       - design
       - ux
       - figma
+    end_date: ""
+    end_time: ""
 
   - id: "7"
     lat: -23.5506507
