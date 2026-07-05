@@ -121,9 +121,6 @@ events:
     date: "2026-04-18"
     time: "18:00"
     location: "Hacker House SP, Rua Augusta 2690"
-    city: "São Paulo"
-    state: "São Paulo"
-    country: "Brazil"
     region: "South America"
     category: "Technology"
     url: "https://example.com/rust-intro-sp"
@@ -131,6 +128,8 @@ events:
       - rust
       - programming
       - systems
+    end_date: ""
+    end_time: ""
 
   - id: "8"
     lat: -27.544562
