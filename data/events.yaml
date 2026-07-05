@@ -74,6 +74,8 @@ events:
       - data-science
       - machine-learning
       - python
+    end_date: ""
+    end_time: ""
 
   - id: "5"
     lat: -19.9227318
