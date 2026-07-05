@@ -807,8 +807,6 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
                 "description",
                 "date",
                 "time",
-                "end_date",
-                "end_time",
                 "location",
                 "region",
                 "category",
@@ -1149,6 +1147,25 @@ def main() -> None:
             # Check if any field changed
             ev_changed = False
             for k, val in mapped_event.items():
+                if k in ("state", "state-province"):
+                    existing_state = (
+                        existing_ev.get("state")
+                        or existing_ev.get("state-province")
+                        or ""
+                    )
+                    mapped_state = (
+                        mapped_event.get("state")
+                        or mapped_event.get("state-province")
+                        or ""
+                    )
+                    if (
+                        str(existing_state).strip().lower()
+                        != str(mapped_state).strip().lower()
+                    ):
+                        ev_changed = True
+                        break
+                    continue
+
                 existing_val = existing_ev.get(k)
                 if k in ("in_person", "virtual", "featured"):
                     # Normalize truthiness check for boolean fields (None/False/0/"" are all equivalent)
@@ -1156,10 +1173,21 @@ def main() -> None:
                         ev_changed = True
                         break
                 else:
-                    if existing_val != val:
-                        # Treat None as equivalent to empty string or empty list
-                        if existing_val is None and (val == "" or val == []):
-                            continue
+                    ex_norm = (
+                        ""
+                        if (
+                            existing_val is None
+                            or existing_val == []
+                            or existing_val is False
+                        )
+                        else str(existing_val).strip()
+                    )
+                    val_norm = (
+                        ""
+                        if (val is None or val == [] or val is False)
+                        else str(val).strip()
+                    )
+                    if ex_norm != val_norm:
                         ev_changed = True
                         break
 
