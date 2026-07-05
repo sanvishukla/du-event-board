@@ -206,6 +206,7 @@ events:
     image_url: "https://uploads-ssl.webflow.com/6164cdbceec2a908841609b5/61709899316ac23dda1364a8_columbus%20skyline.jpeg"
     in_person: true
     language: "English"
+
   - id: "202607052045294672"
     lat: 42.3588336
     lng: -71.0578303
