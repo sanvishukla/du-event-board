@@ -223,7 +223,6 @@ events:
     tags:
       - statistics
     end_date: "2026-08-06"
-    end_time: ""
     organization_name: "ASA"
     organization_url: "https://www.amstat.org"
     url_linkedin: "https://www.linkedin.com/company/american-statistical-association---asa/"
