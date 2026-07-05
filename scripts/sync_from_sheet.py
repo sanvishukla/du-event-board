@@ -285,6 +285,37 @@ def close_pull_request(repo: str, token: str, pr_num: int) -> None:
         print(f"Error closing pull request #{pr_num}: {e}", file=sys.stderr)
 
 
+def parse_location_parts(location_str: str) -> tuple[str, str, str]:
+    """
+    title: Infer city, state, and country from a location string if missing.
+    parameters:
+      location_str:
+        type: str
+    returns:
+      type: tuple[str, str, str]
+    """
+    if not location_str or location_str.lower() in ("online", "virtual"):
+        return "", "", ""
+
+    parts = [p.strip() for p in location_str.split(",") if p.strip()]
+    if not parts:
+        return "", "", ""
+
+    if len(parts) == 1:
+        return parts[0], "", ""
+
+    if len(parts) == 2:
+        return parts[0], "", parts[1]
+
+    if len(parts) >= 3:
+        country = parts[-1]
+        state = parts[-2]
+        city = parts[-3]
+        return city, state, country
+
+    return "", "", ""
+
+
 def get_open_sync_prs(
     repo: str, token: str
 ) -> dict[tuple[str, str, str], dict[str, Any]]:
@@ -742,6 +773,9 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
         "date",
         "time",
         "location",
+        "city",
+        "state",
+        "country",
         "region",
         "category",
         "url",
@@ -947,6 +981,27 @@ def main() -> None:
         mapped_event["date"] = s_date
         mapped_event["end_date"] = s_end_date
         mapped_event["location"] = s_location or "Online"
+
+        # Fallback parsing for location components if city/state/country are missing
+        if s_location:
+            p_city, p_state, p_country = parse_location_parts(s_location)
+            if not mapped_event.get("city") and p_city:
+                mapped_event["city"] = p_city
+            if not mapped_event.get("state-province") and p_state:
+                mapped_event["state-province"] = p_state
+            if not mapped_event.get("state") and p_state:
+                mapped_event["state"] = p_state
+            if not mapped_event.get("country") and p_country:
+                mapped_event["country"] = p_country
+
+        if mapped_event.get("state-province") and not mapped_event.get(
+            "state"
+        ):
+            mapped_event["state"] = mapped_event["state-province"]
+        elif mapped_event.get("state") and not mapped_event.get(
+            "state-province"
+        ):
+            mapped_event["state-province"] = mapped_event["state"]
 
         # Ensure required fields are not empty to prevent generate_events_json.py from failing
         if not mapped_event.get("description"):

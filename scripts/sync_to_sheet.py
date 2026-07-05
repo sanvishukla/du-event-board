@@ -266,6 +266,37 @@ def delete_sheet_event(
         print(f"Failed to delete event '{title}': {e}", file=sys.stderr)
 
 
+def parse_location_parts(location_str: str) -> tuple[str, str, str]:
+    """
+    title: Infer city, state, and country from a location string if missing.
+    parameters:
+      location_str:
+        type: str
+    returns:
+      type: tuple[str, str, str]
+    """
+    if not location_str or location_str.lower() in ("online", "virtual"):
+        return "", "", ""
+
+    parts = [p.strip() for p in location_str.split(",") if p.strip()]
+    if not parts:
+        return "", "", ""
+
+    if len(parts) == 1:
+        return parts[0], "", ""
+
+    if len(parts) == 2:
+        return parts[0], "", parts[1]
+
+    if len(parts) >= 3:
+        country = parts[-1]
+        state = parts[-2]
+        city = parts[-3]
+        return city, state, country
+
+    return "", "", ""
+
+
 def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
     """
     title: Generate a full mapping of event fields for the Google Sheet.
@@ -278,6 +309,22 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
     tags_val = event.get("tags", "")
     if isinstance(tags_val, list):
         tags_val = ", ".join(tags_val)
+
+    city_val = str(event.get("city", "")).strip()
+    state_val = str(
+        event.get("state", event.get("state-province", ""))
+    ).strip()
+    country_val = str(event.get("country", "")).strip()
+    location_val = str(event.get("location", "")).strip()
+
+    if location_val and (not city_val or not state_val or not country_val):
+        p_city, p_state, p_country = parse_location_parts(location_val)
+        if not city_val:
+            city_val = p_city
+        if not state_val:
+            state_val = p_state
+        if not country_val:
+            country_val = p_country
 
     return {
         "id": event.get("id", ""),
@@ -303,10 +350,10 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
         "paid_or_free": event.get("paid_or_free", ""),
         "event_url": event.get("url", event.get("event_url", "")),
         "image_url": event.get("image_url", ""),
-        "location": event.get("location", ""),
-        "city": event.get("city", ""),
-        "state-province": event.get("state-province", ""),
-        "country": event.get("country", ""),
+        "location": location_val,
+        "city": city_val,
+        "state-province": state_val,
+        "country": country_val,
         "region": event.get("region", ""),
         "in_person": format_boolean(event.get("in_person", "")),
         "virtual": format_boolean(event.get("virtual", "")),
