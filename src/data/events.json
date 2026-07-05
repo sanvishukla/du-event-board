@@ -102,7 +102,9 @@
       "devops",
       "docker",
       "kubernetes"
-    ]
+    ],
+    "end_date": "",
+    "end_time": ""
   },
   {
     "id": "6",
