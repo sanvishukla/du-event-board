@@ -131,6 +131,8 @@ events:
       - rust
       - programming
       - systems
+    end_date: ""
+    end_time: ""
 
   - id: "8"
     lat: -27.544562
