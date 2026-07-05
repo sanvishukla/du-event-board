@@ -982,6 +982,22 @@ def main() -> None:
                 and ev not in similar_events
             ]
             similar_events.extend(title_date_matches)
+
+            # Also check open PRs for similar events (by title)
+            for pr_info in open_sync_prs.values():
+                pr_title = str(pr_info.get("title", "")).strip()
+                pr_date = str(pr_info.get("date", "")).strip()
+                if pr_title.lower() == s_title.lower():
+                    if not any(
+                        str(se.get("title", se.get("event_name", "")))
+                        .strip()
+                        .lower()
+                        == pr_title.lower()
+                        for se in similar_events
+                    ):
+                        similar_events.append(
+                            {"title": pr_title, "date": pr_date}
+                        )
         else:
             if key in yaml_index:
                 existing_ev = yaml_index[key]
@@ -1212,7 +1228,7 @@ def main() -> None:
             matched_pr = None
             if s_id and s_id in open_prs_by_id:
                 matched_pr = open_prs_by_id[s_id]
-            else:
+            elif s_id:
                 pr_key = (
                     s_title.lower().strip(),
                     s_date.strip(),
@@ -1222,10 +1238,6 @@ def main() -> None:
                     matched_pr = open_sync_prs[pr_key]
                 else:
                     # Fallback: match by date + location only.
-                    # This handles the case where the event was renamed in the
-                    # sheet (title changed) but the PR was opened with the old
-                    # title. If exactly one open PR shares the same date and
-                    # location, treat it as the same event.
                     date_loc_matches = [
                         pr_info
                         for (pt, pd, pl), pr_info in open_sync_prs.items()
