@@ -227,3 +227,26 @@ events:
     image_url: "https://ww2.amstat.org/meetings/jsm/2023/images/logo.png?v=2023"
     in_person: true
     language: "English"
+
+  - id: "202607061810191047"
+    title: Event1
+    description: xyz
+    date: "2026-07-23"
+    time: 00:00
+    location: online
+    city: online
+    state: null
+    country: online
+    region: online
+    category: conf
+    url: www.sample.com
+    tags:
+      - xyz
+    end_date: "2026-07-29"
+    end_time: 00:00
+    featured: false
+    organization_name: xyz
+    paid_or_free: free
+    in_person: false
+    virtual: true
+    language: english
