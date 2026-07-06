@@ -713,9 +713,11 @@ def main() -> None:
                     if s_val != str(p_val).strip():
                         needs_update = True
                         break
-
         if needs_update:
-            events_needing_update.append(event)
+            if e_id in pending_additions_ids or key in pending_additions:
+                print(f"Skipping update for '{title}' because an open PR is currently syncing it to the repo.")
+            else:
+                events_needing_update.append(event)
 
     if not missing_events and not deleted_events and not events_needing_update:
         print(
