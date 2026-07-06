@@ -250,25 +250,3 @@ events:
     in_person: false
     virtual: true
     language: english
-
-  - id: "202607061815453135"
-    lat: 28.6138954
-    lng: 77.2090057
-    title: "xyz event"
-    description: "xyz"
-    date: "2026-08-03"
-    location: "delhi"
-    city: ""
-    state: ""
-    country: "india"
-    region: "asia"
-    category: "conference"
-    tags:
-      - xyz
-    start_time: "09:00"
-    end_time: "00:00"
-    end_date: "2026-08-05"
-    featured: 0
-    url: "https://www.sample.com"
-    language:
-      - english
