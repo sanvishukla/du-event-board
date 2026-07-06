@@ -1549,6 +1549,15 @@ def main() -> None:
             title = str(ev.get("title", ev.get("event_name", "")))
             date = str(ev.get("date", ev.get("start_date", "")))
             location = str(ev.get("location", ""))
+            
+            # Prevent opening duplicate PRs for the same deletion
+            existing_pr = open_prs_by_id.get(event_id)
+            if existing_pr and existing_pr.get("branch", "").startswith("sync/delete-"):
+                print(
+                    f"Skipping deletion PR for '{title}' (ID: {event_id}) because PR #{existing_pr['number']} is already open."
+                )
+                continue
+
             print(
                 f"Event deleted from Google Sheet: '{title}' on {date} (ID: {event_id})"
             )
