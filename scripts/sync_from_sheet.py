@@ -755,6 +755,19 @@ def split_yaml_into_blocks(file_path: Path) -> tuple[str, dict[str, str]]:
     return header, blocks
 
 
+def format_yaml_field(key: str, val: Any, indent: int = 4) -> str:
+    dumped = yaml.safe_dump(
+        {key: val}, default_flow_style=False, allow_unicode=True
+    ).strip()
+    lines = dumped.splitlines()
+    formatted_lines = []
+    for line in lines:
+        if line.startswith("- "):
+            formatted_lines.append(" " * (indent + 2) + line)
+        else:
+            formatted_lines.append(" " * indent + line)
+    return "\n".join(formatted_lines)
+
 def format_event_as_yaml(ev: dict[str, Any]) -> str:
     """
     title: Format an event dictionary to standard YAML layout.
@@ -797,7 +810,9 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
     ]
 
     lines = []
-    lines.append(f'  - id: "{ev.get("id")}"')
+    first_key = key_order[0]
+    first_val = ev.get(first_key, "")
+    lines.append(f'  - {first_key}: "{first_val}"')
 
     for k in key_order[1:]:
         val = ev.get(k)
@@ -811,18 +826,7 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
                 "category",
             ]:
                 continue
-
-        if k == "tags" and isinstance(val, list):
-            lines.append("    tags:")
-            for tag in val:
-                lines.append(f"      - {tag}")
-        elif isinstance(val, bool):
-            lines.append(f"    {k}: {str(val).lower()}")
-        elif isinstance(val, (int, float)):
-            lines.append(f"    {k}: {val}")
-        else:
-            val_str = str(val).replace('"', '\\"')
-            lines.append(f'    {k}: "{val_str}"')
+        lines.append(format_yaml_field(k, val, indent=4))
 
     return "\n".join(lines) + "\n"
 
