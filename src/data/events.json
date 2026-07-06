@@ -166,5 +166,32 @@
       "community",
       "innovation"
     ]
+  },
+  {
+    "id": "202607061918013981",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "title": "Event 2",
+    "description": "xyz",
+    "date": "2026-07-15",
+    "time": "00:00",
+    "location": "delhi",
+    "city": "delhi",
+    "state": null,
+    "country": "india",
+    "region": "asia",
+    "category": "xyz",
+    "url": "www.sample.com",
+    "tags": [
+      "xyz"
+    ],
+    "end_date": "2026-07-30",
+    "end_time": "00:00",
+    "featured": true,
+    "organization_name": "xyz",
+    "paid_or_free": "free",
+    "in_person": true,
+    "virtual": false,
+    "language": "english"
   }
 ]
