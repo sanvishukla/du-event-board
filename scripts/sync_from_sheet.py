@@ -1063,11 +1063,30 @@ def main() -> None:
             ]
             similar_events.extend(td_matches)
 
-            # Also check open PRs for similar events (by title)
+            # Also check for events with same date and location
+            dl_matches = [
+                ev
+                for ev in yaml_events
+                if str(ev.get("date", ev.get("start_date", ""))).strip() == s_date
+                and str(ev.get("location", "")).strip().lower() == s_location.lower()
+                and ev not in similar_events
+                and s_location.lower() not in ("", "online", "tbd")
+            ]
+            similar_events.extend(dl_matches)
+
+            # Also check open PRs for similar events (by title OR date+location)
             for pr_info in open_sync_prs.values():
                 pr_title = str(pr_info.get("title", "")).strip()
                 pr_date = str(pr_info.get("date", "")).strip()
+                pr_loc = str(pr_info.get("location", "")).strip().lower()
+
+                is_similar = False
                 if pr_title.lower() == s_title.lower():
+                    is_similar = True
+                elif pr_date == s_date and pr_loc == s_location.lower() and s_location.lower() not in ("", "online", "tbd"):
+                    is_similar = True
+
+                if is_similar:
                     if not any(
                         str(se.get("title", se.get("event_name", "")))
                         .strip()
@@ -1337,21 +1356,6 @@ def main() -> None:
                     ]
                     if len(title_date_matches) == 1:
                         matched_pr = title_date_matches[0]
-                    else:
-                        # Fallback: match by date + location only.
-                        date_loc_matches = [
-                            pr_info
-                            for (pt, pd, pl), pr_info in open_sync_prs.items()
-                            if pd == s_date.strip()
-                            and pl == s_location.lower().strip()
-                        ]
-                        if len(date_loc_matches) == 1:
-                            matched_pr = date_loc_matches[0]
-                            print(
-                                f"  Matched open PR #{matched_pr['number']} to "
-                                f"renamed event '{s_title}' via date+location "
-                                f"(old title: '{matched_pr['title']}')"
-                            )
 
             if matched_pr:
                 event_id = matched_pr["id"]
