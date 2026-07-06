@@ -227,3 +227,26 @@ events:
     image_url: "https://ww2.amstat.org/meetings/jsm/2023/images/logo.png?v=2023"
     in_person: true
     language: "English"
+  - id: "202607061807505835"
+    lat: 28.6138954
+    lng: 77.2090057
+    title: "Event new"
+    description: "xyz"
+    date: "2026-07-16"
+    time: "10:00"
+    location: "New Delhi"
+    city: "New Delhi"
+    state: "None"
+    country: "India"
+    region: "Asia"
+    category: "conference"
+    url: "www.sample.com"
+    tags:
+      - python
+    end_date: "2026-07-23"
+    end_time: "00:00"
+    featured: true
+    organization_name: "xyz"
+    paid_or_free: "free"
+    in_person: true
+    language: "English"
