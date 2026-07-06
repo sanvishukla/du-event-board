@@ -306,16 +306,17 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
     returns:
       type: dict[str, Any]
     """
+    def safe_str(val: Any) -> str:
+        return "" if val is None else str(val).strip()
+
     tags_val = event.get("tags", "")
     if isinstance(tags_val, list):
         tags_val = ", ".join(tags_val)
 
-    city_val = str(event.get("city", "")).strip()
-    state_val = str(
-        event.get("state", event.get("state-province", ""))
-    ).strip()
-    country_val = str(event.get("country", "")).strip()
-    location_val = str(event.get("location", "")).strip()
+    city_val = safe_str(event.get("city"))
+    state_val = safe_str(event.get("state")) or safe_str(event.get("state-province"))
+    country_val = safe_str(event.get("country"))
+    location_val = safe_str(event.get("location"))
 
     if location_val and (not city_val or not state_val or not country_val):
         p_city, p_state, p_country = parse_location_parts(location_val)
@@ -327,42 +328,39 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
             country_val = p_country
 
     return {
-        "id": event.get("id", ""),
-        "start_time": event.get("time", ""),
-        "end_time": event.get("end_time", ""),
-        "event_name": event.get("title", event.get("event_name", "")),
-        "start_date": event.get("date", event.get("start_date", "")),
-        "end_date": event.get("end_date", ""),
-        "Start Date and Time": f"{event.get('date', event.get('start_date', ''))} {event.get('time', '')}".strip(),
-        "End Date and Time": f"{event.get('end_date', '')} {event.get('end_time', '')}".strip(),
-        "event_type": event.get("category", event.get("event_type", "")),
+        "id": safe_str(event.get("id")),
+        "start_time": safe_str(event.get("time")),
+        "end_time": safe_str(event.get("end_time")),
+        "event_name": safe_str(event.get("title") or event.get("event_name")),
+        "start_date": safe_str(event.get("date") or event.get("start_date")),
+        "end_date": safe_str(event.get("end_date")),
+        "Start Date and Time": f"{safe_str(event.get('date') or event.get('start_date'))} {safe_str(event.get('time'))}".strip(),
+        "End Date and Time": f"{safe_str(event.get('end_date'))} {safe_str(event.get('end_time'))}".strip(),
+        "event_type": safe_str(event.get("category") or event.get("event_type")),
         "featured": format_featured(event.get("featured", "")),
         "tags": tags_val,
-        "event_description (200 char)": event.get(
-            "description", event.get("event_description", "")
-        ),
-        "organization_name": event.get("organization_name", ""),
-        "organization_url": event.get("organization_url", ""),
-        "url_linkedin": event.get("url_linkedin", ""),
-        "url_twitter": event.get("url_twitter", ""),
-        "url_other": event.get("url_other", ""),
-        "acronym": event.get("acronym", ""),
-        "paid_or_free": event.get("paid_or_free", ""),
-        "event_url": event.get("url", event.get("event_url", "")),
-        "image_url": event.get("image_url", ""),
+        "event_description (200 char)": safe_str(event.get("description") or event.get("event_description")),
+        "organization_name": safe_str(event.get("organization_name")),
+        "organization_url": safe_str(event.get("organization_url")),
+        "url_linkedin": safe_str(event.get("url_linkedin")),
+        "url_twitter": safe_str(event.get("url_twitter")),
+        "url_other": safe_str(event.get("url_other")),
+        "acronym": safe_str(event.get("acronym")),
+        "paid_or_free": safe_str(event.get("paid_or_free")),
+        "event_url": safe_str(event.get("url") or event.get("event_url")),
+        "image_url": safe_str(event.get("image_url")),
         "location": location_val,
         "city": city_val,
         "state-province": state_val,
         "country": country_val,
-        "region": event.get("region", ""),
+        "region": safe_str(event.get("region")),
         "in_person": format_boolean(event.get("in_person", "")),
         "virtual": format_boolean(event.get("virtual", "")),
         "event_category (derived)": get_derived_category(
             event.get("in_person", ""), event.get("virtual", "")
         ),
-        "language": event.get("language", ""),
+        "language": safe_str(event.get("language")),
     }
-
 
 def update_sheet_event(
     webapp_url: str,
@@ -715,9 +713,11 @@ def main() -> None:
                     if s_val != str(p_val).strip():
                         needs_update = True
                         break
-
         if needs_update:
-            events_needing_update.append(event)
+            if e_id in pending_additions_ids or key in pending_additions:
+                print(f"Skipping update for '{title}' because an open PR is currently syncing it to the repo.")
+            else:
+                events_needing_update.append(event)
 
     if not missing_events and not deleted_events and not events_needing_update:
         print(

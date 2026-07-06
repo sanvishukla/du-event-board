@@ -755,6 +755,19 @@ def split_yaml_into_blocks(file_path: Path) -> tuple[str, dict[str, str]]:
     return header, blocks
 
 
+def format_yaml_field(key: str, val: Any, indent: int = 4) -> str:
+    dumped = yaml.safe_dump(
+        {key: val}, default_flow_style=False, allow_unicode=True
+    ).strip()
+    lines = dumped.splitlines()
+    formatted_lines = []
+    for line in lines:
+        if line.startswith("- "):
+            formatted_lines.append(" " * (indent + 2) + line)
+        else:
+            formatted_lines.append(" " * indent + line)
+    return "\n".join(formatted_lines)
+
 def format_event_as_yaml(ev: dict[str, Any]) -> str:
     """
     title: Format an event dictionary to standard YAML layout.
@@ -797,7 +810,9 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
     ]
 
     lines = []
-    lines.append(f'  - id: "{ev.get("id")}"')
+    first_key = key_order[0]
+    first_val = ev.get(first_key, "")
+    lines.append(f'  - {first_key}: "{first_val}"')
 
     for k in key_order[1:]:
         val = ev.get(k)
@@ -811,18 +826,7 @@ def format_event_as_yaml(ev: dict[str, Any]) -> str:
                 "category",
             ]:
                 continue
-
-        if k == "tags" and isinstance(val, list):
-            lines.append("    tags:")
-            for tag in val:
-                lines.append(f"      - {tag}")
-        elif isinstance(val, bool):
-            lines.append(f"    {k}: {str(val).lower()}")
-        elif isinstance(val, (int, float)):
-            lines.append(f"    {k}: {val}")
-        else:
-            val_str = str(val).replace('"', '\\"')
-            lines.append(f'    {k}: "{val_str}"')
+        lines.append(format_yaml_field(k, val, indent=4))
 
     return "\n".join(lines) + "\n"
 
@@ -1063,11 +1067,30 @@ def main() -> None:
             ]
             similar_events.extend(td_matches)
 
-            # Also check open PRs for similar events (by title)
+            # Also check for events with same date and location
+            dl_matches = [
+                ev
+                for ev in yaml_events
+                if str(ev.get("date", ev.get("start_date", ""))).strip() == s_date
+                and str(ev.get("location", "")).strip().lower() == s_location.lower()
+                and ev not in similar_events
+                and s_location.lower() not in ("", "online", "tbd")
+            ]
+            similar_events.extend(dl_matches)
+
+            # Also check open PRs for similar events (by title OR date+location)
             for pr_info in open_sync_prs.values():
                 pr_title = str(pr_info.get("title", "")).strip()
                 pr_date = str(pr_info.get("date", "")).strip()
+                pr_loc = str(pr_info.get("location", "")).strip().lower()
+
+                is_similar = False
                 if pr_title.lower() == s_title.lower():
+                    is_similar = True
+                elif pr_date == s_date and pr_loc == s_location.lower() and s_location.lower() not in ("", "online", "tbd"):
+                    is_similar = True
+
+                if is_similar:
                     if not any(
                         str(se.get("title", se.get("event_name", "")))
                         .strip()
@@ -1337,21 +1360,6 @@ def main() -> None:
                     ]
                     if len(title_date_matches) == 1:
                         matched_pr = title_date_matches[0]
-                    else:
-                        # Fallback: match by date + location only.
-                        date_loc_matches = [
-                            pr_info
-                            for (pt, pd, pl), pr_info in open_sync_prs.items()
-                            if pd == s_date.strip()
-                            and pl == s_location.lower().strip()
-                        ]
-                        if len(date_loc_matches) == 1:
-                            matched_pr = date_loc_matches[0]
-                            print(
-                                f"  Matched open PR #{matched_pr['number']} to "
-                                f"renamed event '{s_title}' via date+location "
-                                f"(old title: '{matched_pr['title']}')"
-                            )
 
             if matched_pr:
                 event_id = matched_pr["id"]
@@ -1545,6 +1553,15 @@ def main() -> None:
             title = str(ev.get("title", ev.get("event_name", "")))
             date = str(ev.get("date", ev.get("start_date", "")))
             location = str(ev.get("location", ""))
+            
+            # Prevent opening duplicate PRs for the same deletion
+            existing_pr = open_prs_by_id.get(event_id)
+            if existing_pr and existing_pr.get("branch", "").startswith("sync/delete-"):
+                print(
+                    f"Skipping deletion PR for '{title}' (ID: {event_id}) because PR #{existing_pr['number']} is already open."
+                )
+                continue
+
             print(
                 f"Event deleted from Google Sheet: '{title}' on {date} (ID: {event_id})"
             )
