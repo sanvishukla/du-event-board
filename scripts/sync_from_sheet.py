@@ -755,7 +755,6 @@ def split_yaml_into_blocks(file_path: Path) -> tuple[str, dict[str, str]]:
     return header, blocks
 
 
-
 def format_event_as_yaml(ev: dict[str, Any]) -> str:
     """
     title: Format an event dictionary to standard YAML layout.
