@@ -527,14 +527,22 @@ def main() -> None:
     # Fetch open PRs to build a set of pending additions
     pending_additions = set()
     pending_additions_ids = set()
+    pending_syncs = set()
+    pending_syncs_ids = set()
+    open_sync_prs = {}
     if github_token and repo:
         print("Fetching open pull requests to map pending additions...")
         open_sync_prs = get_open_sync_prs(repo, github_token)
         for pr_key, pr_info in open_sync_prs.items():
-            pending_additions.add(pr_key)
+            branch = pr_info.get("branch", "")
             pr_id = pr_info.get("id")
+            pending_syncs.add(pr_key)
             if pr_id:
-                pending_additions_ids.add(pr_id)
+                pending_syncs_ids.add(pr_id)
+            if branch.startswith("sync/add-") or branch.startswith("event-submission-"):
+                pending_additions.add(pr_key)
+                if pr_id:
+                    pending_additions_ids.add(pr_id)
 
     yaml_keys = set()
     yaml_ids = set()
@@ -714,7 +722,7 @@ def main() -> None:
                         needs_update = True
                         break
         if needs_update:
-            if e_id in pending_additions_ids or key in pending_additions:
+            if e_id in pending_syncs_ids or key in pending_syncs:
                 print(f"Skipping update for '{title}' because an open PR is currently syncing it to the repo.")
             else:
                 events_needing_update.append(event)
