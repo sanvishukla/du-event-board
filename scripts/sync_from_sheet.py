@@ -1319,7 +1319,7 @@ def main() -> None:
             matched_pr = None
             if s_id and s_id in open_prs_by_id:
                 matched_pr = open_prs_by_id[s_id]
-            elif s_id:
+            else:
                 pr_key = (
                     s_title.lower().strip(),
                     s_date.strip(),
@@ -1328,20 +1328,30 @@ def main() -> None:
                 if pr_key in open_sync_prs:
                     matched_pr = open_sync_prs[pr_key]
                 else:
-                    # Fallback: match by date + location only.
-                    date_loc_matches = [
+                    # Fallback: match by date + title
+                    title_date_matches = [
                         pr_info
                         for (pt, pd, pl), pr_info in open_sync_prs.items()
-                        if pd == s_date.strip()
-                        and pl == s_location.lower().strip()
+                        if pt.lower().strip() == s_title.lower().strip()
+                        and pd == s_date.strip()
                     ]
-                    if len(date_loc_matches) == 1:
-                        matched_pr = date_loc_matches[0]
-                        print(
-                            f"  Matched open PR #{matched_pr['number']} to "
-                            f"renamed event '{s_title}' via date+location "
-                            f"(old title: '{matched_pr['title']}')"
-                        )
+                    if len(title_date_matches) == 1:
+                        matched_pr = title_date_matches[0]
+                    else:
+                        # Fallback: match by date + location only.
+                        date_loc_matches = [
+                            pr_info
+                            for (pt, pd, pl), pr_info in open_sync_prs.items()
+                            if pd == s_date.strip()
+                            and pl == s_location.lower().strip()
+                        ]
+                        if len(date_loc_matches) == 1:
+                            matched_pr = date_loc_matches[0]
+                            print(
+                                f"  Matched open PR #{matched_pr['number']} to "
+                                f"renamed event '{s_title}' via date+location "
+                                f"(old title: '{matched_pr['title']}')"
+                            )
 
             if matched_pr:
                 event_id = matched_pr["id"]
