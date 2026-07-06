@@ -229,24 +229,22 @@ events:
     language: "English"
 
   - id: "202607061810191047"
-    title: Event1
-    description: xyz
+    title: "Event1"
+    description: "xyz"
     date: "2026-07-23"
-    time: 00:00
-    location: online
-    city: online
-    state: null
-    country: online
-    region: online
-    category: conf
-    url: www.sample.com
+    time: "00:00"
+    location: "online"
+    city: "online"
+    state: "None"
+    country: "online"
+    region: "online"
+    category: "conf"
+    url: "www.sample.com"
     tags:
       - xyz
     end_date: "2026-07-29"
-    end_time: 00:00
-    featured: false
-    organization_name: xyz
-    paid_or_free: free
-    in_person: false
+    end_time: "00:00"
+    organization_name: "xyz"
+    paid_or_free: "free"
     virtual: true
-    language: english
+    language: "english"

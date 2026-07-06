@@ -265,7 +265,7 @@
     "time": "00:00",
     "location": "online",
     "city": "online",
-    "state": null,
+    "state": "None",
     "country": "online",
     "region": "online",
     "category": "conf",
@@ -275,10 +275,8 @@
     ],
     "end_date": "2026-07-29",
     "end_time": "00:00",
-    "featured": false,
     "organization_name": "xyz",
     "paid_or_free": "free",
-    "in_person": false,
     "virtual": true,
     "language": "english"
   }
