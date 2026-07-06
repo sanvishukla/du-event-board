@@ -1906,7 +1906,7 @@ def main() -> None:
                 similar_str = ", ".join(
                     [f"`{t}`" for t in change["similar_to"] if t]
                 )
-                pr_body += f"\n\n⚠️ **Note:** This event might be similar to existing events in the codebase: {similar_str}."
+                pr_body += f"\n\n⚠️ **Note:** This event might be similar to existing events in the codebase or open PRs: {similar_str}."
 
             try:
                 if existing_pr_num:
