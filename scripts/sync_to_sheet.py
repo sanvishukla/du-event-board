@@ -306,7 +306,16 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
     returns:
       type: dict[str, Any]
     """
+
     def safe_str(val: Any) -> str:
+        """
+        title: Safely convert a value to string, handling None.
+        parameters:
+          val:
+            type: Any
+        returns:
+          type: str
+        """
         return "" if val is None else str(val).strip()
 
     tags_val = event.get("tags", "")
@@ -314,7 +323,9 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
         tags_val = ", ".join(tags_val)
 
     city_val = safe_str(event.get("city"))
-    state_val = safe_str(event.get("state")) or safe_str(event.get("state-province"))
+    state_val = safe_str(event.get("state")) or safe_str(
+        event.get("state-province")
+    )
     country_val = safe_str(event.get("country"))
     location_val = safe_str(event.get("location"))
 
@@ -336,10 +347,14 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
         "end_date": safe_str(event.get("end_date")),
         "Start Date and Time": f"{safe_str(event.get('date') or event.get('start_date'))} {safe_str(event.get('time'))}".strip(),
         "End Date and Time": f"{safe_str(event.get('end_date'))} {safe_str(event.get('end_time'))}".strip(),
-        "event_type": safe_str(event.get("category") or event.get("event_type")),
+        "event_type": safe_str(
+            event.get("category") or event.get("event_type")
+        ),
         "featured": format_featured(event.get("featured", "")),
         "tags": tags_val,
-        "event_description (200 char)": safe_str(event.get("description") or event.get("event_description")),
+        "event_description (200 char)": safe_str(
+            event.get("description") or event.get("event_description")
+        ),
         "organization_name": safe_str(event.get("organization_name")),
         "organization_url": safe_str(event.get("organization_url")),
         "url_linkedin": safe_str(event.get("url_linkedin")),
@@ -361,6 +376,7 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
         ),
         "language": safe_str(event.get("language")),
     }
+
 
 def update_sheet_event(
     webapp_url: str,
@@ -539,7 +555,9 @@ def main() -> None:
             pending_syncs.add(pr_key)
             if pr_id:
                 pending_syncs_ids.add(pr_id)
-            if branch.startswith("sync/add-") or branch.startswith("event-submission-"):
+            if branch.startswith("sync/add-") or branch.startswith(
+                "event-submission-"
+            ):
                 pending_additions.add(pr_key)
                 if pr_id:
                     pending_additions_ids.add(pr_id)
@@ -723,7 +741,9 @@ def main() -> None:
                         break
         if needs_update:
             if e_id in pending_syncs_ids or key in pending_syncs:
-                print(f"Skipping update for '{title}' because an open PR is currently syncing it to the repo.")
+                print(
+                    f"Skipping update for '{title}' because an open PR is currently syncing it to the repo."
+                )
             else:
                 events_needing_update.append(event)
 

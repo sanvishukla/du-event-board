@@ -755,18 +755,6 @@ def split_yaml_into_blocks(file_path: Path) -> tuple[str, dict[str, str]]:
     return header, blocks
 
 
-def format_yaml_field(key: str, val: Any, indent: int = 4) -> str:
-    dumped = yaml.safe_dump(
-        {key: val}, default_flow_style=False, allow_unicode=True
-    ).strip()
-    lines = dumped.splitlines()
-    formatted_lines = []
-    for line in lines:
-        if line.startswith("- "):
-            formatted_lines.append(" " * (indent + 2) + line)
-        else:
-            formatted_lines.append(" " * indent + line)
-    return "\n".join(formatted_lines)
 
 def format_event_as_yaml(ev: dict[str, Any]) -> str:
     """
@@ -1071,8 +1059,10 @@ def main() -> None:
             dl_matches = [
                 ev
                 for ev in yaml_events
-                if str(ev.get("date", ev.get("start_date", ""))).strip() == s_date
-                and str(ev.get("location", "")).strip().lower() == s_location.lower()
+                if str(ev.get("date", ev.get("start_date", ""))).strip()
+                == s_date
+                and str(ev.get("location", "")).strip().lower()
+                == s_location.lower()
                 and ev not in similar_events
                 and s_location.lower() not in ("", "online", "tbd")
             ]
@@ -1087,7 +1077,11 @@ def main() -> None:
                 is_similar = False
                 if pr_title.lower() == s_title.lower():
                     is_similar = True
-                elif pr_date == s_date and pr_loc == s_location.lower() and s_location.lower() not in ("", "online", "tbd"):
+                elif (
+                    pr_date == s_date
+                    and pr_loc == s_location.lower()
+                    and s_location.lower() not in ("", "online", "tbd")
+                ):
                     is_similar = True
 
                 if is_similar:
@@ -1553,10 +1547,12 @@ def main() -> None:
             title = str(ev.get("title", ev.get("event_name", "")))
             date = str(ev.get("date", ev.get("start_date", "")))
             location = str(ev.get("location", ""))
-            
+
             # Prevent opening duplicate PRs for the same deletion
             existing_pr = open_prs_by_id.get(event_id)
-            if existing_pr and existing_pr.get("branch", "").startswith("sync/delete-"):
+            if existing_pr and existing_pr.get("branch", "").startswith(
+                "sync/delete-"
+            ):
                 print(
                     f"Skipping deletion PR for '{title}' (ID: {event_id}) because PR #{existing_pr['number']} is already open."
                 )
