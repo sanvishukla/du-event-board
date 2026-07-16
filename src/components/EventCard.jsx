@@ -45,13 +45,6 @@ export default function EventCard({
     }
   }
 
-  const handleDirectionClick = (e) => {
-    e.stopPropagation();
-    const address = encodeURIComponent(event.location);
-    const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
   const statusMap = {
     live: "status-badge--live",
     upcoming: "status-badge--upcoming",
@@ -85,14 +78,7 @@ export default function EventCard({
           )}
           <span className="event-list-row__date">{dateDisplay}</span>
 
-          <button
-            className="event-card__directions-btn event-card__directions-btn--icon"
-            onClick={handleDirectionClick}
-            aria-label="Directions"
-            title="Directions"
-          >
-            📍
-          </button>
+
         </div>
       </article>
     );
@@ -171,27 +157,6 @@ export default function EventCard({
         </div>
       )}
 
-      <div className="event-card__actions">
-        {event.url && (
-          <a
-            href={event.url}
-            className="event-card__link"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Learn more
-            <span className="event-card__link-arrow">→</span>
-          </a>
-        )}
-
-        <button
-          className="event-card__directions-btn"
-          onClick={handleDirectionClick}
-        >
-          Directions
-        </button>
-      </div>
     </article>
   );
 }

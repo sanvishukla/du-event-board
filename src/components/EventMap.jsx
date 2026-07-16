@@ -284,7 +284,7 @@ export default function EventMap({ events, onSelectEvent, theme }) {
                               fontSize: "13px",
                               fontWeight: "600",
                               transition: "all 0.2s",
-                              width: "100%",
+                              flex: 1,
                               justifyContent: "center",
                               cursor: "pointer",
                             }}
@@ -294,7 +294,13 @@ export default function EventMap({ events, onSelectEvent, theme }) {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              const address = encodeURIComponent(event.location);
+                              const queryParts = [
+                                event.location,
+                                event.city,
+                                event.state || event.province,
+                                event.country,
+                              ].filter(Boolean);
+                              const address = encodeURIComponent(queryParts.join(", "));
                               const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
                               window.open(url, "_blank", "noopener,noreferrer");
                             }}
@@ -310,12 +316,16 @@ export default function EventMap({ events, onSelectEvent, theme }) {
                               fontSize: "13px",
                               fontWeight: "600",
                               transition: "all 0.2s",
-                              width: "100%",
+                              width: "auto",
                               justifyContent: "center",
                               cursor: "pointer",
                             }}
                           >
-                            Directions
+                            <img
+                              src="/google-map-icon.png"
+                              alt="Google Maps"
+                              style={{ width: "16px", height: "16px", objectFit: "contain" }}
+                            />
                           </button>
                         </div>
                       </div>
