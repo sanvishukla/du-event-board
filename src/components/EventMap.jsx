@@ -300,9 +300,15 @@ export default function EventMap({ events, onSelectEvent, theme }) {
                                 event.state || event.province,
                                 event.country,
                               ].filter(Boolean);
-                              const address = encodeURIComponent(queryParts.join(", "));
+                              const address = encodeURIComponent(
+                                queryParts.join(", "),
+                              );
                               const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
-                              window.open(url, "_blank", "noopener,noreferrer");
+                              window.open(
+                                url,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
                             }}
                             style={{
                               display: "inline-flex",
@@ -324,7 +330,11 @@ export default function EventMap({ events, onSelectEvent, theme }) {
                             <img
                               src="/google-map-icon.png"
                               alt="Google Maps"
-                              style={{ width: "16px", height: "16px", objectFit: "contain" }}
+                              style={{
+                                width: "16px",
+                                height: "16px",
+                                objectFit: "contain",
+                              }}
                             />
                           </button>
                         </div>
@@ -340,4 +350,3 @@ export default function EventMap({ events, onSelectEvent, theme }) {
     </AnimatePresence>
   );
 }
-

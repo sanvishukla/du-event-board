@@ -77,8 +77,6 @@ export default function EventCard({
             </div>
           )}
           <span className="event-list-row__date">{dateDisplay}</span>
-
-
         </div>
       </article>
     );
@@ -156,7 +154,6 @@ export default function EventCard({
           ))}
         </div>
       )}
-
     </article>
   );
 }
