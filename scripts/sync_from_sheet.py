@@ -653,7 +653,7 @@ def normalize_time(t_str: str) -> str:
     if match:
         return f"{int(match.group(1)):02d}:{int(match.group(2)):02d}"
 
-    for fmt in ["%I:%M %p", "%I:%M%p", "%H:%M:%S", "%H:%M"]:
+    for fmt in ["%I:%M:%S %p", "%I:%M %p", "%I:%M%p", "%I:%M:%S%p", "%H:%M:%S", "%H:%M"]:
         try:
             dt = datetime.strptime(t_str, fmt)
             return dt.strftime("%H:%M")

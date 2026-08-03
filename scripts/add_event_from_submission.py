@@ -340,16 +340,17 @@ def main() -> None:
         else:
             event_data[target_key] = str(found_val).strip()
 
-    date_val, time_val = parse_date_time(str(event_data.get("date", "")))
+    date_val, dt_time_val = parse_date_time(str(event_data.get("date", "")))
+    _, standalone_time = parse_date_time(str(event_data.get("time", "")))
     event_data["date"] = date_val
-    event_data["time"] = time_val
+    event_data["time"] = dt_time_val or standalone_time
 
-    end_date_val, end_time_val = parse_date_time(
+    end_date_val, dt_end_time_val = parse_date_time(
         str(event_data.get("end_date", ""))
     )
+    _, standalone_end_time = parse_date_time(str(event_data.get("end_time", "")))
     event_data["end_date"] = end_date_val
-    if end_time_val:
-        event_data["end_time"] = end_time_val
+    event_data["end_time"] = dt_end_time_val or standalone_end_time
 
     location_type = str(normalized_raw.get("location type", "")).lower()
     in_person_val = False
