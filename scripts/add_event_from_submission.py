@@ -26,50 +26,65 @@ CACHE_FILE = PROJECT_ROOT / "data" / ".geocode_cache.json"
 # Key mapping from Google Form questions / Sheet headers to internal YAML keys
 FIELD_MAPPING = {
     "title": ["Event Name", "event_name", "title"],
-    "date": ["Start Date and Time", "start_date", "date"],
-    "end_date": ["End Date and Time", "end_date"],
+    "date": ["Start Date", "Start Date and Time", "start_date", "date"],
+    "time": ["Start Time", "time"],
+    "end_date": ["End Date", "End Date and Time", "end_date"],
+    "end_time": ["End Time", "end_time"],
     "category": [
+        "Event Type (Conference, Workshop, Webinar, etc.)",
         "Event Type (e.g., Conference, Workshop, Webinar)",
         "event_type",
         "category",
     ],
-    "featured": ["Is this a Featured Event?", "featured"],
-    "tags": ["Relevant Tags", "tags"],
+    "featured": ["Featured?", "Is this a Featured Event?", "featured"],
+    "tags": ["Relevant Tags (Separated by commas)", "Relevant Tags", "tags"],
     "description": [
+        "Event Description",
         "Event Description (Maximum 200 characters - A brief, compelling summary)",
         "event_description (200 char)",
         "description",
     ],
-    "organization_name": ["Hosting Organization Name", "organization_name"],
-    "acronym": ["Organization Acronym (if applicable)", "acronym"],
+    "organization_name": ["Organization Name", "Hosting Organization Name", "organization_name"],
+    "acronym": ["Organization Acronym", "Organization Acronym (if applicable)", "acronym"],
     "organization_url": [
         "Official Organization Website URL",
         "organization_url",
     ],
     "url_linkedin": [
+        "LinkedIn Profile URL for Organization",
         "LinkedIn Profile URL for Organization (Optional)",
         "url_linkedin",
     ],
     "url_twitter": [
+        "Twitter/X Profile URL for Organization",
         "Twitter/X Profile URL for Organization (Optional)",
         "url_twitter",
     ],
-    "url_other": ["Other Social Media/Contact URL (Optional)", "url_other"],
+    "url_other": [
+        "Other Social Media/Contact URL",
+        "Other Social Media/Contact URL (Optional)",
+        "url_other",
+    ],
     "paid_or_free": ["Is the Event Paid or Free?", "paid_or_free"],
     "url": ["Official Event Registration/Information URL", "event_url", "url"],
     "image_url": [
+        "Event Image/Logo URL (Must be publicly accessible)",
         "High-Resolution Event Image/Logo URL (Must be publicly accessible)",
         "image_url",
     ],
-    "location": ["Physical Location (If In-Person: Full Address)", "location"],
+    "location": ["Location", "Physical Location (If In-Person: Full Address)", "location"],
     "city": ["city"],
     "state-province": ["state-province", "state/province"],
     "country": ["country"],
     "region": [
+        "Region",
         "Geographic Region (e.g., North America, Europe, APAC, Global)",
         "region",
     ],
     "language": ["Primary Language of the Event", "language"],
+    "in_person": ["In-Person?", "in_person"],
+    "virtual": ["Virtual?", "virtual"],
+    "timestamp": ["Timestamp", "timestamp"],
 }
 
 
