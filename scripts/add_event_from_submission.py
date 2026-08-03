@@ -352,18 +352,17 @@ def main() -> None:
     event_data["end_date"] = end_date_val
     event_data["end_time"] = dt_end_time_val or standalone_end_time
 
-    location_type = str(normalized_raw.get("location type", "")).lower()
-    in_person_val = False
-    virtual_val = False
-    if "in-person" in location_type or "in person" in location_type:
-        in_person_val = True
-    if "virtual" in location_type or "online" in location_type:
-        virtual_val = True
+    in_person_raw = event_data.get("in_person", "")
+    virtual_raw = event_data.get("virtual", "")
 
-    if "in_person" in normalized_raw:
-        in_person_val = clean_boolean(normalized_raw["in_person"])
-    if "virtual" in normalized_raw:
-        virtual_val = clean_boolean(normalized_raw["virtual"])
+    location_type = str(normalized_raw.get("location type", "")).lower()
+    in_person_val = clean_boolean(in_person_raw)
+    virtual_val = clean_boolean(virtual_raw)
+
+    if not in_person_val and ("in-person" in location_type or "in person" in location_type):
+        in_person_val = True
+    if not virtual_val and ("virtual" in location_type or "online" in location_type):
+        virtual_val = True
 
     event_data["in_person"] = in_person_val
     event_data["virtual"] = virtual_val
@@ -421,17 +420,17 @@ def main() -> None:
     event_data["id"] = next_id
 
     coords = None
-    if (
-        event_data.get("location")
-        and str(event_data["location"]).lower() != "online"
-    ):
-        coords = geocode_location(str(event_data["location"]))
-    if (
-        not coords
-        and event_data.get("region")
-        and str(event_data["region"]).lower() != "online"
-    ):
-        coords = geocode_location(str(event_data["region"]))
+    geo_parts = []
+    for field in ["location", "city", "state-province", "country", "region"]:
+        val = event_data.get(field)
+        if val and isinstance(val, str) and val.lower() != "online":
+            geo_parts.append(val)
+
+    for start_idx in range(len(geo_parts)):
+        query = ", ".join(geo_parts[start_idx:])
+        coords = geocode_location(query)
+        if coords:
+            break
 
     if coords:
         event_data["lat"] = coords[0]
@@ -450,7 +449,7 @@ def main() -> None:
         "time",
         "location",
         "city",
-        "state",
+        "state-province",
         "country",
         "region",
         "category",
@@ -483,7 +482,11 @@ def main() -> None:
             if key in [
                 "lat",
                 "lng",
+                "city",
+                "state-province",
+                "country",
                 "end_date",
+                "end_time",
                 "organization_name",
                 "organization_url",
                 "url_linkedin",
