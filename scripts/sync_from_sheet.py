@@ -94,14 +94,15 @@ FIELD_MAPPING = {
         "image url",
     ],
     "location": ["Location", "location", "physical location", "address"],
-    "city": ["city"],
+    "city": ["City\n", "City", "city"],
     "state-province": [
+        "State/Province",
         "state-province",
         "state/province",
         "state",
         "province",
     ],
-    "country": ["country"],
+    "country": ["Country", "country"],
     "region": [
         "Region",
         "region",
