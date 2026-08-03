@@ -159,19 +159,15 @@ events:
     date: "2026-08-19"
     time: 00:00
     location: delhi
-    city: ""
-    state: null
+    city: delhi
     country: india
     region: asia
     category: kln
     url: www.sample.com
     tags:
-      - ghj
+      - ghja
     end_date: "2026-08-19"
     end_time: "10:00"
-    featured: false
     organization_name: hjk
     paid_or_free: free
-    in_person: false
-    virtual: false
     language: english
