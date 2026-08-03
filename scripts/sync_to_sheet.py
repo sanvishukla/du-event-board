@@ -26,6 +26,34 @@ INPUT_FILE = PROJECT_ROOT / "data" / "events.yaml"
 sys.path.append(str(SCRIPT_DIR))
 from sync_from_sheet import parse_date_time  # noqa: E402
 
+# Mapping of internal key → possible Google Sheet column headers (new form first, then old internals)
+_SHEET_FIELD_ALIASES: dict[str, list[str]] = {
+    "event_name": ["Event Name", "event_name", "title"],
+    "start_date": ["Start Date", "start_date", "date"],
+    "end_date": ["End Date", "end_date"],
+    "location": ["Location", "location"],
+    "id": ["id", "event_id", "event id"],
+}
+
+
+def get_sheet_field(s_ev: dict[str, Any], key: str) -> str:
+    """
+    title: Retrieve a field from a sheet event row tolerating both new and old column headers.
+    parameters:
+      s_ev:
+        type: dict[str, Any]
+      key:
+        type: str
+    returns:
+      type: str
+    """
+    s_ev_lower = {k.strip().lower(): v for k, v in s_ev.items()}
+    for alias in _SHEET_FIELD_ALIASES.get(key, [key]):
+        norm = alias.strip().lower()
+        if norm in s_ev_lower:
+            return str(s_ev_lower[norm]).strip()
+    return ""
+
 
 def format_boolean(val: Any) -> str:
     """
@@ -340,13 +368,12 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "id": safe_str(event.get("id")),
+        # Old internal key names (Apps Script compatibility)
         "start_time": safe_str(event.get("time")),
         "end_time": safe_str(event.get("end_time")),
         "event_name": safe_str(event.get("title") or event.get("event_name")),
         "start_date": safe_str(event.get("date") or event.get("start_date")),
         "end_date": safe_str(event.get("end_date")),
-        "Start Date and Time": f"{safe_str(event.get('date') or event.get('start_date'))} {safe_str(event.get('time'))}".strip(),
-        "End Date and Time": f"{safe_str(event.get('end_date'))} {safe_str(event.get('end_time'))}".strip(),
         "event_type": safe_str(
             event.get("category") or event.get("event_type")
         ),
@@ -375,6 +402,37 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
             event.get("in_person", ""), event.get("virtual", "")
         ),
         "language": safe_str(event.get("language")),
+        # New Google Form column header aliases (for sheets that use new header names)
+        "Event Name": safe_str(event.get("title") or event.get("event_name")),
+        "Start Date": safe_str(event.get("date") or event.get("start_date")),
+        "Start Time": safe_str(event.get("time")),
+        "End Date": safe_str(event.get("end_date")),
+        "End Time": safe_str(event.get("end_time")),
+        "Event Type (Conference, Workshop, Webinar, etc.)": safe_str(
+            event.get("category") or event.get("event_type")
+        ),
+        "Featured?": format_featured(event.get("featured", "")),
+        "Relevant Tags (Separated by commas)": tags_val,
+        "Event Description": safe_str(
+            event.get("description") or event.get("event_description")
+        ),
+        "Organization Name": safe_str(event.get("organization_name")),
+        "Official Organization Website URL": safe_str(event.get("organization_url")),
+        "LinkedIn Profile URL for Organization": safe_str(event.get("url_linkedin")),
+        "Twitter/X Profile URL for Organization": safe_str(event.get("url_twitter")),
+        "Other Social Media/Contact URL": safe_str(event.get("url_other")),
+        "Is the Event Paid or Free?": safe_str(event.get("paid_or_free")),
+        "Organization Acronym": safe_str(event.get("acronym")),
+        "Official Event Registration/Information URL": safe_str(event.get("url") or event.get("event_url")),
+        "Event Image/Logo URL (Must be publicly accessible)": safe_str(event.get("image_url")),
+        "In-Person?": format_boolean(event.get("in_person", "")),
+        "Virtual?": format_boolean(event.get("virtual", "")),
+        "Location": location_val,
+        "City": city_val,
+        "State/Province": state_val,
+        "Country": country_val,
+        "Region": safe_str(event.get("region")),
+        "Primary Language of the Event": safe_str(event.get("language")),
     }
 
 

@@ -106,6 +106,74 @@ def test_validate_event_python_datetime_objects():
     assert str(event["date"]) == "2023-10-15"
     assert event["time"] == "14:00"
 
+def test_validate_event_optional_time_fields():
+    """Test start_time and end_time validation if provided."""
+    # Valid start_time and end_time
+    event = {
+        "id": "1",
+        "title": "Test Event",
+        "description": "Desc",
+        "date": "2023-10-15",
+        "location": "Online",
+        "region": "Global",
+        "category": "Tech",
+        "tags": ["test"],
+        "start_time": "09:30",
+        "end_time": "17:00",
+    }
+    errors = validate_event(event, 1)
+    assert errors == []
+
+    # Invalid start_time format
+    event_bad_start = dict(event, start_time="9:30 AM")
+    errors_start = validate_event(event_bad_start, 1)
+    assert len(errors_start) == 1
+    assert "Invalid start_time format '9:30 AM'" in errors_start[0]
+
+    # Invalid end_time format
+    event_bad_end = dict(event, end_time="17:00:00")
+    errors_end = validate_event(event_bad_end, 1)
+    assert len(errors_end) == 1
+    assert "Invalid end_time format '17:00:00'" in errors_end[0]
+
+
+def test_validate_event_all_optional_fields_valid():
+    """Test validation when all optional fields are provided with correct values."""
+    event = {
+        "id": "1",
+        "title": "Full Event",
+        "description": "Comprehensive event description",
+        "date": "2023-10-15",
+        "time": "10:00",
+        "start_time": "10:00",
+        "end_time": "16:00",
+        "location": "Convention Center",
+        "city": "New York",
+        "state-province": "NY",
+        "country": "USA",
+        "region": "North America",
+        "category": "Conference",
+        "tags": ["tech", "ai"],
+        "organization_name": "Tech Corp",
+        "acronym": "TC",
+        "organization_url": "https://example.com",
+        "url_linkedin": "https://linkedin.com/company/techcorp",
+        "url_twitter": "https://twitter.com/techcorp",
+        "url_other": "https://contact.example.com",
+        "paid_or_free": "free",
+        "url": "https://event.example.com",
+        "image_url": "https://example.com/logo.png",
+        "in_person": True,
+        "virtual": False,
+        "featured": True,
+        "language": "English",
+        "lat": 40.7128,
+        "lng": -74.0060,
+    }
+    errors = validate_event(event, 1)
+    assert errors == []
+
+
 @patch("generate_events_json.INPUT_FILE")
 def test_update_yaml_surgically_file_not_found(mock_input_file):
     """Test function."""
@@ -166,3 +234,4 @@ def test_update_yaml_surgically(mock_file, mock_input_file):
 
     assert "lat: 12.34" in written_data
     assert "lng: 56.78" in written_data
+

@@ -8,6 +8,7 @@ summary: |-
 
 import json
 import os
+import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -32,8 +33,6 @@ def main() -> None:
     pr_events = pr_data.get("events", [])
 
     # Try to load origin/main events.yaml to find the newly added event
-    import subprocess
-
     main_ids = set()
     try:
         # Fetch origin/main first

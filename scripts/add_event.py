@@ -357,7 +357,7 @@ def main() -> None:
         for error in errors:
             error_msg += f"- {error}\n"
 
-        with open("error_message.md", "w") as f:
+        with open("error_message.md", "w", encoding="utf-8") as f:
             f.write(error_msg)
 
         print("Validation failed:", file=sys.stderr)
