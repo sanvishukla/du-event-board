@@ -164,7 +164,7 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     date_match = re.search(
         r"(\d{4}[-/]\d{2}[-/]\d{2})|(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})", dt_str
     )
-    time_match = re.search(r"(\d{1,2}:\d{2}(?::\d{2})?)", dt_str)
+    time_match = re.search(r"(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AaPp][Mm])?)", dt_str)
 
     date_val = ""
     time_val = ""
@@ -186,9 +186,18 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
                 continue
 
     if time_match:
-        time_val = time_match.group(0)
-        parts = time_val.split(":")
-        time_val = f"{int(parts[0]):02d}:{int(parts[1]):02d}"
+        raw_time = time_match.group(1).strip()
+        time_val = raw_time
+        for fmt in ["%I:%M:%S %p", "%I:%M %p", "%I:%M%p", "%I:%M:%S%p", "%H:%M:%S", "%H:%M"]:
+            try:
+                dt = datetime.strptime(raw_time, fmt)
+                time_val = dt.strftime("%H:%M")
+                break
+            except ValueError:
+                continue
+        if time_val == raw_time:
+            parts = raw_time.split()[0].split(":")
+            time_val = f"{int(parts[0]):02d}:{int(parts[1]):02d}"
 
     return date_val, time_val
 
