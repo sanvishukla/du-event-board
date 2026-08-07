@@ -9,7 +9,7 @@ dependencies:
   - pip
   - pip:
       - pre-commit
-      - ruff==0.16.2
+      - ruff==0.15.12
       - mypy
       - bandit
       - vulture
