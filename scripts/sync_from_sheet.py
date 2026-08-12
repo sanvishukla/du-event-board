@@ -1844,13 +1844,17 @@ def main() -> None:
                     f"(ID: {event_id}) on branch '{branch_name}'..."
                 )
 
-            # 1. Reset to clean base branch
-            run_git_cmd(["git", "checkout", pr_base])
-            run_git_cmd(["git", "reset", "--hard", f"origin/{pr_base}"])
-            run_git_cmd(["git", "clean", "-fd"])
-
-            # 2. Check out branch (new or existing)
-            run_git_cmd(["git", "checkout", "-B", branch_name])
+            # Check out the appropriate branch
+            if existing_branch:
+                run_git_cmd(["git", "fetch", "origin", branch_name])
+                run_git_cmd(["git", "checkout", branch_name])
+                run_git_cmd(["git", "reset", "--hard", f"origin/{branch_name}"])
+                run_git_cmd(["git", "clean", "-fd"])
+            else:
+                run_git_cmd(["git", "checkout", pr_base])
+                run_git_cmd(["git", "reset", "--hard", f"origin/{pr_base}"])
+                run_git_cmd(["git", "clean", "-fd"])
+                run_git_cmd(["git", "checkout", "-B", branch_name])
 
             # 3. Apply ONLY this change to events.yaml
             with open(INPUT_FILE, "r", encoding="utf-8") as f:
