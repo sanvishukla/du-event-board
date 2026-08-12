@@ -38,7 +38,9 @@ _SHEET_FIELD_ALIASES: dict[str, list[str]] = {
 
 def get_sheet_field(s_ev: dict[str, Any], key: str) -> str:
     """
-    title: Retrieve a field from a sheet event row tolerating both new and old column headers.
+    title: >-
+      Retrieve a field from a sheet event row tolerating both new and old
+      column headers.
     parameters:
       s_ev:
         type: dict[str, Any]
@@ -417,14 +419,24 @@ def create_full_payload(event: dict[str, Any]) -> dict[str, Any]:
             event.get("description") or event.get("event_description")
         ),
         "Organization Name": safe_str(event.get("organization_name")),
-        "Official Organization Website URL": safe_str(event.get("organization_url")),
-        "LinkedIn Profile URL for Organization": safe_str(event.get("url_linkedin")),
-        "Twitter/X Profile URL for Organization": safe_str(event.get("url_twitter")),
+        "Official Organization Website URL": safe_str(
+            event.get("organization_url")
+        ),
+        "LinkedIn Profile URL for Organization": safe_str(
+            event.get("url_linkedin")
+        ),
+        "Twitter/X Profile URL for Organization": safe_str(
+            event.get("url_twitter")
+        ),
         "Other Social Media/Contact URL": safe_str(event.get("url_other")),
         "Is the Event Paid or Free?": safe_str(event.get("paid_or_free")),
         "Organization Acronym": safe_str(event.get("acronym")),
-        "Official Event Registration/Information URL": safe_str(event.get("url") or event.get("event_url")),
-        "Event Image/Logo URL (Must be publicly accessible)": safe_str(event.get("image_url")),
+        "Official Event Registration/Information URL": safe_str(
+            event.get("url") or event.get("event_url")
+        ),
+        "Event Image/Logo URL (Must be publicly accessible)": safe_str(
+            event.get("image_url")
+        ),
         "In-Person?": format_boolean(event.get("in_person", "")),
         "Virtual?": format_boolean(event.get("virtual", "")),
         "Location": location_val,

@@ -44,8 +44,16 @@ FIELD_MAPPING = {
         "event_description (200 char)",
         "description",
     ],
-    "organization_name": ["Organization Name", "Hosting Organization Name", "organization_name"],
-    "acronym": ["Organization Acronym", "Organization Acronym (if applicable)", "acronym"],
+    "organization_name": [
+        "Organization Name",
+        "Hosting Organization Name",
+        "organization_name",
+    ],
+    "acronym": [
+        "Organization Acronym",
+        "Organization Acronym (if applicable)",
+        "acronym",
+    ],
     "organization_url": [
         "Official Organization Website URL",
         "organization_url",
@@ -72,7 +80,11 @@ FIELD_MAPPING = {
         "High-Resolution Event Image/Logo URL (Must be publicly accessible)",
         "image_url",
     ],
-    "location": ["Location", "Physical Location (If In-Person: Full Address)", "location"],
+    "location": [
+        "Location",
+        "Physical Location (If In-Person: Full Address)",
+        "location",
+    ],
     "city": ["City\n", "City", "city"],
     "state-province": ["State/Province", "state-province", "state/province"],
     "country": ["Country", "country"],
@@ -164,7 +176,9 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     date_match = re.search(
         r"(\d{4}[-/]\d{2}[-/]\d{2})|(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})", dt_str
     )
-    time_match = re.search(r"(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AaPp][Mm])?)", dt_str)
+    time_match = re.search(
+        r"(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AaPp][Mm])?)", dt_str
+    )
 
     date_val = ""
     time_val = ""
@@ -188,7 +202,14 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     if time_match:
         raw_time = time_match.group(1).strip()
         time_val = raw_time
-        for fmt in ["%I:%M:%S %p", "%I:%M %p", "%I:%M%p", "%I:%M:%S%p", "%H:%M:%S", "%H:%M"]:
+        for fmt in [
+            "%I:%M:%S %p",
+            "%I:%M %p",
+            "%I:%M%p",
+            "%I:%M:%S%p",
+            "%H:%M:%S",
+            "%H:%M",
+        ]:
             try:
                 dt = datetime.strptime(raw_time, fmt)
                 time_val = dt.strftime("%H:%M")
@@ -348,7 +369,9 @@ def main() -> None:
     end_date_val, dt_end_time_val = parse_date_time(
         str(event_data.get("end_date", ""))
     )
-    _, standalone_end_time = parse_date_time(str(event_data.get("end_time", "")))
+    _, standalone_end_time = parse_date_time(
+        str(event_data.get("end_time", ""))
+    )
     event_data["end_date"] = end_date_val
     event_data["end_time"] = dt_end_time_val or standalone_end_time
 
@@ -359,9 +382,13 @@ def main() -> None:
     in_person_val = clean_boolean(in_person_raw)
     virtual_val = clean_boolean(virtual_raw)
 
-    if not in_person_val and ("in-person" in location_type or "in person" in location_type):
+    if not in_person_val and (
+        "in-person" in location_type or "in person" in location_type
+    ):
         in_person_val = True
-    if not virtual_val and ("virtual" in location_type or "online" in location_type):
+    if not virtual_val and (
+        "virtual" in location_type or "online" in location_type
+    ):
         virtual_val = True
 
     event_data["in_person"] = in_person_val

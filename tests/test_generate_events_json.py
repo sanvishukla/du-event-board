@@ -234,4 +234,3 @@ def test_update_yaml_surgically(mock_file, mock_input_file):
 
     assert "lat: 12.34" in written_data
     assert "lng: 56.78" in written_data
-

@@ -109,8 +109,18 @@ FIELD_MAPPING = {
         "geographic region",
         "continent",
     ],
-    "language": ["Primary Language of the Event", "language", "primary language"],
-    "date": ["Start Date", "start_date", "date", "start date", "start date and time"],
+    "language": [
+        "Primary Language of the Event",
+        "language",
+        "primary language",
+    ],
+    "date": [
+        "Start Date",
+        "start_date",
+        "date",
+        "start date",
+        "start date and time",
+    ],
     "time": ["Start Time", "start_time", "start time", "time"],
     "end_time": ["End Time", "end_time", "end time"],
     "virtual": ["Virtual?", "virtual", "online"],
@@ -593,7 +603,9 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     date_match = re.search(
         r"(\d{4}[-/]\d{2}[-/]\d{2})|(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})", dt_str
     )
-    time_match = re.search(r"(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AaPp][Mm])?)", dt_str)
+    time_match = re.search(
+        r"(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AaPp][Mm])?)", dt_str
+    )
 
     date_val = ""
     time_val = ""
@@ -616,7 +628,14 @@ def parse_date_time(dt_str: str) -> tuple[str, str]:
     if time_match:
         raw_time = time_match.group(1).strip()
         time_val = raw_time
-        for fmt in ["%I:%M:%S %p", "%I:%M %p", "%I:%M%p", "%I:%M:%S%p", "%H:%M:%S", "%H:%M"]:
+        for fmt in [
+            "%I:%M:%S %p",
+            "%I:%M %p",
+            "%I:%M%p",
+            "%I:%M:%S%p",
+            "%H:%M:%S",
+            "%H:%M",
+        ]:
             try:
                 dt = datetime.strptime(raw_time, fmt)
                 time_val = dt.strftime("%H:%M")
@@ -653,7 +672,14 @@ def normalize_time(t_str: str) -> str:
     if match:
         return f"{int(match.group(1)):02d}:{int(match.group(2)):02d}"
 
-    for fmt in ["%I:%M:%S %p", "%I:%M %p", "%I:%M%p", "%I:%M:%S%p", "%H:%M:%S", "%H:%M"]:
+    for fmt in [
+        "%I:%M:%S %p",
+        "%I:%M %p",
+        "%I:%M%p",
+        "%I:%M:%S%p",
+        "%H:%M:%S",
+        "%H:%M",
+    ]:
         try:
             dt = datetime.strptime(t_str, fmt)
             return dt.strftime("%H:%M")
