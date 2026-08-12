@@ -31,7 +31,8 @@ def test_validate_event_valid():
         "time": "14:00",
         "location": "Online",
         "region": "Global",
-        "category": "Tech"
+        "category": "Tech",
+        "tags": ["test"]
     }
     errors = validate_event(event, 1)
     assert errors == []
@@ -44,8 +45,13 @@ def test_validate_event_missing_fields():
         # missing description, date, location, region
     }
     errors = validate_event(event, 1)
-    assert len(errors) == 4
+    assert len(errors) == 6
     assert any("Missing required field 'description'" in e for e in errors)
+    assert any("Missing required field 'date'" in e for e in errors)
+    assert any("Missing required field 'location'" in e for e in errors)
+    assert any("Missing required field 'region'" in e for e in errors)
+    assert any("Missing required field 'category'" in e for e in errors)
+    assert any("Missing required field 'tags'" in e for e in errors)
 
 def test_validate_event_invalid_date():
     """Test function."""
@@ -56,7 +62,8 @@ def test_validate_event_invalid_date():
         "date": "15-10-2023", # Invalid format
         "location": "Online",
         "region": "Global",
-        "category": "Tech"
+        "category": "Tech",
+        "tags": ["test"]
     }
     errors = validate_event(event, 1)
     assert len(errors) == 1
@@ -72,7 +79,8 @@ def test_validate_event_invalid_time():
         "time": "2pm", # Invalid format
         "location": "Online",
         "region": "Global",
-        "category": "Tech"
+        "category": "Tech",
+        "tags": ["test"]
     }
     errors = validate_event(event, 1)
     assert len(errors) == 1
@@ -89,7 +97,8 @@ def test_validate_event_python_datetime_objects():
         "time": datetime.time(14, 0),
         "location": "Online",
         "region": "Global",
-        "category": "Tech"
+        "category": "Tech",
+        "tags": ["test"]
     }
     errors = validate_event(event, 1)
     assert len(errors) == 0
