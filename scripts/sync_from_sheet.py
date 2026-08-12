@@ -1848,7 +1848,9 @@ def main() -> None:
             if existing_branch:
                 run_git_cmd(["git", "fetch", "origin", branch_name])
                 run_git_cmd(["git", "checkout", branch_name])
-                run_git_cmd(["git", "reset", "--hard", f"origin/{branch_name}"])
+                run_git_cmd(
+                    ["git", "reset", "--hard", f"origin/{branch_name}"]
+                )
                 run_git_cmd(["git", "clean", "-fd"])
             else:
                 run_git_cmd(["git", "checkout", pr_base])
@@ -1863,8 +1865,12 @@ def main() -> None:
 
             if change_type == "add":
                 existing_idx = next(
-                    (i for i, ev in enumerate(temp_yaml_events) if str(ev.get("id")) == str(event_id)),
-                    None
+                    (
+                        i
+                        for i, ev in enumerate(temp_yaml_events)
+                        if str(ev.get("id")) == str(event_id)
+                    ),
+                    None,
                 )
                 if existing_idx is not None:
                     temp_yaml_events[existing_idx] = event_data
