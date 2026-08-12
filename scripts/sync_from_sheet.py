@@ -461,6 +461,7 @@ def get_open_sync_prs(
                         "branch": branch,
                         "id": e_id,
                         "title": e_title,
+                        "base": pr.get("base", {}).get("ref", "main"),
                     }
     except Exception as e:
         print(f"Warning: Failed to fetch open PRs: {e}", file=sys.stderr)
@@ -1395,6 +1396,9 @@ def main() -> None:
                 if matched_pr:
                     change_dict["existing_branch"] = existing_branch
                     change_dict["existing_pr_num"] = existing_pr_num
+                    change_dict["existing_pr_base"] = matched_pr.get(
+                        "base", "main"
+                    )
                 detected_changes.append(change_dict)
             else:
                 # Keep existing unmodified event
@@ -1568,6 +1572,7 @@ def main() -> None:
                             # Reuse the existing PR branch so we don't open a new PR
                             "existing_branch": branch_name,
                             "existing_pr_num": matched_pr["number"],
+                            "existing_pr_base": matched_pr.get("base", "main"),
                         }
                     )
                 else:
@@ -1824,11 +1829,13 @@ def main() -> None:
 
             if existing_branch:
                 branch_name = existing_branch
+                pr_base = change.get("existing_pr_base", base_branch)
                 print(
                     f"Updating existing branch '{branch_name}' for event '{title}' "
                     f"(ID: {event_id})..."
                 )
             else:
+                pr_base = base_branch
                 branch_name = (
                     f"sync/{change_type}-{event_id}-{int(time.time())}"
                 )
@@ -1838,8 +1845,8 @@ def main() -> None:
                 )
 
             # 1. Reset to clean base branch
-            run_git_cmd(["git", "checkout", base_branch])
-            run_git_cmd(["git", "reset", "--hard", f"origin/{base_branch}"])
+            run_git_cmd(["git", "checkout", pr_base])
+            run_git_cmd(["git", "reset", "--hard", f"origin/{pr_base}"])
             run_git_cmd(["git", "clean", "-fd"])
 
             # 2. Check out branch (new or existing)
@@ -2008,7 +2015,7 @@ def main() -> None:
                         repo=repo,
                         token=github_token,
                         branch=branch_name,
-                        base=base_branch,
+                        base=pr_base,
                         title=pr_title,
                         body=pr_body,
                     )
