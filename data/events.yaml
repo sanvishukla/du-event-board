@@ -164,8 +164,8 @@ events:
     category: Conference
     url: https://2026.djangocon.us
     tags:
-      - Django
       - Python
+      - Django
     end_date: "2026-08-28"
     organization_name: Django Software Foundation
     organization_url: https://2026.djangocon.us
