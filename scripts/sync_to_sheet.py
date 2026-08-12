@@ -155,6 +155,7 @@ def get_open_sync_prs(
                 if not (
                     branch.startswith("sync/")
                     or branch.startswith("event-submission-")
+                    or branch.startswith("add-event/issue-")
                 ):
                     continue
 
@@ -736,7 +737,13 @@ def main() -> None:
                     s_ev = sheet_events_by_key[fallback_key]
 
         if not s_ev:
-            missing_events.append(event)
+            pr_key = (title, date, location)
+            if e_id in pending_syncs_ids or pr_key in pending_syncs:
+                print(
+                    f"Skipping sync to sheet for '{title}' because an open PR is currently syncing it to the repo."
+                )
+            else:
+                missing_events.append(event)
             continue
 
         needs_update = False
@@ -810,7 +817,8 @@ def main() -> None:
                         needs_update = True
                         break
         if needs_update:
-            if e_id in pending_syncs_ids or key in pending_syncs:
+            pr_key = (title, date, location)
+            if e_id in pending_syncs_ids or pr_key in pending_syncs:
                 print(
                     f"Skipping update for '{title}' because an open PR is currently syncing it to the repo."
                 )
