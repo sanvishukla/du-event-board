@@ -1862,7 +1862,14 @@ def main() -> None:
             temp_yaml_events = temp_yaml_data.get("events", [])
 
             if change_type == "add":
-                temp_yaml_events.append(event_data)
+                existing_idx = next(
+                    (i for i, ev in enumerate(temp_yaml_events) if str(ev.get("id")) == str(event_id)),
+                    None
+                )
+                if existing_idx is not None:
+                    temp_yaml_events[existing_idx] = event_data
+                else:
+                    temp_yaml_events.append(event_data)
             elif change_type == "delete":
                 temp_yaml_events = [
                     ev
