@@ -161,7 +161,7 @@ events:
     state: MA
     country: USA
     region: Canada / USA
-    category: Conference
+    category: Technology
     url: https://ww2.amstat.org/meetings/jsm/2026/
     tags:
       - statistics
