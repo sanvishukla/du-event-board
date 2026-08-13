@@ -68,3 +68,6 @@ jobs:
           branch: "event-submission-${{ github.run_id }}"
           delete-branch: true
           base: main
+          add-paths: |
+            data/events.yaml
+            src/data/events.json

@@ -79,3 +79,6 @@ jobs:
             > Since this PR was generated automatically using `GITHUB_TOKEN`, GitHub Actions prevents other workflows (like CI) from running automatically. If you want to trigger CI checks, you can simply close and reopen this PR, or push an empty commit to it.
           branch: add-event/issue-${{ github.event.issue.number }}
           delete-branch: true
+          add-paths: |
+            data/events.yaml
+            src/data/events.json

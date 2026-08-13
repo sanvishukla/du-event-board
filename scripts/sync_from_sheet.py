@@ -1802,8 +1802,7 @@ def main() -> None:
                 file=sys.stderr,
             )
             sys.exit(1)
-
-        base_branch = os.environ.get("GITHUB_REF_NAME") or "main"
+        base_branch = "main"
 
         # Configure local git user
         run_git_cmd(["git", "config", "user.name", "github-actions[bot]"])
