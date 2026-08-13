@@ -33,3 +33,33 @@ jobs:
           GOOGLE_SHEET_SECRET_TOKEN: ${{ secrets.GOOGLE_SHEET_SECRET_TOKEN }}
           PR_IS_MERGED: ${{ github.event.pull_request.merged }}
         run: python scripts/delete_pending_submission.py
+
+  revert_sheet_changes:
+    # Run when an edit or delete PR is closed without merging
+    if: |
+      github.event.pull_request.merged == false &&
+      (startsWith(github.event.pull_request.head.ref, 'sync/edit-') ||
+       startsWith(github.event.pull_request.head.ref, 'sync/delete-'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Sync sheet to restore original state
+        env:
+          GOOGLE_SHEET_WEBAPP_URL: ${{ secrets.GOOGLE_SHEET_WEBAPP_URL }}
+          GOOGLE_SHEET_SECRET_TOKEN: ${{ secrets.GOOGLE_SHEET_SECRET_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/sync_to_sheet.py
