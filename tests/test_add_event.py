@@ -2,8 +2,15 @@ import os
 import json
 import pytest
 import subprocess
+import sys
+from pathlib import Path
 from unittest.mock import patch, mock_open, MagicMock
-from scripts.add_event import (
+
+# Add project root and scripts directory to path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+
+from add_event import (
     parse_issue_body,
     geocode_location_forced,
     format_event_yaml,
@@ -91,7 +98,7 @@ def test_main_validation_fails(mock_exit, monkeypatch):
         with pytest.raises(SystemExit):
             main()
         mock_exit.assert_called_once_with(1)
-        mock_file.assert_called_with("error_message.md", "w")
+        mock_file.assert_called_with("error_message.md", "w", encoding="utf-8")
 
 @patch("scripts.add_event.sys.exit")
 @patch("scripts.add_event.geocode_location_forced")

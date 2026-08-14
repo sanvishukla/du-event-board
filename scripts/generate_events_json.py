@@ -25,6 +25,8 @@ REQUIRED_FIELDS = [
     "date",
     "location",
     "region",
+    "category",
+    "tags",
 ]
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -144,7 +146,7 @@ def validate_event(event: dict[str, Any], index: int) -> list[str]:
                 f"Event #{index}: Invalid date format '{event['date']}' (expected YYYY-MM-DD)"
             )
 
-    # Validate time format
+    # Validate time format (only if a non-empty time is provided)
     if "time" in event and event["time"]:
         try:
             # Handle time objects if PyYAML parsed them
@@ -306,7 +308,13 @@ def main() -> None:
 
             # Build an ordered list of geographic components (most to least specific)
             geo_parts = []
-            for field in ["location", "city", "state", "country", "region"]:
+            for field in [
+                "location",
+                "city",
+                "state-province",
+                "country",
+                "region",
+            ]:
                 val = event.get(field)
                 if val and isinstance(val, str) and val.lower() != "online":
                     geo_parts.append(val)
